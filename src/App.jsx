@@ -1,6 +1,9 @@
 import { useMemo, useState } from "react";
 
 export default function ConcealCarryTrainingWebsite() {
+  const SQUARE_BOOKING_URL = "https://app.squareup.com/appointments/business_locations/qrcode/LKSMBY77QKE4C";
+  const SQUARE_DEPOSIT_URL = "https://square.link/u/qMU7S5Pb?src=sheet";
+  const SQUARE_FULL_PAYMENT_URL = "https://square.link/u/qV8mK8e8?src=sheet";
   const [page, setPage] = useState("home");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
@@ -167,12 +170,12 @@ export default function ConcealCarryTrainingWebsite() {
           <button type="button" onClick={() => setPage("about")} className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10">
             About Us
           </button>
-          <button type="button" onClick={() => setPage("booking")} className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10">
+          <a href={SQUARE_BOOKING_URL} target="_blank" rel="noreferrer" className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10">
             Booking
-          </button>
-          <button type="button" onClick={() => setPage("payment")} className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10">
+          </a>
+          <a href={SQUARE_BOOKING_URL} target="_blank" rel="noreferrer" className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10">
             Payment
-          </button>
+          </a>
           <a href="#register" className="rounded-full bg-yellow-400 px-4 py-2 text-center text-black">
             Contact
           </a>
@@ -459,20 +462,21 @@ export default function ConcealCarryTrainingWebsite() {
                 <h2 className="mb-2 text-2xl font-black uppercase text-yellow-300">
                   Need to Change Your Date?
                 </h2>
-                <button
-                  type="button"
-                  onClick={() => setPage("booking")}
+                <a
+                  href={SQUARE_BOOKING_URL}
+                  target="_blank"
+                  rel="noreferrer"
                   className="inline-block rounded-xl border border-white/20 bg-black px-6 py-3 font-black uppercase text-white transition hover:bg-white/10"
                 >
-                  View Dates
-                </button>
+                  View Dates in Square
+                </a>
               </div>
 
               <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
                 <h2 className="mb-3 text-2xl font-black">Deposit Option</h2>
                 <p className="mb-4 text-white/70">Secure your seat with a deposit.</p>
                 <a
-                  href="https://square.link/u/qMU7S5Pb?src=sheet"
+                  href={SQUARE_DEPOSIT_URL}
                   target="_blank"
                   rel="noreferrer"
                   className="block rounded-xl bg-yellow-400 py-4 text-center font-black uppercase text-black"
@@ -485,7 +489,7 @@ export default function ConcealCarryTrainingWebsite() {
                 <h2 className="mb-3 text-2xl font-black">Full Payment</h2>
                 <p className="mb-4 text-white/70">Pay the full class fee upfront.</p>
                 <a
-                  href="https://square.link/u/qV8mK8e8?src=sheet"
+                  href={SQUARE_FULL_PAYMENT_URL}
                   target="_blank"
                   rel="noreferrer"
                   className="block rounded-xl bg-red-600 py-4 text-center font-black uppercase text-white"
@@ -527,7 +531,7 @@ export default function ConcealCarryTrainingWebsite() {
           <div className="h-full w-full bg-[linear-gradient(135deg,transparent_0%,transparent_47%,rgba(255,255,255,0.07)_47%,rgba(255,255,255,0.07)_53%,transparent_53%,transparent_100%)]" />
         </div>
 
-        <div className="relative mx-auto grid max-w-7xl gap-12 px-6 py-16 md:px-10 lg:grid-cols-[1.2fr_0.8fr] lg:px-12 lg:py-24">
+        <div className="relative mx-auto max-w-7xl px-6 py-16 md:px-10 lg:px-12 lg:py-24">
           <div>
             <div className="mb-4 inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 px-4 py-2 text-sm font-semibold tracking-wide text-red-200">
               Illinois Concealed Carry Training
@@ -554,20 +558,14 @@ export default function ConcealCarryTrainingWebsite() {
               >
                 View Classes
               </a>
-              <button
-                type="button"
-                onClick={() => setPage("booking")}
-                className="rounded-2xl bg-yellow-400 px-6 py-4 text-center text-lg font-black uppercase tracking-wide text-black transition hover:-translate-y-0.5"
-              >
-                Make Payment
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage("booking")}
+              <a
+                href={SQUARE_BOOKING_URL}
+                target="_blank"
+                rel="noreferrer"
                 className="rounded-2xl border border-yellow-400/30 bg-yellow-400/10 px-6 py-4 text-center text-lg font-black uppercase tracking-wide text-yellow-300 transition hover:bg-yellow-400/20"
               >
-                Book a Class
-              </button>
+                Book with Square
+              </a>
             </div>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
@@ -581,9 +579,58 @@ export default function ConcealCarryTrainingWebsite() {
                 </div>
               ))}
             </div>
-          </div>
 
-          <div className="flex items-center">
+            <div className="mt-12 flex justify-center">
+              <div className="w-full max-w-md rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl">
+                <div className="rounded-[1.5rem] border border-yellow-400/20 bg-neutral-900 p-6">
+                  <div className="mb-4 inline-flex rounded-full bg-yellow-400 px-3 py-1 text-sm font-black uppercase tracking-wider text-black">
+                    Enrollment Open
+                  </div>
+                  <h2 className="text-3xl font-black uppercase">Get Started Today</h2>
+                  <div className="mt-6 space-y-4 text-white/80">
+                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                      <div className="text-sm uppercase tracking-wider text-white/50">
+                        Range Fee
+                      </div>
+                      <div className="mt-1 text-4xl font-black text-yellow-400">
+                        $75
+                      </div>
+                    </div>
+                    <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                      <div className="text-sm uppercase tracking-wider text-white/50">
+                        Contact
+                      </div>
+                      <div className="mt-1 text-xl font-bold">(224) 248-7021</div>
+                      <div className="break-all text-base">
+                        info@illinoisprotectiveservices.com
+                      </div>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <a
+                      href={SQUARE_BOOKING_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-2xl bg-yellow-400 px-4 py-4 text-center text-base font-black uppercase tracking-wide text-black transition hover:-translate-y-0.5"
+                    >
+                      Book with Square
+                    </a>
+                      <a
+                      href={SQUARE_BOOKING_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="rounded-2xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-4 text-center text-base font-black uppercase tracking-wide text-yellow-300 transition hover:bg-yellow-400/20"
+                    >
+                      Book Online
+                    </a>
+                    </div>
+                    <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm leading-7 text-red-100">
+                      Registration is required and class space is limited. Early sign-up is strongly recommended.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
             <div className="w-full rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl">
               <div className="rounded-[1.5rem] border border-yellow-400/20 bg-neutral-900 p-6">
                 <div className="mb-4 inline-flex rounded-full bg-yellow-400 px-3 py-1 text-sm font-black uppercase tracking-wider text-black">
@@ -609,13 +656,14 @@ export default function ConcealCarryTrainingWebsite() {
                     </div>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <button
-                      type="button"
-                      onClick={() => setPage("booking")}
+                    <a
+                      href={SQUARE_BOOKING_URL}
+                      target="_blank"
+                      rel="noreferrer"
                       className="rounded-2xl bg-yellow-400 px-4 py-4 text-center text-base font-black uppercase tracking-wide text-black transition hover:-translate-y-0.5"
                     >
-                      Choose Date First
-                    </button>
+                      Book with Square
+                    </a>
                     <button
                       type="button"
                       onClick={() => setPage("booking")}
@@ -733,27 +781,29 @@ export default function ConcealCarryTrainingWebsite() {
               Reserve Your Seat
             </p>
             <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
-              Simple Registration Call-To-Action
+              Book Your Training Session
             </h2>
             <p className="mt-4 max-w-2xl leading-8 text-white/80">
               Use this section for your form embed, booking link, or QR-code-based sign-up. It is ready to be connected to your preferred registration and payment system.
             </p>
 
             <div className="mt-6 flex flex-col gap-4 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => setPage("booking")}
-                className="rounded-2xl bg-yellow-400 px-6 py-4 text-center text-base font-black uppercase tracking-wide text-black transition hover:-translate-y-0.5"
-              >
-                Choose Date First
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage("booking")}
+              <a
+  href={SQUARE_BOOKING_URL}
+  target="_blank"
+  rel="noreferrer"
+  className="rounded-2xl bg-yellow-400 px-6 py-4 text-center text-base font-black uppercase tracking-wide text-black transition hover:-translate-y-0.5"
+>
+  Book & Pay Now
+</a>
+              <a
+                href={SQUARE_BOOKING_URL}
+                target="_blank"
+                rel="noreferrer"
                 className="rounded-2xl border border-white/15 bg-black/20 px-6 py-4 text-center text-base font-black uppercase tracking-wide text-white transition hover:bg-white/10"
               >
-                Schedule Your Spot
-              </button>
+                Book & Pay Now
+              </a>
             </div>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
