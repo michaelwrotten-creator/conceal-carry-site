@@ -149,182 +149,280 @@ export default function ConcealCarryTrainingWebsite() {
     });
   }
 
-  if (page === "booking") {
-    return (
-      <div className="min-h-screen bg-neutral-950 px-6 py-16 text-white">
-        <div className="mx-auto max-w-6xl">
-          <button
-            type="button"
-            onClick={() => setPage("home")}
-            className="mb-6 text-sm text-yellow-300 underline"
-          >
-            ← Back to Home
-          </button>
+  const NavBar = () => (
+    <div className="sticky top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 md:flex-row md:items-center md:justify-between md:px-10 lg:px-12">
+        <button
+          type="button"
+          onClick={() => setPage("home")}
+          className="text-left text-lg font-black uppercase tracking-[0.2em] text-white"
+        >
+          Illinois Protective Services
+        </button>
 
-          <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="flex flex-wrap gap-3 text-sm font-bold uppercase tracking-wide">
+          <button type="button" onClick={() => setPage("home")} className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10">
+            Home
+          </button>
+          <button type="button" onClick={() => setPage("about")} className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10">
+            About Us
+          </button>
+          <button type="button" onClick={() => setPage("booking")} className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10">
+            Booking
+          </button>
+          <button type="button" onClick={() => setPage("payment")} className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10">
+            Payment
+          </button>
+          <button type="button" onClick={() => setPage("home")} className="rounded-full bg-yellow-400 px-4 py-2 text-black">
+            Contact
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (page === "about") {
+    return (
+      <div className="min-h-screen bg-neutral-950 text-white">
+        <NavBar />
+        <section className="mx-auto max-w-7xl px-6 py-16 md:px-10 lg:px-12">
+          <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr]">
             <div>
               <div className="inline-flex rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-black uppercase tracking-wider text-yellow-300">
-                Booking Page
+                About Us
               </div>
-
-              <h1 className="mt-4 text-4xl font-black uppercase sm:text-5xl">
-                Choose Your Class Date
+              <h1 className="mt-4 text-4xl font-black uppercase sm:text-5xl lg:text-6xl">
+                Professional Training Built on Safety, Confidence, and Responsibility
               </h1>
-
-              <p className="mt-4 max-w-2xl text-lg leading-8 text-white/75">
-                Pick an available weekday on the calendar, then choose a training
-                time between 9:00 AM and 5:00 PM before making your payment.
+              <p className="mt-6 max-w-3xl text-lg leading-8 text-white/75">
+                Illinois Protective Services provides concealed carry training designed for responsible gun owners, first-time students, returning students, and private groups who want structured instruction and a professional learning environment.
+              </p>
+              <p className="mt-4 max-w-3xl text-lg leading-8 text-white/75">
+                Our goal is to help students understand safe firearm handling, legal awareness, decision-making, and practical confidence while creating a smooth path from registration to booking and payment.
               </p>
 
-              <div className="mt-8 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-xl">
-                <label className="text-sm font-bold uppercase tracking-[0.2em] text-red-300">
-                  Select Date
-                </label>
-
-                <p className="mt-4 text-sm leading-7 text-white/60">
-                  Weekday appointments are available Monday through Friday only.
-                </p>
-
-                <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {upcomingDates.map((date) => (
-                    <button
-                      key={date.value}
-                      type="button"
-                      onClick={() => {
-                        if (!date.isWeekend) setSelectedDate(date.value);
-                      }}
-                      disabled={date.isWeekend}
-                      className={`rounded-2xl border px-4 py-4 text-left text-sm font-black uppercase tracking-wide transition ${
-                        date.isWeekend
-                          ? "cursor-not-allowed border-white/10 bg-white/5 text-white/30 line-through"
-                          : selectedDate === date.value
-                            ? "border-yellow-300 bg-yellow-400 text-black"
-                            : "border-white/15 bg-black/20 text-white hover:bg-white/10"
-                      }`}
-                    >
-                      <div>{date.label}</div>
-                      <div className="mt-2 text-xs font-bold tracking-[0.2em]">
-                        {date.isWeekend ? "Unavailable" : "Available"}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-8 rounded-[2rem] border border-yellow-400/20 bg-yellow-400/10 p-6">
-                <h2 className="text-2xl font-black uppercase text-yellow-300">
-                  Available Times
-                </h2>
-                <p className="mt-3 text-yellow-50/90">
-                  Choose a time slot from 9:00 AM through 5:00 PM.
-                </p>
-              </div>
-
-              <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {availableTimes.map((slot) => (
-                  <button
-                    key={slot}
-                    type="button"
-                    onClick={() => setSelectedTime(slot)}
-                    className={`rounded-2xl border px-4 py-4 text-center text-sm font-black uppercase tracking-wide transition ${
-                      selectedTime === slot
-                        ? "border-yellow-300 bg-yellow-400 text-black"
-                        : "border-yellow-400/30 bg-yellow-400/10 text-yellow-300 hover:bg-yellow-400/20"
-                    }`}
-                  >
-                    {slot}
-                  </button>
-                ))}
-              </div>
-
-              <div className="mt-8 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-xl">
-                <h2 className="text-2xl font-black uppercase">Selected Appointment</h2>
-                <p className="mt-4 text-white/75">
-                  {selectedDate ? formatSelectedDate() : "No date selected yet."}
-                </p>
-                <p className="mt-2 text-white/75">
-                  {selectedTime ? selectedTime : "No time selected yet."}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (selectedDate && selectedTime) setPage("payment");
-                  }}
-                  className="mt-6 rounded-2xl bg-yellow-400 px-6 py-4 text-center text-base font-black uppercase tracking-wide text-black transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={!selectedDate || !selectedTime}
-                >
-                  Continue to Payment
-                </button>
-              </div>
-
-              <div className="mt-10">
-                <h2 className="mb-4 text-2xl font-black uppercase">
-                  Training Highlights
-                </h2>
-                <p className="mb-6 text-white/70">
-                  Real students completing concealed carry training and range
-                  instruction.
-                </p>
-
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div
-                      key={i}
-                      className="flex aspect-square items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-sm text-white/40"
-                    >
-                      Add Photo
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-10">
-                  <h3 className="mb-4 text-2xl font-black uppercase">
-                    Student Testimonials
-                  </h3>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {testimonialData.map((t) => (
-                      <div
-                        key={t.name}
-                        className="rounded-2xl border border-white/10 bg-white/5 p-5"
-                      >
-                        <p className="leading-7 text-white/80">“{t.text}”</p>
-                        <div className="mt-4 text-sm font-bold uppercase tracking-wide text-yellow-300">
-                          — {t.name}
-                        </div>
-                      </div>
-                    ))}
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                {[
+                  "Safety-first training approach",
+                  "Beginner-friendly instruction",
+                  "Professional classroom and range guidance",
+                  "Private group options available",
+                ].map((item) => (
+                  <div key={item} className="rounded-2xl border border-white/10 bg-white/5 p-5 text-white/85">
+                    {item}
                   </div>
-                </div>
+                ))}
               </div>
             </div>
 
             <div className="space-y-6">
               <div className="rounded-[2rem] border border-white/10 bg-white/5 p-7 shadow-xl">
-                <h2 className="text-2xl font-black uppercase">Booking Details</h2>
+                <h2 className="text-2xl font-black uppercase">Our Mission</h2>
+                <p className="mt-4 leading-8 text-white/75">
+                  To provide quality concealed carry training that is practical, respectful, and focused on helping students become more informed, prepared, and confident.
+                </p>
+              </div>
+
+              <div className="rounded-[2rem] border border-white/10 bg-white/5 p-7 shadow-xl">
+                <h2 className="text-2xl font-black uppercase">Who We Serve</h2>
                 <ul className="mt-5 space-y-3 text-white/75">
-                  <li>• Select a weekday date that works best for your schedule.</li>
-                  <li>• Available booking hours are Monday through Friday, 9:00 AM to 5:00 PM.</li>
-                  <li>• After choosing a date and time, continue to payment to secure your class.</li>
-                  <li>• Replace these sample availability settings with your live calendar later.</li>
+                  <li>• First-time concealed carry students</li>
+                  <li>• Experienced gun owners seeking formal instruction</li>
+                  <li>• Families and church groups</li>
+                  <li>• Private sessions and group training requests</li>
                 </ul>
               </div>
 
               <div className="rounded-[2rem] border border-yellow-400/20 bg-yellow-400/10 p-7 shadow-xl">
-                <h2 className="text-2xl font-black uppercase text-yellow-300">
-                  Need a Private Session?
-                </h2>
-                <p className="mt-4 leading-8 text-yellow-50/90">
-                  For church groups, families, or private classes, contact Illinois
-                  Protective Services to request a custom date.
+                <h2 className="text-2xl font-black uppercase text-yellow-300">Contact Our Team</h2>
+                <div className="mt-5 space-y-3 text-yellow-50/90">
+                  <p><span className="font-bold">Phone:</span> (224) 248-7021</p>
+                  <p className="break-all"><span className="font-bold">Email:</span> info@illinoisprotectiveservices.com</p>
+                </div>
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <button type="button" onClick={() => setPage("booking")} className="rounded-2xl bg-black px-5 py-3 font-black uppercase tracking-wide text-white border border-white/20 hover:bg-white/10">
+                    Book a Class
+                  </button>
+                  <button type="button" onClick={() => setPage("home")} className="rounded-2xl bg-yellow-400 px-5 py-3 font-black uppercase tracking-wide text-black">
+                    Go to Home
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (page === "booking") {
+    return (
+      <div className="min-h-screen bg-neutral-950 text-white">
+        <NavBar />
+        <div className="px-6 py-16">
+          <div className="mx-auto max-w-6xl">
+            <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+              <div>
+                <div className="inline-flex rounded-full border border-yellow-400/30 bg-yellow-400/10 px-4 py-2 text-sm font-black uppercase tracking-wider text-yellow-300">
+                  Booking Page
+                </div>
+
+                <h1 className="mt-4 text-4xl font-black uppercase sm:text-5xl">
+                  Choose Your Class Date
+                </h1>
+
+                <p className="mt-4 max-w-2xl text-lg leading-8 text-white/75">
+                  Pick an available weekday on the calendar, then choose a training time between 9:00 AM and 5:00 PM before making your payment.
                 </p>
-                <div className="mt-5 space-y-2 text-yellow-50/90">
-                  <p>
-                    <span className="font-bold">Phone:</span> (224) 248-7021
+
+                <div className="mt-8 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-xl">
+                  <label className="text-sm font-bold uppercase tracking-[0.2em] text-red-300">
+                    Select Date
+                  </label>
+
+                  <p className="mt-4 text-sm leading-7 text-white/60">
+                    Weekday appointments are available Monday through Friday only.
                   </p>
-                  <p className="break-all">
-                    <span className="font-bold">Email:</span>{" "}
-                    info@illinoisprotectiveservices.com
+
+                  <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {upcomingDates.map((date) => (
+                      <button
+                        key={date.value}
+                        type="button"
+                        onClick={() => {
+                          if (!date.isWeekend) setSelectedDate(date.value);
+                        }}
+                        disabled={date.isWeekend}
+                        className={`rounded-2xl border px-4 py-4 text-left text-sm font-black uppercase tracking-wide transition ${
+                          date.isWeekend
+                            ? "cursor-not-allowed border-white/10 bg-white/5 text-white/30 line-through"
+                            : selectedDate === date.value
+                              ? "border-yellow-300 bg-yellow-400 text-black"
+                              : "border-white/15 bg-black/20 text-white hover:bg-white/10"
+                        }`}
+                      >
+                        <div>{date.label}</div>
+                        <div className="mt-2 text-xs font-bold tracking-[0.2em]">
+                          {date.isWeekend ? "Unavailable" : "Available"}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-8 rounded-[2rem] border border-yellow-400/20 bg-yellow-400/10 p-6">
+                  <h2 className="text-2xl font-black uppercase text-yellow-300">
+                    Available Times
+                  </h2>
+                  <p className="mt-3 text-yellow-50/90">
+                    Choose a time slot from 9:00 AM through 5:00 PM.
                   </p>
+                </div>
+
+                <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {availableTimes.map((slot) => (
+                    <button
+                      key={slot}
+                      type="button"
+                      onClick={() => setSelectedTime(slot)}
+                      className={`rounded-2xl border px-4 py-4 text-center text-sm font-black uppercase tracking-wide transition ${
+                        selectedTime === slot
+                          ? "border-yellow-300 bg-yellow-400 text-black"
+                          : "border-yellow-400/30 bg-yellow-400/10 text-yellow-300 hover:bg-yellow-400/20"
+                      }`}
+                    >
+                      {slot}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="mt-8 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-xl">
+                  <h2 className="text-2xl font-black uppercase">Selected Appointment</h2>
+                  <p className="mt-4 text-white/75">
+                    {selectedDate ? formatSelectedDate() : "No date selected yet."}
+                  </p>
+                  <p className="mt-2 text-white/75">
+                    {selectedTime ? selectedTime : "No time selected yet."}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedDate && selectedTime) setPage("payment");
+                    }}
+                    className="mt-6 rounded-2xl bg-yellow-400 px-6 py-4 text-center text-base font-black uppercase tracking-wide text-black transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={!selectedDate || !selectedTime}
+                  >
+                    Continue to Payment
+                  </button>
+                </div>
+
+                <div className="mt-10">
+                  <h2 className="mb-4 text-2xl font-black uppercase">
+                    Training Highlights
+                  </h2>
+                  <p className="mb-6 text-white/70">
+                    Real students completing concealed carry training and range instruction.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <div
+                        key={i}
+                        className="flex aspect-square items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-sm text-white/40"
+                      >
+                        Add Photo
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-10">
+                    <h3 className="mb-4 text-2xl font-black uppercase">
+                      Student Testimonials
+                    </h3>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      {testimonialData.map((t) => (
+                        <div
+                          key={t.name}
+                          className="rounded-2xl border border-white/10 bg-white/5 p-5"
+                        >
+                          <p className="leading-7 text-white/80">“{t.text}”</p>
+                          <div className="mt-4 text-sm font-bold uppercase tracking-wide text-yellow-300">
+                            — {t.name}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="rounded-[2rem] border border-white/10 bg-white/5 p-7 shadow-xl">
+                  <h2 className="text-2xl font-black uppercase">Booking Details</h2>
+                  <ul className="mt-5 space-y-3 text-white/75">
+                    <li>• Select a weekday date that works best for your schedule.</li>
+                    <li>• Available booking hours are Monday through Friday, 9:00 AM to 5:00 PM.</li>
+                    <li>• After choosing a date and time, continue to payment to secure your class.</li>
+                    <li>• Replace these sample availability settings with your live calendar later.</li>
+                  </ul>
+                </div>
+
+                <div className="rounded-[2rem] border border-yellow-400/20 bg-yellow-400/10 p-7 shadow-xl">
+                  <h2 className="text-2xl font-black uppercase text-yellow-300">
+                    Need a Private Session?
+                  </h2>
+                  <p className="mt-4 leading-8 text-yellow-50/90">
+                    For church groups, families, or private classes, contact Illinois Protective Services to request a custom date.
+                  </p>
+                  <div className="mt-5 space-y-2 text-yellow-50/90">
+                    <p>
+                      <span className="font-bold">Phone:</span> (224) 248-7021
+                    </p>
+                    <p className="break-all">
+                      <span className="font-bold">Email:</span>{" "}
+                      info@illinoisprotectiveservices.com
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -336,89 +434,84 @@ export default function ConcealCarryTrainingWebsite() {
 
   if (page === "payment") {
     return (
-      <div className="min-h-screen bg-neutral-950 px-6 py-16 text-white">
-        <div className="mx-auto max-w-3xl">
-          <button
-            type="button"
-            onClick={() => setPage("home")}
-            className="mb-6 text-sm text-yellow-300 underline"
-          >
-            ← Back to Home
-          </button>
+      <div className="min-h-screen bg-neutral-950 text-white">
+        <NavBar />
+        <div className="px-6 py-16">
+          <div className="mx-auto max-w-3xl">
+            <h1 className="mb-6 text-4xl font-black uppercase">
+              Complete Your Payment
+            </h1>
 
-          <h1 className="mb-6 text-4xl font-black uppercase">
-            Complete Your Payment
-          </h1>
-
-          <div className="mb-6 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-5 text-yellow-50">
-            <div className="text-sm font-bold uppercase tracking-[0.2em] text-yellow-300">
-              Selected Appointment
-            </div>
-            <div className="mt-2 text-lg font-black text-white">
-              {formatSelectedDate()}
-            </div>
-            <div className="mt-1 text-white/90">
-              {selectedTime || "No time selected"}
-            </div>
-          </div>
-
-          <div className="grid gap-6">
-            <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-6 text-center">
-              <h2 className="mb-2 text-2xl font-black uppercase text-yellow-300">
-                Need to Change Your Date?
-              </h2>
-              <button
-                type="button"
-                onClick={() => setPage("booking")}
-                className="inline-block rounded-xl border border-white/20 bg-black px-6 py-3 font-black uppercase text-white transition hover:bg-white/10"
-              >
-                View Dates
-              </button>
+            <div className="mb-6 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-5 text-yellow-50">
+              <div className="text-sm font-bold uppercase tracking-[0.2em] text-yellow-300">
+                Selected Appointment
+              </div>
+              <div className="mt-2 text-lg font-black text-white">
+                {formatSelectedDate()}
+              </div>
+              <div className="mt-1 text-white/90">
+                {selectedTime || "No time selected"}
+              </div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-              <h2 className="mb-3 text-2xl font-black">Deposit Option</h2>
-              <p className="mb-4 text-white/70">Secure your seat with a deposit.</p>
-              <a
-                href="https://square.link/u/qMU7S5Pb?src=sheet"
-                target="_blank"
-                rel="noreferrer"
-                className="block rounded-xl bg-yellow-400 py-4 text-center font-black uppercase text-black"
-              >
-                Pay Deposit
-              </a>
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
-              <h2 className="mb-3 text-2xl font-black">Full Payment</h2>
-              <p className="mb-4 text-white/70">Pay the full class fee upfront.</p>
-              <a
-                href="https://square.link/u/qV8mK8e8?src=sheet"
-                target="_blank"
-                rel="noreferrer"
-                className="block rounded-xl bg-red-600 py-4 text-center font-black uppercase text-white"
-              >
-                Pay Full Fee
-              </a>
-            </div>
-          </div>
-
-          <div className="mt-10">
-            <h3 className="mb-4 text-2xl font-black uppercase">
-              Student Testimonials
-            </h3>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {testimonialData.map((t) => (
-                <div
-                  key={t.name}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-5"
+            <div className="grid gap-6">
+              <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-6 text-center">
+                <h2 className="mb-2 text-2xl font-black uppercase text-yellow-300">
+                  Need to Change Your Date?
+                </h2>
+                <button
+                  type="button"
+                  onClick={() => setPage("booking")}
+                  className="inline-block rounded-xl border border-white/20 bg-black px-6 py-3 font-black uppercase text-white transition hover:bg-white/10"
                 >
-                  <p className="leading-7 text-white/80">“{t.text}”</p>
-                  <div className="mt-4 text-sm font-bold uppercase tracking-wide text-yellow-300">
-                    — {t.name}
+                  View Dates
+                </button>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+                <h2 className="mb-3 text-2xl font-black">Deposit Option</h2>
+                <p className="mb-4 text-white/70">Secure your seat with a deposit.</p>
+                <a
+                  href="https://square.link/u/qMU7S5Pb?src=sheet"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block rounded-xl bg-yellow-400 py-4 text-center font-black uppercase text-black"
+                >
+                  Pay Deposit
+                </a>
+              </div>
+
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+                <h2 className="mb-3 text-2xl font-black">Full Payment</h2>
+                <p className="mb-4 text-white/70">Pay the full class fee upfront.</p>
+                <a
+                  href="https://square.link/u/qV8mK8e8?src=sheet"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block rounded-xl bg-red-600 py-4 text-center font-black uppercase text-white"
+                >
+                  Pay Full Fee
+                </a>
+              </div>
+            </div>
+
+            <div className="mt-10">
+              <h3 className="mb-4 text-2xl font-black uppercase">
+                Student Testimonials
+              </h3>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {testimonialData.map((t) => (
+                  <div
+                    key={t.name}
+                    className="rounded-2xl border border-white/10 bg-white/5 p-5"
+                  >
+                    <p className="leading-7 text-white/80">“{t.text}”</p>
+                    <div className="mt-4 text-sm font-bold uppercase tracking-wide text-yellow-300">
+                      — {t.name}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -428,6 +521,7 @@ export default function ConcealCarryTrainingWebsite() {
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white">
+      <NavBar />
       <section className="relative overflow-hidden border-b border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.35),transparent_35%),radial-gradient(circle_at_top_right,rgba(37,99,235,0.25),transparent_30%),linear-gradient(180deg,#111827_0%,#0a0a0a_100%)]">
         <div className="absolute inset-0 opacity-20">
           <div className="h-full w-full bg-[linear-gradient(135deg,transparent_0%,transparent_47%,rgba(255,255,255,0.07)_47%,rgba(255,255,255,0.07)_53%,transparent_53%,transparent_100%)]" />
@@ -444,9 +538,7 @@ export default function ConcealCarryTrainingWebsite() {
             </h1>
 
             <p className="mt-6 max-w-2xl text-lg leading-8 text-white/80 sm:text-xl">
-              Professional concealed carry training with practical instruction,
-              range experience, completion certificates, and convenient scheduling
-              for individuals and groups.
+              Professional concealed carry training with practical instruction, range experience, completion certificates, and convenient scheduling for individuals and groups.
             </p>
 
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -471,10 +563,10 @@ export default function ConcealCarryTrainingWebsite() {
               </button>
               <button
                 type="button"
-                onClick={() => setPage("booking")}
+                onClick={() => setPage("about")}
                 className="rounded-2xl border border-yellow-400/30 bg-yellow-400/10 px-6 py-4 text-center text-lg font-black uppercase tracking-wide text-yellow-300 transition hover:bg-yellow-400/20"
               >
-                Book a Class
+                About Us
               </button>
             </div>
 
@@ -533,8 +625,7 @@ export default function ConcealCarryTrainingWebsite() {
                     </button>
                   </div>
                   <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm leading-7 text-red-100">
-                    Registration is required and class space is limited. Early
-                    sign-up is strongly recommended.
+                    Registration is required and class space is limited. Early sign-up is strongly recommended.
                   </div>
                 </div>
               </div>
@@ -557,9 +648,7 @@ export default function ConcealCarryTrainingWebsite() {
             </h2>
           </div>
           <p className="max-w-2xl text-white/70">
-            Built for first-time students, experienced gun owners seeking formal
-            training, and private groups needing a professional instructor-led
-            experience.
+            Built for first-time students, experienced gun owners seeking formal training, and private groups needing a professional instructor-led experience.
           </p>
         </div>
 
@@ -574,7 +663,11 @@ export default function ConcealCarryTrainingWebsite() {
               </div>
               <h3 className="mt-4 text-2xl font-black uppercase">{option.title}</h3>
               <p className="mt-4 leading-7 text-white/75">{option.description}</p>
-              <button className="mt-6 rounded-2xl border border-white/15 px-5 py-3 font-bold uppercase tracking-wide text-white transition hover:bg-white/10">
+              <button
+                type="button"
+                onClick={() => setPage("home")}
+                className="mt-6 rounded-2xl border border-white/15 px-5 py-3 font-bold uppercase tracking-wide text-white transition hover:bg-white/10"
+              >
                 Request Info
               </button>
             </div>
@@ -592,9 +685,7 @@ export default function ConcealCarryTrainingWebsite() {
               Professional, Structured, and Practical
             </h2>
             <p className="mt-5 max-w-2xl leading-8 text-white/75">
-              This site is designed to highlight responsible firearms education
-              with a strong focus on safety, practical instruction, and a smooth
-              registration experience.
+              This site is designed to highlight responsible firearms education with a strong focus on safety, practical instruction, and a smooth registration experience.
             </p>
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
               {[
@@ -646,9 +737,7 @@ export default function ConcealCarryTrainingWebsite() {
               Simple Registration Call-To-Action
             </h2>
             <p className="mt-4 max-w-2xl leading-8 text-white/80">
-              Use this section for your form embed, booking link, or QR-code-based
-              sign-up. It is ready to be connected to your preferred registration
-              and payment system.
+              Use this section for your form embed, booking link, or QR-code-based sign-up. It is ready to be connected to your preferred registration and payment system.
             </p>
 
             <div className="mt-6 flex flex-col gap-4 sm:flex-row">
@@ -772,9 +861,7 @@ export default function ConcealCarryTrainingWebsite() {
                 Important
               </h3>
               <p className="mt-4 leading-8 text-yellow-50/90">
-                This website template is for lawful training and safety education.
-                Always follow all applicable federal, state, and local laws, range
-                rules, and instructor requirements.
+                This website template is for lawful training and safety education. Always follow all applicable federal, state, and local laws, range rules, and instructor requirements.
               </p>
             </div>
           </div>
