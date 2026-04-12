@@ -1,33 +1,45 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 export default function ConcealCarryTrainingWebsite() {
   const [page, setPage] = useState("home");
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
+
   const availableDates = [
-    {
-      date: "Saturday, April 18",
-      time: "9:00 AM – 1:00 PM",
-      spots: "6 spots left",
-      type: "Illinois CCW Training",
-    },
-    {
-      date: "Sunday, April 19",
-      time: "1:00 PM – 5:00 PM",
-      spots: "4 spots left",
-      type: "Beginner-Friendly Session",
-    },
-    {
-      date: "Saturday, April 25",
-      time: "10:00 AM – 2:00 PM",
-      spots: "8 spots left",
-      type: "Private Group Openings",
-    },
-    {
-      date: "Sunday, April 26",
-      time: "12:00 PM – 4:00 PM",
-      spots: "5 spots left",
-      type: "Refresher & Skills Practice",
-    },
+    "9:00 AM",
+    "10:00 AM",
+    "11:00 AM",
+    "12:00 PM",
+    "1:00 PM",
+    "2:00 PM",
+    "3:00 PM",
+    "4:00 PM",
+    "5:00 PM",
   ];
+
+  const upcomingDates = useMemo(() => {
+    const dates = [];
+    const today = new Date();
+
+    for (let i = 0; i < 21; i += 1) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      const day = date.getDay();
+
+      dates.push({
+        value: date.toISOString().split("T")[0],
+        label: date.toLocaleDateString("en-US", {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+        }),
+        isWeekend: day === 0 || day === 6,
+      });
+    }
+
+    return dates;
+  }, []);
+
   const highlights = [
     "Expert instruction with hands-on range training",
     "Certificate provided upon completion",
@@ -102,46 +114,136 @@ export default function ConcealCarryTrainingWebsite() {
                 Choose Your Class Date
               </h1>
               <p className="mt-4 max-w-2xl text-lg leading-8 text-white/75">
-                Select an available training date below to reserve your seat. This page is designed to connect directly to your Calendly booking link or any scheduling tool you use.
+                Pick an available weekday on the calendar, then choose a training time between 9:00 AM and 5:00 PM before making your payment.
               </p>
 
-              <div className="mt-8 grid gap-5">
-                {availableDates.map((session) => (
-                  <div
-                    key={`${session.date}-${session.time}`}
-                    className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-xl"
-                  >
-                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                      <div>
-                        <div className="text-sm font-bold uppercase tracking-[0.2em] text-red-300">
-                          {session.type}
-                        </div>
-                        <h2 className="mt-2 text-2xl font-black uppercase">{session.date}</h2>
-                        <p className="mt-2 text-lg text-white/75">{session.time}</p>
-                        <p className="mt-2 text-sm font-bold uppercase tracking-[0.2em] text-yellow-300">
-                          {session.spots}
-                        </p>
+              <div className="mt-8 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-xl">
+                <label className="text-sm font-bold uppercase tracking-[0.2em] text-red-300">
+                  Select Date
+                </label>
+                <p className="mt-4 text-sm leading-7 text-white/60">
+                  Weekday appointments are available Monday through Friday only.
+                </p>
+
+                <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {upcomingDates.map((date) => (
+                    <button
+                      key={date.value}
+                      type="button"
+                      onClick={() => {
+                        if (!date.isWeekend) setSelectedDate(date.value);
+                      }}
+                      disabled={date.isWeekend}
+                      className={`rounded-2xl border px-4 py-4 text-left text-sm font-black uppercase tracking-wide transition ${
+                        date.isWeekend
+                          ? "cursor-not-allowed border-white/10 bg-white/5 text-white/30 line-through"
+                          : selectedDate === date.value
+                            ? "border-yellow-300 bg-yellow-400 text-black"
+                            : "border-white/15 bg-black/20 text-white hover:bg-white/10"
+                      }`}
+                    >
+                      <div>{date.label}</div>
+                      <div className="mt-2 text-xs font-bold tracking-[0.2em]">
+                        {date.isWeekend ? "Unavailable" : "Available"}
                       </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-                      <a
-                        href="https://calendly.com"
-                        className="rounded-2xl bg-yellow-400 px-6 py-4 text-center text-base font-black uppercase tracking-wide text-black transition hover:-translate-y-0.5"
-                      >
-                        Book This Date
-                      </a>
-                    </div>
-                  </div>
+              <div className="mt-8 rounded-[2rem] border border-yellow-400/20 bg-yellow-400/10 p-6">
+                <h2 className="text-2xl font-black uppercase text-yellow-300">Available Times</h2>
+                <p className="mt-3 text-yellow-50/90">
+                  Choose a time slot from 9:00 AM through 5:00 PM.
+                </p>
+              </div>
+
+              <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {availableDates.map((slot) => (
+                  <button
+                    key={slot}
+                    type="button"
+                    onClick={() => setSelectedTime(slot)}
+                    className={`rounded-2xl border px-4 py-4 text-center text-sm font-black uppercase tracking-wide transition ${
+                      selectedTime === slot
+                        ? "border-yellow-300 bg-yellow-400 text-black"
+                        : "border-yellow-400/30 bg-yellow-400/10 text-yellow-300 hover:bg-yellow-400/20"
+                    }`}
+                  >
+                    {slot}
+                  </button>
                 ))}
+              </div>
 
-                {/* Student Training Gallery */}
+              <div className="mt-8 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-xl">
+                <h2 className="text-2xl font-black uppercase">Selected Appointment</h2>
+                <p className="mt-4 text-white/75">
+                  {selectedDate
+                    ? new Date(`${selectedDate}T12:00:00`).toLocaleDateString("en-US", {
+                        weekday: "long",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : "No date selected yet."}
+                </p>
+                <p className="mt-2 text-white/75">
+                  {selectedTime ? selectedTime : "No time selected yet."}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (selectedDate && selectedTime) setPage("payment");
+                  }}
+                  className="mt-6 rounded-2xl bg-yellow-400 px-6 py-4 text-center text-base font-black uppercase tracking-wide text-black transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={!selectedDate || !selectedTime}
+                >
+                  Continue to Payment
+                </button>
+              </div>
+
+              <div className="mt-10">
+                <h2 className="text-2xl font-black uppercase mb-4">Training Highlights</h2>
+                <p className="text-white/70 mb-6">
+                  Real students completing concealed carry training and range instruction.
+                </p>
+
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <div
+                      key={i}
+                      className="aspect-square rounded-2xl border border-white/10 bg-white/5 flex items-center justify-center text-white/40 text-sm"
+                    >
+                      Add Photo
+                    </div>
+                  ))}
+                </div>
+
                 <div className="mt-10">
-                  <h2 className="text-2xl font-black uppercase mb-4">Training Highlights</h2>
-                  <p className="text-white/70 mb-6">Real students completing concealed carry training and range instruction.</p>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    {[1,2,3,4,5,6].map((i) => (
-                      <div key={i} className="aspect-square rounded-2xl border border-white/10 bg-white/5 flex items-center justify-center text-white/40 text-sm">
-                        Add Photo
+                  <h3 className="text-2xl font-black uppercase mb-4">Student Testimonials</h3>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {[
+                      {
+                        name: "Jessica R.",
+                        text: "Very professional and informative. I came in nervous and left confident and prepared.",
+                      },
+                      {
+                        name: "Marcus T.",
+                        text: "Hands-on training was excellent. Instructor made everything easy to understand.",
+                      },
+                      {
+                        name: "Danielle S.",
+                        text: "Great class for beginners. I feel much safer and more knowledgeable now.",
+                      },
+                      {
+                        name: "Anthony K.",
+                        text: "Worth every dollar. Organized, professional, and real-world training.",
+                      },
+                    ].map((t, i) => (
+                      <div key={i} className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                        <p className="text-white/80 leading-7">“{t.text}”</p>
+                        <div className="mt-4 text-sm font-bold uppercase tracking-wide text-yellow-300">
+                          — {t.name}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -153,10 +255,10 @@ export default function ConcealCarryTrainingWebsite() {
               <div className="rounded-[2rem] border border-white/10 bg-white/5 p-7 shadow-xl">
                 <h2 className="text-2xl font-black uppercase">Booking Details</h2>
                 <ul className="mt-5 space-y-3 text-white/75">
-                  <li>• Select the date that works best for your schedule.</li>
-                  <li>• Complete your booking through your live calendar link.</li>
-                  <li>• You can place address details, class requirements, and waiver instructions here.</li>
-                  <li>• Replace sample dates with your real class calendar at any time.</li>
+                  <li>• Select a weekday date that works best for your schedule.</li>
+                  <li>• Available booking hours are Monday through Friday, 9:00 AM to 5:00 PM.</li>
+                  <li>• After choosing a date and time, continue to payment to secure your class.</li>
+                  <li>• Replace these sample availability settings with your live calendar later.</li>
                 </ul>
               </div>
 
@@ -190,26 +292,43 @@ export default function ConcealCarryTrainingWebsite() {
 
           <h1 className="text-4xl font-black uppercase mb-6">Complete Your Payment</h1>
 
+          <div className="mb-6 rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-5 text-yellow-50">
+            <div className="text-sm font-bold uppercase tracking-[0.2em] text-yellow-300">
+              Selected Appointment
+            </div>
+            <div className="mt-2 text-lg font-black text-white">
+              {selectedDate
+                ? new Date(`${selectedDate}T12:00:00`).toLocaleDateString("en-US", {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                  })
+                : "No date selected"}
+            </div>
+            <div className="mt-1 text-white/90">{selectedTime || "No time selected"}</div>
+          </div>
+
           <div className="grid gap-6">
             <div className="rounded-2xl border border-yellow-400/20 bg-yellow-400/10 p-6 text-center">
               <h2 className="text-2xl font-black uppercase text-yellow-300 mb-2">
-                Book Your Class Date
+                Need to Change Your Date?
               </h2>
-              <p className="text-yellow-50/90 mb-4">
-                
-              </p>
-              <a
-                href="https://calendly.com"
+              <button
+                type="button"
+                onClick={() => setPage("booking")}
                 className="inline-block rounded-xl bg-black text-white font-black px-6 py-3 uppercase border border-white/20 hover:bg-white/10 transition"
               >
                 View Dates
-              </a>
+              </button>
             </div>
+
             <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
               <h2 className="text-2xl font-black mb-3">Deposit Option</h2>
               <p className="text-white/70 mb-4">Secure your seat with a deposit.</p>
               <a
-                onClick={() => setPage("payment")}
+                href="https://square.link/YOUR-DEPOSIT-LINK"
+                target="_blank"
+                rel="noreferrer"
                 className="block rounded-xl bg-yellow-400 text-black text-center font-black py-4 uppercase"
               >
                 Pay Deposit
@@ -220,7 +339,9 @@ export default function ConcealCarryTrainingWebsite() {
               <h2 className="text-2xl font-black mb-3">Full Payment</h2>
               <p className="text-white/70 mb-4">Pay the full class fee upfront.</p>
               <a
-                onClick={() => setPage("payment")}
+                href="https://square.link/YOUR-FULL-PAYMENT-LINK"
+                target="_blank"
+                rel="noreferrer"
                 className="block rounded-xl bg-red-600 text-white text-center font-black py-4 uppercase"
               >
                 Pay Full Fee
@@ -228,26 +349,38 @@ export default function ConcealCarryTrainingWebsite() {
             </div>
           </div>
 
-                {/* Testimonials */}
-                <div className="mt-10">
-                  <h3 className="text-2xl font-black uppercase mb-4">Student Testimonials</h3>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {[
-                      { name: "Jessica R.", text: "Very professional and informative. I came in nervous and left confident and prepared." },
-                      { name: "Marcus T.", text: "Hands-on training was excellent. Instructor made everything easy to understand." },
-                      { name: "Danielle S.", text: "Great class for beginners. I feel much safer and more knowledgeable now." },
-                      { name: "Anthony K.", text: "Worth every dollar. Organized, professional, and real-world training." },
-                    ].map((t, i) => (
-                      <div key={i} className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                        <p className="text-white/80 leading-7">“{t.text}”</p>
-                        <div className="mt-4 text-sm font-bold uppercase tracking-wide text-yellow-300">— {t.name}</div>
-                      </div>
-                    ))}
+          <div className="mt-10">
+            <h3 className="text-2xl font-black uppercase mb-4">Student Testimonials</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                {
+                  name: "Jessica R.",
+                  text: "Very professional and informative. I came in nervous and left confident and prepared.",
+                },
+                {
+                  name: "Marcus T.",
+                  text: "Hands-on training was excellent. Instructor made everything easy to understand.",
+                },
+                {
+                  name: "Danielle S.",
+                  text: "Great class for beginners. I feel much safer and more knowledgeable now.",
+                },
+                {
+                  name: "Anthony K.",
+                  text: "Worth every dollar. Organized, professional, and real-world training.",
+                },
+              ].map((t, i) => (
+                <div key={i} className="rounded-2xl border border-white/10 bg-white/5 p-5">
+                  <p className="text-white/80 leading-7">“{t.text}”</p>
+                  <div className="mt-4 text-sm font-bold uppercase tracking-wide text-yellow-300">
+                    — {t.name}
                   </div>
                 </div>
-
-              </div>
+              ))}
             </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -286,18 +419,20 @@ export default function ConcealCarryTrainingWebsite() {
               >
                 View Classes
               </a>
-              <a
-                onClick={() => setPage("payment")}
+              <button
+                type="button"
+                onClick={() => setPage("booking")}
                 className="rounded-2xl bg-yellow-400 px-6 py-4 text-center text-lg font-black uppercase tracking-wide text-black transition hover:-translate-y-0.5"
               >
                 Make Payment
-              </a>
-              <a
+              </button>
+              <button
+                type="button"
                 onClick={() => setPage("booking")}
                 className="rounded-2xl border border-yellow-400/30 bg-yellow-400/10 px-6 py-4 text-center text-lg font-black uppercase tracking-wide text-yellow-300 transition hover:bg-yellow-400/20"
               >
                 Book a Class
-              </a>
+              </button>
             </div>
 
             <div className="mt-10 grid gap-4 sm:grid-cols-2">
@@ -331,18 +466,20 @@ export default function ConcealCarryTrainingWebsite() {
                     <div className="text-base break-all">info@illinoisprotectiveservices.com</div>
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <a
-                      onClick={() => setPage("payment")}
+                    <button
+                      type="button"
+                      onClick={() => setPage("booking")}
                       className="rounded-2xl bg-yellow-400 px-4 py-4 text-center text-base font-black uppercase tracking-wide text-black transition hover:-translate-y-0.5"
                     >
                       Pay Deposit
-                    </a>
-                    <a
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => setPage("booking")}
                       className="rounded-2xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-4 text-center text-base font-black uppercase tracking-wide text-yellow-300 transition hover:bg-yellow-400/20"
                     >
                       Book Online
-                    </a>
+                    </button>
                   </div>
                   <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm leading-7 text-red-100">
                     Registration is required and class space is limited. Early sign-up is strongly recommended.
@@ -431,18 +568,20 @@ export default function ConcealCarryTrainingWebsite() {
             </p>
 
             <div className="mt-6 flex flex-col gap-4 sm:flex-row">
-              <a
-                onClick={() => setPage("payment")}
+              <button
+                type="button"
+                onClick={() => setPage("booking")}
                 className="rounded-2xl bg-yellow-400 px-6 py-4 text-center text-base font-black uppercase tracking-wide text-black transition hover:-translate-y-0.5"
               >
                 Pay Class Fee
-              </a>
-              <a
+              </button>
+              <button
+                type="button"
                 onClick={() => setPage("booking")}
                 className="rounded-2xl border border-white/15 bg-black/20 px-6 py-4 text-center text-base font-black uppercase tracking-wide text-white transition hover:bg-white/10"
               >
                 Schedule Your Spot
-              </a>
+              </button>
             </div>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2">
