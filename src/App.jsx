@@ -173,9 +173,9 @@ export default function ConcealCarryTrainingWebsite() {
           <button type="button" onClick={() => setPage("payment")} className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10">
             Payment
           </button>
-          <button type="button" onClick={() => setPage("home")} className="rounded-full bg-yellow-400 px-4 py-2 text-black">
+          <a href="#register" className="rounded-full bg-yellow-400 px-4 py-2 text-center text-black">
             Contact
-          </button>
+          </a>
         </div>
       </div>
     </div>
@@ -563,10 +563,10 @@ export default function ConcealCarryTrainingWebsite() {
               </button>
               <button
                 type="button"
-                onClick={() => setPage("about")}
+                onClick={() => setPage("booking")}
                 className="rounded-2xl border border-yellow-400/30 bg-yellow-400/10 px-6 py-4 text-center text-lg font-black uppercase tracking-wide text-yellow-300 transition hover:bg-yellow-400/20"
               >
-                About Us
+                Book a Class
               </button>
             </div>
 
@@ -614,7 +614,7 @@ export default function ConcealCarryTrainingWebsite() {
                       onClick={() => setPage("booking")}
                       className="rounded-2xl bg-yellow-400 px-4 py-4 text-center text-base font-black uppercase tracking-wide text-black transition hover:-translate-y-0.5"
                     >
-                      Pay Deposit
+                      Choose Date First
                     </button>
                     <button
                       type="button"
@@ -663,13 +663,12 @@ export default function ConcealCarryTrainingWebsite() {
               </div>
               <h3 className="mt-4 text-2xl font-black uppercase">{option.title}</h3>
               <p className="mt-4 leading-7 text-white/75">{option.description}</p>
-              <button
-                type="button"
-                onClick={() => setPage("home")}
-                className="mt-6 rounded-2xl border border-white/15 px-5 py-3 font-bold uppercase tracking-wide text-white transition hover:bg-white/10"
+              <a
+                href="#register"
+                className="mt-6 inline-block rounded-2xl border border-white/15 px-5 py-3 text-center font-bold uppercase tracking-wide text-white transition hover:bg-white/10"
               >
                 Request Info
-              </button>
+              </a>
             </div>
           ))}
         </div>
@@ -746,7 +745,7 @@ export default function ConcealCarryTrainingWebsite() {
                 onClick={() => setPage("booking")}
                 className="rounded-2xl bg-yellow-400 px-6 py-4 text-center text-base font-black uppercase tracking-wide text-black transition hover:-translate-y-0.5"
               >
-                Pay Class Fee
+                Choose Date First
               </button>
               <button
                 type="button"
