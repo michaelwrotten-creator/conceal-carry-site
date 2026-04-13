@@ -1,7 +1,109 @@
 import { useMemo, useState } from "react";
+function AiHelperChat() {
+  const [open, setOpen] = useState(false);
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState([
+    {
+      role: "assistant",
+      text: "Hi! I’m your training assistant. I can help with booking, payment, class info, and contact details.",
+    },
+  ]);
+
+  function handleSend() {
+    const trimmed = input.trim();
+    if (!trimmed) return;
+
+    const userMessage = { role: "user", text: trimmed };
+    let reply =
+      "I can help with booking, payment, class details, and contact information.";
+
+    const lower = trimmed.toLowerCase();
+
+    if (lower.includes("book") || lower.includes("schedule") || lower.includes("date")) {
+      reply =
+        "To book your class, go to the Booking page or use the Book with Square button.";
+    } else if (lower.includes("pay") || lower.includes("deposit") || lower.includes("fee")) {
+      reply =
+        "You can pay a deposit or full fee on the Payment page. Your Square payment links are already connected.";
+    } else if (lower.includes("price") || lower.includes("cost")) {
+      reply = "The current range fee shown on the site is $75.";
+    } else if (lower.includes("contact") || lower.includes("phone") || lower.includes("email")) {
+      reply =
+        "You can contact Illinois Protective Services at (224) 248-7021 or info@illinoisprotectiveservices.com.";
+    } else if (lower.includes("hours") || lower.includes("time")) {
+      reply =
+        "Booking times are Monday through Friday from 9:00 AM to 5:00 PM.";
+    } else if (lower.includes("where") || lower.includes("location")) {
+      reply =
+        "For location details, use the contact section or ask the instructor directly before class.";
+    }
+
+    setMessages((prev) => [...prev, userMessage, { role: "assistant", text: reply }]);
+    setInput("");
+  }
+
+  return (
+    <div className="fixed bottom-6 right-6 z-[9999]">
+      {open && (
+        <div className="mb-4 w-[340px] overflow-hidden rounded-3xl border border-white/10 bg-neutral-950 shadow-2xl">
+          <div className="border-b border-white/10 bg-yellow-400 px-5 py-4 text-black">
+            <div className="text-sm font-black uppercase tracking-widest">AI Helper</div>
+            <div className="text-xs font-semibold">Booking, payment, and class support</div>
+          </div>
+
+          <div className="h-[360px] space-y-3 overflow-y-auto p-4">
+            {messages.map((msg, index) => (
+              <div
+                key={index}
+                className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-6 ${
+                  msg.role === "assistant"
+                    ? "bg-white/10 text-white"
+                    : "ml-auto bg-yellow-400 text-black"
+                }`}
+              >
+                {msg.text}
+              </div>
+            ))}
+          </div>
+
+          <div className="border-t border-white/10 p-3">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSend();
+                }}
+                placeholder="Ask about booking or payment..."
+                className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-white/40"
+              />
+              <button
+                type="button"
+                onClick={handleSend}
+                className="rounded-xl bg-yellow-400 px-4 py-3 text-sm font-black uppercase text-black"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className="flex h-16 w-16 items-center justify-center rounded-full bg-yellow-400 text-lg font-black uppercase text-black shadow-2xl transition hover:scale-105"
+      >
+        AI
+      </button>
+      <AiHelperChat />
+    </div>
+  );
+}
 
 export default function ConcealCarryTrainingWebsite() {
-  const SQUARE_BOOKING_URL = "https://book.squareup.com/appointments/duxyj421attisk/location/LKSMBY77QKE4C";
+  const SQUARE_BOOKING_URL = "https://squareup.com/appointments/book/YOUR-BOOKING-LINK";
   const SQUARE_DEPOSIT_URL = "https://square.link/u/qMU7S5Pb?src=sheet";
   const SQUARE_FULL_PAYMENT_URL = "https://square.link/u/qV8mK8e8?src=sheet";
   const [page, setPage] = useState("home");
@@ -153,51 +255,49 @@ export default function ConcealCarryTrainingWebsite() {
   }
 
   const NavBar = () => (
-    <div className="flex flex-wrap gap-3 text-sm font-bold uppercase tracking-wide">
-  {/* HOME */}
-  <button
-    onClick={() => setPage("home")}
-    className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10"
-  >
-    Home
-  </button>
+    <div className="sticky top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 md:flex-row md:items-center md:justify-between md:px-10 lg:px-12">
+        <button
+          type="button"
+          onClick={() => setPage("home")}
+          className="text-left text-lg font-black uppercase tracking-[0.2em] text-white"
+        >
+          Illinois Protective Services
+        </button>
 
-  {/* ABOUT */}
-  <button
-    onClick={() => setPage("about")}
-    className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10"
-  >
-    About Us
-  </button>
+        <div className="flex flex-wrap gap-3 text-sm font-bold uppercase tracking-wide">
+          <button type="button" onClick={() => setPage("home")} className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10">
+            Home
+          </button>
+          <button type="button" onClick={() => setPage("about")} className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10">
+            About Us
+          </button>
+          <button
+  type="button"
+  onClick={() => setPage("booking")}
+  className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10"
+>
+  Booking
+</button>
 
-  {/* BOOKING */}
-  <a
-    href={SQUARE_BOOKING_URL}
-    target="_blank"
-    rel="noreferrer"
-    className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10"
-  >
-    Booking
-  </a>
+<button
+  type="button"
+  onClick={() => setPage("payment")}
+  className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10"
+>
+  Payment
+</button>
 
-  {/* PAYMENT */}
-  <a
-    href={SQUARE_BOOKING_URL}
-    target="_blank"
-    rel="noreferrer"
-    className="rounded-full border border-white/15 px-4 py-2 text-white/80 hover:bg-white/10"
-  >
-    Payment
-  </a>
-
-  {/* CONTACT */}
-  <a
-    href="#register"
-    className="rounded-full bg-yellow-400 px-4 py-2 text-black text-center"
-  >
-    Contact
-  </a>
-</div>
+<button
+  type="button"
+  onClick={() => setPage("contact")}
+  className="rounded-full bg-yellow-400 px-4 py-2 text-black"
+>
+  Contact
+</button>
+        </div>
+      </div>
+    </div>
   );
 
   if (page === "about") {
@@ -452,6 +552,35 @@ export default function ConcealCarryTrainingWebsite() {
   }
 
   if (page === "payment") {
+    if (page === "contact") {
+  return (
+    <div className="min-h-screen bg-neutral-950 text-white">
+      <NavBar />
+
+      <div className="mx-auto max-w-4xl px-6 py-20 text-center">
+        <h1 className="text-4xl font-black uppercase">Contact Us</h1>
+
+        <p className="mt-6 text-white/70">
+          Reach out to book your class or ask questions.
+        </p>
+
+        <div className="mt-10 space-y-3 text-lg">
+          <p><strong>Phone:</strong> (224) 248-7021</p>
+          <p><strong>Email:</strong> info@illinoisprotectiveservices.com</p>
+        </div>
+
+        <a
+          href={SQUARE_BOOKING_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-10 inline-block rounded-xl bg-yellow-400 px-6 py-4 font-black uppercase text-black"
+        >
+          Book Now
+        </a>
+      </div>
+    </div>
+  );
+}
     return (
       <div className="min-h-screen bg-neutral-950 text-white">
         <NavBar />
@@ -600,76 +729,101 @@ export default function ConcealCarryTrainingWebsite() {
         </div>
       </section>
 
-  <section className="mx-auto max-w-7xl px-6 py-8 md:px-10 lg:px-12">
-    <div className="flex justify-center">
-      <div className="sticky top-28 w-full max-w-lg">
+      <section className="mx-auto max-w-7xl px-6 py-8 md:px-10 lg:px-12">
+        <div className="flex justify-center">
+          <div className="sticky top-24 w-full max-w-md rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl">
+            <div className="rounded-[1.5rem] border border-yellow-400/20 bg-neutral-900 p-6">
+              <div className="mb-4 inline-flex rounded-full bg-yellow-400 px-3 py-1 text-sm font-black uppercase tracking-wider text-black">
+                Enrollment Open
+              </div>
+              <h2 className="text-3xl font-black uppercase">Get Started Today</h2>
+              <div className="mt-6 space-y-4 text-white/80">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="text-sm uppercase tracking-wider text-white/50">
+                    Range Fee
+                  </div>
+                  <div className="mt-1 text-4xl font-black text-yellow-400">
+                    $75
+                  </div>
+                </div>
 
-    <div className="rounded-[2.5rem] border border-white/10 bg-gradient-to-b from-white/10 to-white/5 p-[2px] shadow-[0_20px_80px_rgba(0,0,0,0.6)]">
-      
-      <div className="rounded-[2.5rem] bg-neutral-900 px-8 py-10 text-center">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <div className="text-sm uppercase tracking-wider text-white/50">
+                    Contact
+                  </div>
+                  <div className="mt-1 text-xl font-bold">(224) 248-7021</div>
+                  <div className="break-all text-base">
+                    info@illinoisprotectiveservices.com
+                  </div>
+                </div>
 
-        {/* Badge */}
-        <div className="mx-auto mb-5 inline-flex rounded-full bg-yellow-400 px-4 py-1 text-xs font-black uppercase tracking-widest text-black">
-          Enrollment Open
-        </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <a
+                    href={SQUARE_BOOKING_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-2xl bg-yellow-400 px-4 py-4 text-center text-base font-black uppercase tracking-wide text-black transition hover:-translate-y-0.5"
+                  >
+                    Book with Square
+                  </a>
+                  <a
+                    href={SQUARE_BOOKING_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-2xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-4 text-center text-base font-black uppercase tracking-wide text-yellow-300 transition hover:bg-yellow-400/20"
+                  >
+                    Book Online
+                  </a>
+                </div>
 
-        {/* Title */}
-        <h2 className="text-3xl font-black uppercase leading-tight">
-          Get Started Today
-        </h2>
-
-        {/* Divider */}
-        <div className="mx-auto my-6 h-[2px] w-16 bg-yellow-400/60 rounded-full"></div>
-
-        {/* Price */}
-        <div className="mb-6">
-          <div className="text-sm uppercase tracking-widest text-white/50">
-            Range Fee
+                <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm leading-7 text-red-100">
+                  Registration is required and class space is limited. Early sign-up is strongly recommended.
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="mt-2 text-5xl font-black text-yellow-400">
-            $75
+        </div>
+      </section>
+
+      <section
+        className="mx-auto max-w-7xl px-6 py-16 md:px-10 lg:px-12"
+        id="classes"
+      >
+        <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-400">
+              Training Options
+            </p>
+            <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
+              Choose the Right Class Format
+            </h2>
           </div>
+          <p className="max-w-2xl text-white/70">
+            Built for first-time students, experienced gun owners seeking formal training, and private groups needing a professional instructor-led experience.
+          </p>
         </div>
 
-        {/* Contact */}
-        <div className="mb-8 space-y-1 text-white/80">
-          <div className="font-bold">(224) 248-7021</div>
-          <div className="text-sm break-all">
-            info@illinoisprotectiveservices.com
-          </div>
+        <div className="grid gap-6 lg:grid-cols-3">
+          {classOptions.map((option) => (
+            <div
+              key={option.title}
+              className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-xl"
+            >
+              <div className="inline-flex rounded-full border border-yellow-400/20 bg-yellow-400/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-yellow-300">
+                {option.badge}
+              </div>
+              <h3 className="mt-4 text-2xl font-black uppercase">{option.title}</h3>
+              <p className="mt-4 leading-7 text-white/75">{option.description}</p>
+              <a
+                href="#register"
+                className="mt-6 inline-block rounded-2xl border border-white/15 px-5 py-3 text-center font-bold uppercase tracking-wide text-white transition hover:bg-white/10"
+              >
+                Request Info
+              </a>
+            </div>
+          ))}
         </div>
-
-        {/* Buttons */}
-        <div className="flex flex-col gap-3">
-          <a
-            href={SQUARE_BOOKING_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-xl bg-yellow-400 py-4 text-center font-black uppercase tracking-wide text-black transition hover:scale-[1.02] hover:shadow-lg"
-          >
-            Book & Pay Now
-          </a>
-
-          <a
-            href={SQUARE_BOOKING_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-xl border border-yellow-400/40 py-4 text-center font-black uppercase tracking-wide text-yellow-300 transition hover:bg-yellow-400/10"
-          >
-            View Availability
-          </a>
-        </div>
-
-        {/* Notice */}
-        <div className="mt-6 text-sm text-red-300/90">
-          Limited class size. Early registration recommended.
-        </div>
-
-      </div>
-    </div>
-  </div>
-</div>
-</section>
+      </section>
 
       <section className="border-y border-white/10 bg-white/[0.03]">
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:px-10 lg:grid-cols-2 lg:px-12">
