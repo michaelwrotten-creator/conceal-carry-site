@@ -25,14 +25,14 @@ function AiHelperChat() {
       lower.includes("date")
     ) {
       reply =
-        "Go to the Booking page to choose a service, date, and time before payment.";
+        "Go to the Booking page to choose a service, then select your date and time before payment.";
     } else if (
       lower.includes("pay") ||
       lower.includes("deposit") ||
       lower.includes("fee")
     ) {
       reply =
-        "Go to the Payment page to choose Deposit or a Full Payment option for your service.";
+        "Go to the Payment page to choose Deposit or a Full Payment option for your selected service.";
     } else if (
       lower.includes("class") ||
       lower.includes("service") ||
@@ -472,7 +472,7 @@ export default function ConcealCarryTrainingWebsite() {
               Available Services for Booking
             </h1>
             <p className="mt-4 text-lg leading-8 text-white/75">
-              Browse all currently available services before starting the booking flow.
+              Browse all current services before starting or continuing your booking flow.
             </p>
 
             {(selectedDate || selectedTime || selectedService) && (
@@ -577,57 +577,36 @@ export default function ConcealCarryTrainingWebsite() {
         <section className="mx-auto max-w-6xl px-6 py-16 md:px-10">
           <div className="max-w-3xl">
             <div className="inline-flex rounded-full border border-red-500/20 bg-red-600/10 px-4 py-2 text-sm font-black uppercase tracking-[0.2em] text-blue-300">
-              Step 1
+              Step 2
             </div>
             <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.06em] sm:text-5xl">
-              Choose Service, Date, and Time
+              Select Date and Time
             </h1>
             <p className="mt-4 text-lg leading-8 text-white/75">
-              Select a service first, then pick an available weekday and time.
+              Choose your available class date and preferred time frame before continuing to payment.
             </p>
+          </div>
+
+          <div className="mt-8 rounded-2xl border border-red-500/20 bg-red-600/10 p-5 text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)]">
+            <div className="text-sm font-bold uppercase tracking-[0.2em] text-blue-300">
+              Selected Service
+            </div>
+            <div className="mt-2 text-lg font-black">
+              {getSelectedService()?.title || "No service selected"}
+            </div>
+            <div className="mt-1 text-white/80">
+              {getSelectedService()?.duration} • {formatPrice(getSelectedService()?.price || 0)}
+            </div>
           </div>
 
           <div className="mt-10 grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
             <div>
               <div className={cardClass}>
-                <h2 className="text-xl font-black uppercase">Choose a Service</h2>
+                <h2 className="text-xl font-black uppercase">Available Dates</h2>
                 <p className="mt-3 text-white/70">
-                  Select the class service you want to book before choosing your
-                  date and time.
+                  Monday through Friday availability is shown below. Weekends are unavailable.
                 </p>
 
-                <div className="mt-6 grid gap-3">
-                  {classServices.map((service) => (
-                    <button
-                      key={service.id}
-                      type="button"
-                      onClick={() => setSelectedService(service.id)}
-                      className={`rounded-2xl border px-4 py-4 text-left transition ${
-                        selectedService === service.id
-                          ? "border-red-500 bg-red-600 text-white"
-                          : "border-white/15 bg-white/[0.03] text-white hover:bg-white/10"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-4">
-                        <div>
-                          <div className="text-base font-black uppercase">
-                            {service.title}
-                          </div>
-                          <div className="mt-1 text-sm text-white/75">
-                            {service.duration}
-                          </div>
-                        </div>
-                        <div className="text-base font-black">
-                          {formatPrice(service.price)}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className={cardClass + " mt-8"}>
-                <h2 className="text-xl font-black uppercase">Available Dates</h2>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   {availableDates.map((date) => (
                     <button
@@ -656,8 +635,12 @@ export default function ConcealCarryTrainingWebsite() {
 
               <div className="mt-8 rounded-[2rem] border border-red-500/20 bg-blue-500/10 p-6 shadow-[0_12px_30px_rgba(0,0,0,0.28)]">
                 <h2 className="text-xl font-black uppercase text-blue-300">
-                  Available Times
+                  Available Time Frames
                 </h2>
+                <p className="mt-3 text-white/75">
+                  Select your preferred class time frame.
+                </p>
+
                 <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {availableTimes.map((slot) => (
                     <button
@@ -679,11 +662,13 @@ export default function ConcealCarryTrainingWebsite() {
 
             <div className={cardClass}>
               <div className="inline-flex rounded-full border border-red-500/20 bg-red-600/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-blue-300">
-                Step 2
+                Booking Summary
               </div>
+
               <h2 className="mt-4 text-2xl font-black uppercase">
-                Confirm Selection
+                Confirm Availability
               </h2>
+
               <div className="mt-6 space-y-4 text-white/80">
                 <div>
                   <div className="text-sm uppercase tracking-[0.18em] text-white/50">
@@ -693,6 +678,7 @@ export default function ConcealCarryTrainingWebsite() {
                     {getSelectedService()?.title || "No service selected"}
                   </div>
                 </div>
+
                 <div>
                   <div className="text-sm uppercase tracking-[0.18em] text-white/50">
                     Price
@@ -701,6 +687,7 @@ export default function ConcealCarryTrainingWebsite() {
                     {formatPrice(getSelectedService()?.price || 0)}
                   </div>
                 </div>
+
                 <div>
                   <div className="text-sm uppercase tracking-[0.18em] text-white/50">
                     Date
@@ -709,9 +696,10 @@ export default function ConcealCarryTrainingWebsite() {
                     {selectedDate ? formatSelectedDate() : "No date selected"}
                   </div>
                 </div>
+
                 <div>
                   <div className="text-sm uppercase tracking-[0.18em] text-white/50">
-                    Time
+                    Time Frame
                   </div>
                   <div className="mt-1 text-lg font-bold">
                     {selectedTime || "No time selected"}
@@ -742,7 +730,7 @@ export default function ConcealCarryTrainingWebsite() {
         <section className="mx-auto max-w-5xl px-6 py-16 md:px-10">
           <div className="max-w-3xl">
             <div className="inline-flex rounded-full border border-red-500/20 bg-red-600/10 px-4 py-2 text-sm font-black uppercase tracking-[0.2em] text-blue-300">
-              Step 2
+              Step 3
             </div>
             <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.06em] sm:text-5xl">
               Complete Payment
@@ -853,8 +841,8 @@ export default function ConcealCarryTrainingWebsite() {
                   Optional Next Step
                 </h2>
                 <p className="mt-3 text-white/70">
-                  After choosing Deposit or one of the Full Payment service
-                  options, you can continue to the Classes page to review all services again.
+                  After choosing Deposit or one of the Full Payment service options,
+                  you can continue to the Classes page to review all services again.
                 </p>
                 <div className="mt-4 text-sm uppercase tracking-[0.18em] text-blue-300">
                   Current payment choice: {paymentChoice || "None selected"}
@@ -1026,17 +1014,17 @@ export default function ConcealCarryTrainingWebsite() {
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <button
               type="button"
-              onClick={() => setPage("booking")}
-              className="rounded-2xl border border-red-500/40 bg-red-600 px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-white shadow-[0_0_24px_rgba(220,38,38,0.18)] transition hover:-translate-y-0.5 hover:bg-red-700"
-            >
-              Book Class
-            </button>
-            <button
-              type="button"
               onClick={() => setPage("classes")}
               className="rounded-2xl border border-blue-500/30 bg-blue-500/10 px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-blue-300 transition hover:bg-blue-500/20"
             >
               View Class Services
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage("booking")}
+              className="rounded-2xl border border-red-500/40 bg-red-600 px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-white shadow-[0_0_24px_rgba(220,38,38,0.18)] transition hover:-translate-y-0.5 hover:bg-red-700"
+            >
+              Book Class
             </button>
           </div>
         </div>
@@ -1081,18 +1069,18 @@ export default function ConcealCarryTrainingWebsite() {
               },
               {
                 step: "2",
-                title: "Choose Service",
-                text: "Select the class service you want to book.",
+                title: "Select Date & Time",
+                text: "Choose your preferred available class date and time frame.",
               },
               {
                 step: "3",
-                title: "Pick Date",
-                text: "Choose your preferred weekday and time slot.",
+                title: "Choose Payment",
+                text: "Select Deposit or Full Payment on the payment page.",
               },
               {
                 step: "4",
-                title: "Choose Payment",
-                text: "Select Deposit or Full Payment on the payment page.",
+                title: "Complete Booking",
+                text: "Finish your payment and prepare for class.",
               },
             ].map((item) => (
               <div key={item.step} className={cardClass}>
@@ -1119,8 +1107,8 @@ export default function ConcealCarryTrainingWebsite() {
               Mission Ready Training
             </h2>
             <p className="mt-4 max-w-2xl leading-8 text-white/75">
-              Browse services first, then choose your class, date, and time.
-              When you are ready, continue to payment.
+              Browse services first, then choose your class date and time.
+              When ready, continue to payment.
             </p>
           </div>
 
@@ -1147,17 +1135,17 @@ export default function ConcealCarryTrainingWebsite() {
                 <div className="grid gap-3">
                   <button
                     type="button"
-                    onClick={() => setPage("booking")}
-                    className="rounded-2xl border border-red-500/40 bg-red-600 px-4 py-4 text-center text-base font-black uppercase tracking-[0.14em] text-white shadow-[0_0_24px_rgba(220,38,38,0.18)] transition hover:-translate-y-0.5 hover:bg-red-700"
-                  >
-                    Book Class
-                  </button>
-                  <button
-                    type="button"
                     onClick={() => setPage("classes")}
                     className="rounded-2xl border border-blue-500/30 bg-blue-500/10 px-4 py-4 text-center text-base font-black uppercase tracking-[0.14em] text-blue-300 transition hover:bg-blue-500/20"
                   >
                     View Class Services
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPage("booking")}
+                    className="rounded-2xl border border-red-500/40 bg-red-600 px-4 py-4 text-center text-base font-black uppercase tracking-[0.14em] text-white shadow-[0_0_24px_rgba(220,38,38,0.18)] transition hover:-translate-y-0.5 hover:bg-red-700"
+                  >
+                    Book Class
                   </button>
                 </div>
 
