@@ -403,13 +403,7 @@ export default function ConcealCarryTrainingWebsite() {
           </button>
           <button
             type="button"
-            onClick={() => {
-              if (!paymentChoice) {
-                alert("Please choose Deposit or Full Payment first.");
-                return;
-              }
-              setPage("classes");
-            }}
+            onClick={() => setPage("classes")}
             className={navButtonClass}
           >
             Classes
@@ -478,35 +472,37 @@ export default function ConcealCarryTrainingWebsite() {
               Available Services for Booking
             </h1>
             <p className="mt-4 text-lg leading-8 text-white/75">
-              Review all current services available through your booking flow.
+              Browse all currently available services before starting the booking flow.
             </p>
 
-            <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-600/10 p-5 text-white">
-              <div className="text-sm font-bold uppercase tracking-[0.2em] text-blue-300">
-                Current Booking
+            {(selectedDate || selectedTime || selectedService) && (
+              <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-600/10 p-5 text-white">
+                <div className="text-sm font-bold uppercase tracking-[0.2em] text-blue-300">
+                  Current Booking
+                </div>
+                <div className="mt-3 space-y-2">
+                  <div>
+                    <span className="font-bold">Service:</span>{" "}
+                    {getSelectedService()?.title || "None selected"}
+                  </div>
+                  <div>
+                    <span className="font-bold">Price:</span>{" "}
+                    {formatPrice(getSelectedService()?.price || 0)}
+                  </div>
+                  <div>
+                    <span className="font-bold">Date:</span> {formatSelectedDate()}
+                  </div>
+                  <div>
+                    <span className="font-bold">Time:</span>{" "}
+                    {selectedTime || "No time selected"}
+                  </div>
+                  <div>
+                    <span className="font-bold">Payment choice:</span>{" "}
+                    {paymentChoice || "Not selected yet"}
+                  </div>
+                </div>
               </div>
-              <div className="mt-3 space-y-2">
-                <div>
-                  <span className="font-bold">Service:</span>{" "}
-                  {getSelectedService()?.title || "None selected"}
-                </div>
-                <div>
-                  <span className="font-bold">Price:</span>{" "}
-                  {formatPrice(getSelectedService()?.price || 0)}
-                </div>
-                <div>
-                  <span className="font-bold">Date:</span> {formatSelectedDate()}
-                </div>
-                <div>
-                  <span className="font-bold">Time:</span>{" "}
-                  {selectedTime || "No time selected"}
-                </div>
-                <div>
-                  <span className="font-bold">Payment choice:</span>{" "}
-                  {paymentChoice || "None selected"}
-                </div>
-              </div>
-            </div>
+            )}
           </div>
 
           <div className="mt-10 grid gap-6 lg:grid-cols-2">
@@ -538,16 +534,32 @@ export default function ConcealCarryTrainingWebsite() {
                   ))}
                 </ul>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedService(service.id);
-                    setPage("contact");
-                  }}
-                  className="mt-6 rounded-xl border border-red-500/40 bg-red-600 px-5 py-3 font-black uppercase tracking-[0.14em] text-white hover:bg-red-700"
-                >
-                  Ask About This Service
-                </button>
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedService(service.id);
+                      setPage("booking");
+                    }}
+                    className="rounded-xl border border-red-500/40 bg-red-600 px-5 py-3 font-black uppercase tracking-[0.14em] text-white hover:bg-red-700"
+                  >
+                    Book This Service
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedService(service.id);
+                      setFormData((prev) => ({
+                        ...prev,
+                        type: service.title,
+                      }));
+                      setPage("contact");
+                    }}
+                    className="rounded-xl border border-blue-500/30 bg-blue-500/10 px-5 py-3 font-black uppercase tracking-[0.14em] text-blue-300 hover:bg-blue-500/20"
+                  >
+                    Ask About This Service
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -737,7 +749,6 @@ export default function ConcealCarryTrainingWebsite() {
             </h1>
             <p className="mt-4 text-lg leading-8 text-white/75">
               Choose Deposit or a Full Payment option for your selected service.
-              You cannot continue to Classes until you select one.
             </p>
           </div>
 
@@ -839,11 +850,11 @@ export default function ConcealCarryTrainingWebsite() {
 
               <div className={cardClass}>
                 <h2 className="text-2xl font-black uppercase">
-                  Move Forward After Payment Choice
+                  Optional Next Step
                 </h2>
                 <p className="mt-3 text-white/70">
                   After choosing Deposit or one of the Full Payment service
-                  options, continue to the Classes page.
+                  options, you can continue to the Classes page to review all services again.
                 </p>
                 <div className="mt-4 text-sm uppercase tracking-[0.18em] text-blue-300">
                   Current payment choice: {paymentChoice || "None selected"}
@@ -1022,15 +1033,7 @@ export default function ConcealCarryTrainingWebsite() {
             </button>
             <button
               type="button"
-              onClick={() => {
-                if (!paymentChoice) {
-                  alert(
-                    "Choose a date and payment option first if you want to continue to Classes."
-                  );
-                } else {
-                  setPage("classes");
-                }
-              }}
+              onClick={() => setPage("classes")}
               className="rounded-2xl border border-blue-500/30 bg-blue-500/10 px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-blue-300 transition hover:bg-blue-500/20"
             >
               View Class Services
@@ -1073,23 +1076,23 @@ export default function ConcealCarryTrainingWebsite() {
             {[
               {
                 step: "1",
+                title: "View Services",
+                text: "See all available classes before making a choice.",
+              },
+              {
+                step: "2",
                 title: "Choose Service",
                 text: "Select the class service you want to book.",
               },
               {
-                step: "2",
+                step: "3",
                 title: "Pick Date",
                 text: "Choose your preferred weekday and time slot.",
               },
               {
-                step: "3",
-                title: "Choose Payment",
-                text: "Select Deposit or Full Payment before continuing.",
-              },
-              {
                 step: "4",
-                title: "Review Classes",
-                text: "See all available services and contact us if needed.",
+                title: "Choose Payment",
+                text: "Select Deposit or Full Payment on the payment page.",
               },
             ].map((item) => (
               <div key={item.step} className={cardClass}>
@@ -1116,8 +1119,8 @@ export default function ConcealCarryTrainingWebsite() {
               Mission Ready Training
             </h2>
             <p className="mt-4 max-w-2xl leading-8 text-white/75">
-              Choose your service, date, and time first. Then select Deposit or
-              Full Payment before moving on to the Classes page.
+              Browse services first, then choose your class, date, and time.
+              When you are ready, continue to payment.
             </p>
           </div>
 
@@ -1151,15 +1154,7 @@ export default function ConcealCarryTrainingWebsite() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-                      if (!paymentChoice) {
-                        alert(
-                          "Please choose Deposit or Full Payment first before moving forward."
-                        );
-                        return;
-                      }
-                      setPage("classes");
-                    }}
+                    onClick={() => setPage("classes")}
                     className="rounded-2xl border border-blue-500/30 bg-blue-500/10 px-4 py-4 text-center text-base font-black uppercase tracking-[0.14em] text-blue-300 transition hover:bg-blue-500/20"
                   >
                     View Class Services
@@ -1167,8 +1162,8 @@ export default function ConcealCarryTrainingWebsite() {
                 </div>
 
                 <div className="rounded-2xl border border-red-500/20 bg-red-600/10 p-4 text-sm leading-7 text-white/90">
-                  You must select a service, choose a date and time, and then
-                  choose Deposit or Full Payment before moving forward to Classes.
+                  Customers can view all class services anytime. Booking still
+                  requires choosing a service, date, time, and payment.
                 </div>
               </div>
             </div>
