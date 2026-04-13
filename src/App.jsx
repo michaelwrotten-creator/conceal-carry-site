@@ -7,70 +7,210 @@ function AiHelperChat() {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      text: "Welcome. I can help with booking, payment, class services, and contact details.",
+      text: "Welcome to Illinois Protective Services. I can help with class options, pricing, booking, payment, refunds, what to bring, and general concealed carry training questions.",
     },
   ]);
+
+  const knowledge = {
+    services: [
+      {
+        title: "Mini Class",
+        price: "$50.00",
+        duration: "1 hr 30 min",
+        summary:
+          "A short-format class for focused instruction and quick skills review.",
+      },
+      {
+        title: "3-Hour Class",
+        price: "$150.00",
+        duration: "3 hr",
+        summary:
+          "A condensed training option with structured instruction and safety review.",
+      },
+      {
+        title: "8-Hours Class Veteran",
+        price: "$100.00",
+        duration: "8 hr",
+        summary: "An extended training option with veteran pricing.",
+      },
+      {
+        title: "16-Hour Classes",
+        price: "$225.00",
+        duration: "16 hr",
+        summary:
+          "A full-length concealed carry training option with complete instruction.",
+      },
+    ],
+    hours: "Monday through Friday from 9:00 AM to 5:00 PM.",
+    phone: "(224) 248-7021",
+    email: "info@illinoisprotectiveservices.com",
+    refundPolicy:
+      "If you are unable to attend your scheduled class, notify the instructor at least 24 hours in advance to retain full credit toward a future class date. Rescheduling requests made with less than 48 hours’ notice will result in forfeiture of class credit, and a new payment and deposit will be required.",
+    bringItems:
+      "Students should be prepared to bring required identification, any required documentation, and follow all instructor guidance. Final class details should be confirmed directly before class.",
+    beginnerInfo:
+      "Beginner-friendly instruction is available. New students can still receive structured guidance and safety-focused training.",
+    certificate:
+      "Completion certificates are available for qualifying class services after the required training is completed.",
+    groupInfo:
+      "Private group sessions may be available for families, organizations, or teams. Contact the instructor directly to coordinate.",
+    disclaimer:
+      "I can provide general class information, but I do not provide legal advice.",
+  };
+
+  function getBroadResponse(message) {
+    const lower = message.toLowerCase();
+    const mentions = (...terms) => terms.some((term) => lower.includes(term));
+
+    if (mentions("hello", "hi", "hey")) {
+      return "Hello. I can help you compare classes, understand pricing, choose a booking option, review the refund policy, and answer general training questions.";
+    }
+
+    if (
+      mentions(
+        "what classes",
+        "services",
+        "class options",
+        "available classes",
+        "training options"
+      )
+    ) {
+      return `Available services include: ${knowledge.services
+        .map((s) => `${s.title} (${s.price}, ${s.duration})`)
+        .join("; ")}.`;
+    }
+
+    if (mentions("mini class")) {
+      return "The Mini Class is $50.00 and lasts 1 hour 30 minutes. It is a shorter-format option for focused instruction and a quick skills review.";
+    }
+
+    if (mentions("3-hour", "3 hour")) {
+      return "The 3-Hour Class is $150.00 and lasts 3 hours. It is a condensed training option with structured instruction and safety review.";
+    }
+
+    if (mentions("8-hour", "8 hour", "veteran")) {
+      return "The 8-Hours Class Veteran option is $100.00 and lasts 8 hours. It is an extended option with veteran pricing.";
+    }
+
+    if (mentions("16-hour", "16 hour", "full class")) {
+      return "The 16-Hour Classes option is $225.00 and lasts 16 hours. It is the full-length concealed carry training option.";
+    }
+
+    if (mentions("book", "booking", "schedule", "appointment")) {
+      return "To book a class, go to the Booking page, choose your service, then select an available date and time before continuing to payment.";
+    }
+
+    if (mentions("date", "dates", "availability", "available")) {
+      return `Customers can view date availability on the Booking page. Current booking hours are ${knowledge.hours}`;
+    }
+
+    if (mentions("time", "times", "time frame", "time slot")) {
+      return `Available class times are ${knowledge.hours}`;
+    }
+
+    if (
+      mentions("pay", "payment", "deposit", "full payment", "price", "cost")
+    ) {
+      return "You can either pay a deposit or choose a full payment option for the selected service on the Payment page.";
+    }
+
+    if (mentions("refund", "reschedule", "rescheduling", "policy", "credit")) {
+      return knowledge.refundPolicy;
+    }
+
+    if (
+      mentions(
+        "what should i bring",
+        "bring",
+        "bring to class",
+        "items",
+        "requirements"
+      )
+    ) {
+      return knowledge.bringItems;
+    }
+
+    if (mentions("beginner", "new shooter", "first time", "no experience")) {
+      return knowledge.beginnerInfo;
+    }
+
+    if (mentions("certificate", "certification", "completion")) {
+      return knowledge.certificate;
+    }
+
+    if (
+      mentions("group", "private class", "private session", "organization", "team")
+    ) {
+      return knowledge.groupInfo;
+    }
+
+    if (mentions("phone", "email", "contact", "call", "text")) {
+      return `You can contact Illinois Protective Services at ${knowledge.phone} or ${knowledge.email}.`;
+    }
+
+    if (
+      mentions(
+        "concealed carry law",
+        "legal advice",
+        "illinois law",
+        "permit law"
+      )
+    ) {
+      return "I can provide general training information, but I do not provide legal advice. For legal questions, consult the instructor or a qualified legal professional.";
+    }
+
+    if (mentions("which class", "best class", "recommend")) {
+      return "For a quick option, the Mini Class may fit best. For a condensed structured session, choose the 3-Hour Class. For extended instruction, choose the 8-Hours Class Veteran or the 16-Hour Classes option depending on your needs.";
+    }
+
+    if (mentions("range", "range training")) {
+      return "Range guidance may be included depending on the selected service. Review the class service details and confirm specifics with the instructor before class.";
+    }
+
+    if (mentions("hours")) {
+      return `Current booking hours are ${knowledge.hours}`;
+    }
+
+    if (mentions("thank you", "thanks")) {
+      return "You’re welcome. I’m here if you want help choosing the best class or understanding the booking steps.";
+    }
+
+    return `${knowledge.disclaimer} I can help with services, pricing, booking steps, date availability, payment options, what to bring, refund policy, and contact details.`;
+  }
 
   function handleSend() {
     const trimmed = input.trim();
     if (!trimmed) return;
 
-    const lower = trimmed.toLowerCase();
-    let reply =
-      "I can help with booking, payment, class services, and contact information.";
-
-    if (
-      lower.includes("book") ||
-      lower.includes("schedule") ||
-      lower.includes("date")
-    ) {
-      reply =
-        "Go to the Booking page to choose a service, then select your date and time before payment.";
-    } else if (
-      lower.includes("pay") ||
-      lower.includes("deposit") ||
-      lower.includes("fee")
-    ) {
-      reply =
-        "Go to the Payment page to choose Deposit or a Full Payment option for your selected service.";
-    } else if (
-      lower.includes("class") ||
-      lower.includes("service") ||
-      lower.includes("training")
-    ) {
-      reply =
-        "The Classes page shows Mini Class, 3-Hour Class, 8-Hours Class Veteran, and 16-Hour Classes.";
-    } else if (
-      lower.includes("contact") ||
-      lower.includes("phone") ||
-      lower.includes("email")
-    ) {
-      reply =
-        "You can contact Illinois Protective Services at (224) 248-7021 or info@illinoisprotectiveservices.com.";
-    } else if (lower.includes("hours") || lower.includes("time")) {
-      reply =
-        "Booking times are Monday through Friday from 9:00 AM to 5:00 PM.";
-    }
+    const userMessage = { role: "user", text: trimmed };
+    const reply = getBroadResponse(trimmed);
 
     setMessages((prev) => [
       ...prev,
-      { role: "user", text: trimmed },
+      userMessage,
       { role: "assistant", text: reply },
     ]);
     setInput("");
   }
 
+  const quickQuestions = [
+    "What classes are available?",
+    "How much is each class?",
+    "What should I bring?",
+    "What is the refund policy?",
+  ];
+
   return (
     <div className="fixed bottom-6 right-6 z-[9999]">
       {open && (
-        <div className="mb-4 w-[360px] overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(180deg,#050505_0%,#0b1016_100%)] shadow-[0_25px_70px_rgba(0,0,0,0.6)]">
+        <div className="mb-4 w-[380px] overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(180deg,#050505_0%,#0b1016_100%)] shadow-[0_25px_70px_rgba(0,0,0,0.6)]">
           <div className="flex items-center justify-between border-b border-red-500/20 bg-[linear-gradient(90deg,#7f1d1d_0%,#0f172a_100%)] px-5 py-4 text-white">
             <div>
               <div className="text-sm font-black uppercase tracking-[0.22em]">
                 AI Navigator
               </div>
               <div className="text-xs font-semibold text-white/80">
-                Booking, payment, and class support
+                Concealed carry training assistant
               </div>
             </div>
 
@@ -101,6 +241,30 @@ function AiHelperChat() {
 
           {!minimized && (
             <>
+              <div className="border-b border-white/10 p-3">
+                <div className="flex flex-wrap gap-2">
+                  {quickQuestions.map((question) => (
+                    <button
+                      key={question}
+                      type="button"
+                      onClick={() => {
+                        setMessages((prev) => [
+                          ...prev,
+                          { role: "user", text: question },
+                          {
+                            role: "assistant",
+                            text: getBroadResponse(question),
+                          },
+                        ]);
+                      }}
+                      className="rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-xs font-bold text-blue-300 hover:bg-blue-500/20"
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               <div className="h-[360px] space-y-3 overflow-y-auto p-4">
                 {messages.map((msg, index) => (
                   <div
@@ -125,7 +289,7 @@ function AiHelperChat() {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleSend();
                     }}
-                    placeholder="Ask about booking or classes..."
+                    placeholder="Ask about classes, booking, prices, policy..."
                     className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-white/40"
                   />
                   <button
@@ -289,6 +453,10 @@ export default function ConcealCarryTrainingWebsite() {
     {
       q: "What should I bring?",
       a: "You will receive class details and required items after booking.",
+    },
+    {
+      q: "What is the refund policy?",
+      a: "Notify the instructor at least 24 hours in advance to keep full credit toward a future date. Rescheduling with less than 48 hours' notice results in forfeiture of class credit and requires a new payment and deposit.",
     },
   ];
 
@@ -1155,6 +1323,36 @@ export default function ConcealCarryTrainingWebsite() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 py-16 md:px-10">
+        <div className="rounded-[2rem] border border-red-500/20 bg-red-600/10 p-8 shadow-[0_12px_30px_rgba(0,0,0,0.28)]">
+          <div className="inline-flex rounded-full border border-red-500/30 bg-red-600 px-4 py-2 text-sm font-black uppercase tracking-[0.18em] text-white">
+            Refund & Rescheduling Policy
+          </div>
+
+          <div className="mt-6 space-y-5 leading-8 text-white/85">
+            <p>
+              We understand that unexpected situations may arise. If you are unable to
+              attend your scheduled class, please notify the instructor at least
+              <span className="font-bold text-white"> 24 hours in advance </span>
+              to retain full credit toward a future class date.
+            </p>
+
+            <p>
+              Rescheduling requests made with
+              <span className="font-bold text-white"> less than 48 hours’ notice </span>
+              will result in the forfeiture of your class credit. In these cases, a
+              new payment and deposit will be required to secure a spot in a future
+              Concealed Carry License (CCL) class.
+            </p>
+
+            <p>
+              We appreciate your understanding and cooperation, as this policy allows
+              us to provide quality instruction and accommodate all students fairly.
+            </p>
           </div>
         </div>
       </section>
