@@ -25,21 +25,21 @@ function AiHelperChat() {
       lower.includes("date")
     ) {
       reply =
-        "Go to the Booking page to choose a class date and time before payment.";
+        "Go to the Booking page to choose a service, date, and time before payment.";
     } else if (
       lower.includes("pay") ||
       lower.includes("deposit") ||
       lower.includes("fee")
     ) {
       reply =
-        "Go to the Payment page to choose Deposit or Full Payment. After selecting one, you can move forward to class services.";
+        "Go to the Payment page to choose Deposit or a Full Payment option for your service.";
     } else if (
       lower.includes("class") ||
       lower.includes("service") ||
       lower.includes("training")
     ) {
       reply =
-        "The Classes page shows all available training services, including Illinois CCW, group sessions, and refresher training.";
+        "The Classes page shows Mini Class, 3-Hour Class, 8-Hours Class Veteran, and 16-Hour Classes.";
     } else if (
       lower.includes("contact") ||
       lower.includes("phone") ||
@@ -80,6 +80,7 @@ function AiHelperChat() {
                 onClick={() => setMinimized((prev) => !prev)}
                 className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white hover:bg-white/10"
                 aria-label="Minimize chat"
+                title="Minimize"
               >
                 —
               </button>
@@ -91,6 +92,7 @@ function AiHelperChat() {
                 }}
                 className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white hover:bg-white/10"
                 aria-label="Close chat"
+                title="Close"
               >
                 ✕
               </button>
@@ -164,6 +166,7 @@ export default function ConcealCarryTrainingWebsite() {
   const [page, setPage] = useState("home");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
+  const [selectedService, setSelectedService] = useState("16hour");
   const [paymentChoice, setPaymentChoice] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
@@ -202,36 +205,59 @@ export default function ConcealCarryTrainingWebsite() {
 
   const classServices = [
     {
-      title: "Illinois CCW Training",
+      id: "mini",
+      title: "Mini Class",
+      price: 50,
+      duration: "1 hr 30 min",
       description:
-        "Complete concealed carry training with classroom instruction, safety, and range guidance.",
+        "Short-format training session for quick instruction and focused skill development.",
       includes: [
-        "Firearm safety instruction",
-        "Legal and responsibility overview",
-        "Hands-on range training",
-        "Certificate upon completion",
+        "Focused instruction",
+        "Short-format class",
+        "Beginner-friendly option",
+        "Quick skills review",
       ],
     },
     {
-      title: "Private Group Sessions",
+      id: "3hour",
+      title: "3-Hour Class",
+      price: 150,
+      duration: "3 hr",
       description:
-        "Book a class for families, teams, organizations, or private groups.",
+        "A condensed training option for students needing a shorter structured class.",
       includes: [
-        "Private class setup",
-        "Flexible group coordination",
-        "Guided instruction",
-        "Group pricing options",
+        "Structured instruction",
+        "Safety review",
+        "Classroom training",
+        "Professional guidance",
       ],
     },
     {
-      title: "Refresher Training",
+      id: "8hour-veteran",
+      title: "8-Hours Class Veteran",
+      price: 100,
+      duration: "8 hr",
       description:
-        "Return for guided skill-building and confidence practice.",
+        "Veteran-focused 8-hour class option with extended instruction time.",
       includes: [
-        "Skills review",
-        "Safe handling reinforcement",
-        "Target practice coaching",
-        "Confidence-building instruction",
+        "Extended class session",
+        "Veteran pricing",
+        "Safety instruction",
+        "Hands-on guidance",
+      ],
+    },
+    {
+      id: "16hour",
+      title: "16-Hour Classes",
+      price: 225,
+      duration: "16 hr",
+      description:
+        "Full-length concealed carry training option with complete instruction and class coverage.",
+      includes: [
+        "Full training session",
+        "Extended classroom instruction",
+        "Range guidance",
+        "Completion pathway",
       ],
     },
   ];
@@ -266,6 +292,14 @@ export default function ConcealCarryTrainingWebsite() {
     },
   ];
 
+  function getSelectedService() {
+    return classServices.find((service) => service.id === selectedService);
+  }
+
+  function formatPrice(amount) {
+    return `$${amount.toFixed(2)}`;
+  }
+
   function formatSelectedDate() {
     if (!selectedDate) return "No date selected";
     const found = availableDates.find((d) => d.value === selectedDate);
@@ -296,6 +330,10 @@ export default function ConcealCarryTrainingWebsite() {
     "rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))] p-6 shadow-[0_12px_30px_rgba(0,0,0,0.28)]";
 
   function goToPaymentFromBooking() {
+    if (!selectedService) {
+      alert("Please choose a service first.");
+      return;
+    }
     if (!selectedDate || !selectedTime) {
       alert("Please choose both a date and time first.");
       return;
@@ -311,59 +349,6 @@ export default function ConcealCarryTrainingWebsite() {
     setPage("classes");
   }
 
-  function PaymentButtons({ large = false }) {
-    const basePrimary =
-      "rounded-2xl border border-red-500/40 bg-red-600 text-white shadow-[0_0_24px_rgba(220,38,38,0.18)] hover:bg-red-700";
-    const baseSecondary =
-      "rounded-2xl border border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20";
-
-    const sizeClass = large
-      ? "px-6 py-4 text-base font-black uppercase tracking-[0.16em]"
-      : "px-5 py-3 text-sm font-black uppercase tracking-[0.14em]";
-
-    return (
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className={cardClass}>
-          <h3 className="text-2xl font-black uppercase">Pay Deposit</h3>
-          <p className="mt-3 text-white/70">
-            Reserve your class with a deposit.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setPaymentChoice("deposit");
-              window.open(SQUARE_DEPOSIT_URL, "_blank", "noopener,noreferrer");
-            }}
-            className={`mt-6 block w-full ${basePrimary} ${sizeClass}`}
-          >
-            Pay Deposit
-          </button>
-        </div>
-
-        <div className={cardClass}>
-          <h3 className="text-2xl font-black uppercase">Pay Full Fee</h3>
-          <p className="mt-3 text-white/70">
-            Pay the full class fee upfront.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              setPaymentChoice("full");
-              window.open(
-                SQUARE_FULL_PAYMENT_URL,
-                "_blank",
-                "noopener,noreferrer"
-              );
-            }}
-            className={`mt-6 block w-full ${baseSecondary} ${sizeClass}`}
-          >
-            Pay Full Fee
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   const NavBar = () => (
     <div className="sticky top-0 z-50 border-b border-red-900/40 bg-[linear-gradient(180deg,rgba(0,0,0,0.95),rgba(10,10,10,0.92))] backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.45)]">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 md:flex-row md:items-center md:justify-between md:px-10 lg:px-12">
@@ -375,7 +360,7 @@ export default function ConcealCarryTrainingWebsite() {
           <img
             src={LOGO_SRC}
             alt="Illinois Protective Services logo"
-            className="h-12 w-12 rounded-full border border-white/10 object-cover bg-white/5"
+            className="h-12 w-12 rounded-full border border-white/10 bg-white/5 object-cover"
           />
           <div>
             <div className="text-sm font-black uppercase tracking-[0.22em] text-white">
@@ -418,7 +403,13 @@ export default function ConcealCarryTrainingWebsite() {
           </button>
           <button
             type="button"
-            onClick={() => setPage("classes")}
+            onClick={() => {
+              if (!paymentChoice) {
+                alert("Please choose Deposit or Full Payment first.");
+                return;
+              }
+              setPage("classes");
+            }}
             className={navButtonClass}
           >
             Classes
@@ -487,32 +478,40 @@ export default function ConcealCarryTrainingWebsite() {
               Available Services for Booking
             </h1>
             <p className="mt-4 text-lg leading-8 text-white/75">
-              Review all training services currently available. Customers should
-              choose a date first, then payment, before moving to this page.
+              Review all current services available through your booking flow.
             </p>
 
-            {selectedDate && selectedTime && (
-              <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-600/10 p-5 text-white">
-                <div className="text-sm font-bold uppercase tracking-[0.2em] text-blue-300">
-                  Your Current Selection
+            <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-600/10 p-5 text-white">
+              <div className="text-sm font-bold uppercase tracking-[0.2em] text-blue-300">
+                Current Booking
+              </div>
+              <div className="mt-3 space-y-2">
+                <div>
+                  <span className="font-bold">Service:</span>{" "}
+                  {getSelectedService()?.title || "None selected"}
                 </div>
-                <div className="mt-2 text-lg font-black">
-                  {formatSelectedDate()}
+                <div>
+                  <span className="font-bold">Price:</span>{" "}
+                  {formatPrice(getSelectedService()?.price || 0)}
                 </div>
-                <div className="mt-1 text-white/90">{selectedTime}</div>
-                <div className="mt-2 text-sm text-white/80">
-                  Payment choice:{" "}
-                  <span className="font-bold uppercase">
-                    {paymentChoice || "Not selected"}
-                  </span>
+                <div>
+                  <span className="font-bold">Date:</span> {formatSelectedDate()}
+                </div>
+                <div>
+                  <span className="font-bold">Time:</span>{" "}
+                  {selectedTime || "No time selected"}
+                </div>
+                <div>
+                  <span className="font-bold">Payment choice:</span>{" "}
+                  {paymentChoice || "None selected"}
                 </div>
               </div>
-            )}
+            </div>
           </div>
 
-          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+          <div className="mt-10 grid gap-6 lg:grid-cols-2">
             {classServices.map((service) => (
-              <div key={service.title} className={cardClass}>
+              <div key={service.id} className={cardClass}>
                 <div className="inline-flex rounded-full border border-red-500/20 bg-red-600/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-blue-300">
                   Bookable Service
                 </div>
@@ -522,14 +521,29 @@ export default function ConcealCarryTrainingWebsite() {
                 <p className="mt-4 leading-7 text-white/75">
                   {service.description}
                 </p>
+
+                <div className="mt-4 space-y-2 text-white/80">
+                  <div>
+                    <span className="font-bold">Duration:</span> {service.duration}
+                  </div>
+                  <div>
+                    <span className="font-bold">Price:</span>{" "}
+                    {formatPrice(service.price)}
+                  </div>
+                </div>
+
                 <ul className="mt-5 space-y-2 text-white/80">
                   {service.includes.map((item) => (
                     <li key={item}>• {item}</li>
                   ))}
                 </ul>
+
                 <button
                   type="button"
-                  onClick={() => setPage("contact")}
+                  onClick={() => {
+                    setSelectedService(service.id);
+                    setPage("contact");
+                  }}
                   className="mt-6 rounded-xl border border-red-500/40 bg-red-600 px-5 py-3 font-black uppercase tracking-[0.14em] text-white hover:bg-red-700"
                 >
                   Ask About This Service
@@ -554,16 +568,53 @@ export default function ConcealCarryTrainingWebsite() {
               Step 1
             </div>
             <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.06em] sm:text-5xl">
-              Choose Your Class Date
+              Choose Service, Date, and Time
             </h1>
             <p className="mt-4 text-lg leading-8 text-white/75">
-              Pick an available weekday and select your preferred time.
+              Select a service first, then pick an available weekday and time.
             </p>
           </div>
 
           <div className="mt-10 grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
             <div>
               <div className={cardClass}>
+                <h2 className="text-xl font-black uppercase">Choose a Service</h2>
+                <p className="mt-3 text-white/70">
+                  Select the class service you want to book before choosing your
+                  date and time.
+                </p>
+
+                <div className="mt-6 grid gap-3">
+                  {classServices.map((service) => (
+                    <button
+                      key={service.id}
+                      type="button"
+                      onClick={() => setSelectedService(service.id)}
+                      className={`rounded-2xl border px-4 py-4 text-left transition ${
+                        selectedService === service.id
+                          ? "border-red-500 bg-red-600 text-white"
+                          : "border-white/15 bg-white/[0.03] text-white hover:bg-white/10"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <div className="text-base font-black uppercase">
+                            {service.title}
+                          </div>
+                          <div className="mt-1 text-sm text-white/75">
+                            {service.duration}
+                          </div>
+                        </div>
+                        <div className="text-base font-black">
+                          {formatPrice(service.price)}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={cardClass + " mt-8"}>
                 <h2 className="text-xl font-black uppercase">Available Dates</h2>
                 <div className="mt-6 grid gap-3 sm:grid-cols-2">
                   {availableDates.map((date) => (
@@ -624,6 +675,22 @@ export default function ConcealCarryTrainingWebsite() {
               <div className="mt-6 space-y-4 text-white/80">
                 <div>
                   <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                    Service
+                  </div>
+                  <div className="mt-1 text-lg font-bold">
+                    {getSelectedService()?.title || "No service selected"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                    Price
+                  </div>
+                  <div className="mt-1 text-lg font-bold">
+                    {formatPrice(getSelectedService()?.price || 0)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm uppercase tracking-[0.18em] text-white/50">
                     Date
                   </div>
                   <div className="mt-1 text-lg font-bold">
@@ -638,6 +705,7 @@ export default function ConcealCarryTrainingWebsite() {
                     {selectedTime || "No time selected"}
                   </div>
                 </div>
+
                 <button
                   type="button"
                   onClick={goToPaymentFromBooking}
@@ -659,7 +727,7 @@ export default function ConcealCarryTrainingWebsite() {
         <NavBar />
         <AiHelperChat />
 
-        <section className="mx-auto max-w-4xl px-6 py-16 md:px-10">
+        <section className="mx-auto max-w-5xl px-6 py-16 md:px-10">
           <div className="max-w-3xl">
             <div className="inline-flex rounded-full border border-red-500/20 bg-red-600/10 px-4 py-2 text-sm font-black uppercase tracking-[0.2em] text-blue-300">
               Step 2
@@ -668,44 +736,126 @@ export default function ConcealCarryTrainingWebsite() {
               Complete Payment
             </h1>
             <p className="mt-4 text-lg leading-8 text-white/75">
-              Choose Deposit or Full Payment. You cannot move forward to class
-              services until you select one.
+              Choose Deposit or a Full Payment option for your selected service.
+              You cannot continue to Classes until you select one.
             </p>
           </div>
 
           <div className="mt-10 space-y-6">
             <div className="rounded-2xl border border-red-500/20 bg-red-600/10 p-5 text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)]">
               <div className="text-sm font-bold uppercase tracking-[0.2em] text-blue-300">
-                Selected Appointment
+                Selected Booking
               </div>
-              <div className="mt-2 text-lg font-black">
-                {formatSelectedDate()}
-              </div>
-              <div className="mt-1 text-white/90">
-                {selectedTime || "No time selected"}
+              <div className="mt-3 space-y-2">
+                <div>
+                  <span className="font-bold">Service:</span>{" "}
+                  {getSelectedService()?.title}
+                </div>
+                <div>
+                  <span className="font-bold">Duration:</span>{" "}
+                  {getSelectedService()?.duration}
+                </div>
+                <div>
+                  <span className="font-bold">Price:</span>{" "}
+                  {formatPrice(getSelectedService()?.price || 0)}
+                </div>
+                <div>
+                  <span className="font-bold">Date:</span> {formatSelectedDate()}
+                </div>
+                <div>
+                  <span className="font-bold">Time:</span>{" "}
+                  {selectedTime || "No time selected"}
+                </div>
               </div>
             </div>
 
-            <PaymentButtons large />
-
-            <div className={cardClass}>
-              <h2 className="text-2xl font-black uppercase">
-                Move Forward After Payment Choice
-              </h2>
-              <p className="mt-3 text-white/70">
-                After selecting Deposit or Full Payment, continue to the Classes
-                page to review all available services.
-              </p>
-              <div className="mt-4 text-sm uppercase tracking-[0.18em] text-blue-300">
-                Current payment choice: {paymentChoice || "None selected"}
+            <div className="grid gap-6">
+              <div className={cardClass}>
+                <h2 className="text-2xl font-black uppercase">Pay Deposit</h2>
+                <p className="mt-3 text-white/70">
+                  Reserve your class with a deposit.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPaymentChoice("deposit");
+                    window.open(
+                      SQUARE_DEPOSIT_URL,
+                      "_blank",
+                      "noopener,noreferrer"
+                    );
+                  }}
+                  className="mt-6 block w-full rounded-xl border border-red-500/40 bg-red-600 py-4 text-center font-black uppercase tracking-[0.14em] text-white hover:bg-red-700"
+                >
+                  Pay Deposit
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={goToClassesAfterPaymentChoice}
-                className="mt-6 rounded-2xl border border-red-500/40 bg-red-600 px-6 py-4 text-base font-black uppercase tracking-[0.16em] text-white shadow-[0_0_24px_rgba(220,38,38,0.18)] hover:bg-red-700"
-              >
-                Continue to Classes
-              </button>
+
+              <div className={cardClass}>
+                <h2 className="text-2xl font-black uppercase">
+                  Full Payment Options
+                </h2>
+                <p className="mt-3 text-white/70">
+                  Choose the full payment option for your selected service.
+                </p>
+
+                <div className="mt-6 grid gap-3">
+                  {classServices.map((service) => (
+                    <button
+                      key={service.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedService(service.id);
+                        setPaymentChoice(`full-${service.id}`);
+                        window.open(
+                          SQUARE_FULL_PAYMENT_URL,
+                          "_blank",
+                          "noopener,noreferrer"
+                        );
+                      }}
+                      className={`rounded-2xl border px-4 py-4 text-left transition ${
+                        selectedService === service.id
+                          ? "border-blue-500/40 bg-blue-500/10 text-blue-300"
+                          : "border-white/15 bg-white/[0.03] text-white hover:bg-white/10"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-4">
+                        <div>
+                          <div className="text-base font-black uppercase">
+                            {service.title}
+                          </div>
+                          <div className="mt-1 text-sm text-white/70">
+                            {service.duration}
+                          </div>
+                        </div>
+                        <div className="text-base font-black">
+                          {formatPrice(service.price)}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className={cardClass}>
+                <h2 className="text-2xl font-black uppercase">
+                  Move Forward After Payment Choice
+                </h2>
+                <p className="mt-3 text-white/70">
+                  After choosing Deposit or one of the Full Payment service
+                  options, continue to the Classes page.
+                </p>
+                <div className="mt-4 text-sm uppercase tracking-[0.18em] text-blue-300">
+                  Current payment choice: {paymentChoice || "None selected"}
+                </div>
+                <button
+                  type="button"
+                  onClick={goToClassesAfterPaymentChoice}
+                  className="mt-6 rounded-2xl border border-red-500/40 bg-red-600 px-6 py-4 text-base font-black uppercase tracking-[0.16em] text-white shadow-[0_0_24px_rgba(220,38,38,0.18)] hover:bg-red-700"
+                >
+                  Continue to Classes
+                </button>
+              </div>
             </div>
           </div>
         </section>
@@ -791,9 +941,10 @@ export default function ConcealCarryTrainingWebsite() {
                   className="rounded-2xl border border-white/15 bg-black/20 px-5 py-4 text-white outline-none"
                 >
                   <option value="">Select Training Type</option>
-                  <option>Illinois CCW Training</option>
-                  <option>Private Group Session</option>
-                  <option>Refresher & Skills Practice</option>
+                  <option>Mini Class</option>
+                  <option>3-Hour Class</option>
+                  <option>8-Hours Class Veteran</option>
+                  <option>16-Hour Classes</option>
                 </select>
                 <textarea
                   value={formData.message}
@@ -840,7 +991,7 @@ export default function ConcealCarryTrainingWebsite() {
             <img
               src={LOGO_SRC}
               alt="Illinois Protective Services logo"
-              className="h-14 w-14 rounded-full border border-white/10 object-cover bg-white/5"
+              className="h-14 w-14 rounded-full border border-white/10 bg-white/5 object-cover"
             />
             <div className="text-left">
               <div className="text-sm font-black uppercase tracking-[0.22em] text-white">
@@ -871,7 +1022,15 @@ export default function ConcealCarryTrainingWebsite() {
             </button>
             <button
               type="button"
-              onClick={() => setPage("classes")}
+              onClick={() => {
+                if (!paymentChoice) {
+                  alert(
+                    "Choose a date and payment option first if you want to continue to Classes."
+                  );
+                } else {
+                  setPage("classes");
+                }
+              }}
               className="rounded-2xl border border-blue-500/30 bg-blue-500/10 px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-blue-300 transition hover:bg-blue-500/20"
             >
               View Class Services
@@ -906,26 +1065,31 @@ export default function ConcealCarryTrainingWebsite() {
               How It Works
             </p>
             <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
-              Book in Three Simple Steps
+              Book in Four Simple Steps
             </h2>
           </div>
 
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="mt-10 grid gap-5 md:grid-cols-4">
             {[
               {
                 step: "1",
-                title: "Choose Date",
-                text: "Pick a weekday and choose your preferred class time.",
+                title: "Choose Service",
+                text: "Select the class service you want to book.",
               },
               {
                 step: "2",
-                title: "Choose Payment",
-                text: "Select deposit or full payment to continue forward.",
+                title: "Pick Date",
+                text: "Choose your preferred weekday and time slot.",
               },
               {
                 step: "3",
-                title: "Review Class Services",
-                text: "See all available services and contact us with questions.",
+                title: "Choose Payment",
+                text: "Select Deposit or Full Payment before continuing.",
+              },
+              {
+                step: "4",
+                title: "Review Classes",
+                text: "See all available services and contact us if needed.",
               },
             ].map((item) => (
               <div key={item.step} className={cardClass}>
@@ -952,8 +1116,8 @@ export default function ConcealCarryTrainingWebsite() {
               Mission Ready Training
             </h2>
             <p className="mt-4 max-w-2xl leading-8 text-white/75">
-              Choose your date first, complete a payment selection, then review
-              all class services available for booking.
+              Choose your service, date, and time first. Then select Deposit or
+              Full Payment before moving on to the Classes page.
             </p>
           </div>
 
@@ -970,10 +1134,10 @@ export default function ConcealCarryTrainingWebsite() {
               <div className="mt-6 space-y-4 text-white/80">
                 <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <div className="text-sm uppercase tracking-[0.18em] text-white/50">
-                    Range Fee
+                    Starting Price
                   </div>
                   <div className="mt-1 text-4xl font-black text-blue-300">
-                    $75
+                    $50.00
                   </div>
                 </div>
 
@@ -987,7 +1151,15 @@ export default function ConcealCarryTrainingWebsite() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setPage("classes")}
+                    onClick={() => {
+                      if (!paymentChoice) {
+                        alert(
+                          "Please choose Deposit or Full Payment first before moving forward."
+                        );
+                        return;
+                      }
+                      setPage("classes");
+                    }}
                     className="rounded-2xl border border-blue-500/30 bg-blue-500/10 px-4 py-4 text-center text-base font-black uppercase tracking-[0.14em] text-blue-300 transition hover:bg-blue-500/20"
                   >
                     View Class Services
@@ -995,8 +1167,8 @@ export default function ConcealCarryTrainingWebsite() {
                 </div>
 
                 <div className="rounded-2xl border border-red-500/20 bg-red-600/10 p-4 text-sm leading-7 text-white/90">
-                  Choose a date first. Payment selection is required before
-                  moving forward to class services after booking.
+                  You must select a service, choose a date and time, and then
+                  choose Deposit or Full Payment before moving forward to Classes.
                 </div>
               </div>
             </div>
