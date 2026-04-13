@@ -103,7 +103,7 @@ function AiHelperChat() {
 }
 
 export default function ConcealCarryTrainingWebsite() {
-  const SQUARE_BOOKING_URL = "https://squareup.com/appointments/book/YOUR-BOOKING-LINK";
+  const SQUARE_BOOKING_URL = "https://book.squareup.com/appointments/duxyj421attisk/location/LKSMBY77QKE4C";
   const SQUARE_DEPOSIT_URL = "https://square.link/u/qMU7S5Pb?src=sheet";
   const SQUARE_FULL_PAYMENT_URL = "https://square.link/u/qV8mK8e8?src=sheet";
   const [page, setPage] = useState("home");
