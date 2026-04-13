@@ -7,7 +7,7 @@ function AiHelperChat() {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      text: "Welcome. I can help with booking, payment, class times, and contact details.",
+      text: "Welcome. I can help with booking, payment, class services, and contact details.",
     },
   ]);
 
@@ -15,11 +15,9 @@ function AiHelperChat() {
     const trimmed = input.trim();
     if (!trimmed) return;
 
-    const userMessage = { role: "user", text: trimmed };
-    let reply =
-      "I can help with booking, payment, class details, and contact information.";
-
     const lower = trimmed.toLowerCase();
+    let reply =
+      "I can help with booking, payment, class services, and contact information.";
 
     if (
       lower.includes("book") ||
@@ -27,16 +25,21 @@ function AiHelperChat() {
       lower.includes("date")
     ) {
       reply =
-        "Use the Booking page to choose your date and time, then continue to payment.";
+        "Go to the Booking page to choose a class date and time before payment.";
     } else if (
       lower.includes("pay") ||
       lower.includes("deposit") ||
       lower.includes("fee")
     ) {
       reply =
-        "Use the Payment page to choose Deposit or Full Payment. Your Square links are already connected.";
-    } else if (lower.includes("price") || lower.includes("cost")) {
-      reply = "The current range fee shown on the site is $75.";
+        "Go to the Payment page to choose Deposit or Full Payment. After selecting one, you can move forward to class services.";
+    } else if (
+      lower.includes("class") ||
+      lower.includes("service") ||
+      lower.includes("training")
+    ) {
+      reply =
+        "The Classes page shows all available training services, including Illinois CCW, group sessions, and refresher training.";
     } else if (
       lower.includes("contact") ||
       lower.includes("phone") ||
@@ -47,18 +50,11 @@ function AiHelperChat() {
     } else if (lower.includes("hours") || lower.includes("time")) {
       reply =
         "Booking times are Monday through Friday from 9:00 AM to 5:00 PM.";
-    } else if (
-      lower.includes("where") ||
-      lower.includes("location") ||
-      lower.includes("address")
-    ) {
-      reply =
-        "Use the Contact page to request location details or contact the instructor directly before class.";
     }
 
     setMessages((prev) => [
       ...prev,
-      userMessage,
+      { role: "user", text: trimmed },
       { role: "assistant", text: reply },
     ]);
     setInput("");
@@ -84,7 +80,6 @@ function AiHelperChat() {
                 onClick={() => setMinimized((prev) => !prev)}
                 className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white hover:bg-white/10"
                 aria-label="Minimize chat"
-                title="Minimize"
               >
                 —
               </button>
@@ -96,7 +91,6 @@ function AiHelperChat() {
                 }}
                 className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white hover:bg-white/10"
                 aria-label="Close chat"
-                title="Close"
               >
                 ✕
               </button>
@@ -129,7 +123,7 @@ function AiHelperChat() {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleSend();
                     }}
-                    placeholder="Ask about booking or payment..."
+                    placeholder="Ask about booking or classes..."
                     className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-white/40"
                   />
                   <button
@@ -161,6 +155,7 @@ function AiHelperChat() {
 }
 
 export default function ConcealCarryTrainingWebsite() {
+  const LOGO_SRC = "/ips-logo.png";
   const SQUARE_BOOKING_URL =
     "https://book.squareup.com/appointments/duxyj421attisk/location/LKSMBY77QKE4C";
   const SQUARE_DEPOSIT_URL = "https://square.link/u/qMU7S5Pb?src=sheet";
@@ -169,6 +164,7 @@ export default function ConcealCarryTrainingWebsite() {
   const [page, setPage] = useState("home");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
+  const [paymentChoice, setPaymentChoice] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -204,18 +200,39 @@ export default function ConcealCarryTrainingWebsite() {
     "5:00 PM",
   ];
 
-  const trainingOptions = [
+  const classServices = [
     {
       title: "Illinois CCW Training",
-      description: "Complete instruction, safety guidance, and range training.",
+      description:
+        "Complete concealed carry training with classroom instruction, safety, and range guidance.",
+      includes: [
+        "Firearm safety instruction",
+        "Legal and responsibility overview",
+        "Hands-on range training",
+        "Certificate upon completion",
+      ],
     },
     {
       title: "Private Group Sessions",
-      description: "Book families, organizations, or private groups together.",
+      description:
+        "Book a class for families, teams, organizations, or private groups.",
+      includes: [
+        "Private class setup",
+        "Flexible group coordination",
+        "Guided instruction",
+        "Group pricing options",
+      ],
     },
     {
       title: "Refresher Training",
-      description: "Sharpen handling, confidence, and practical skills.",
+      description:
+        "Return for guided skill-building and confidence practice.",
+      includes: [
+        "Skills review",
+        "Safe handling reinforcement",
+        "Target practice coaching",
+        "Confidence-building instruction",
+      ],
     },
   ];
 
@@ -278,15 +295,96 @@ export default function ConcealCarryTrainingWebsite() {
   const cardClass =
     "rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.03))] p-6 shadow-[0_12px_30px_rgba(0,0,0,0.28)]";
 
+  function goToPaymentFromBooking() {
+    if (!selectedDate || !selectedTime) {
+      alert("Please choose both a date and time first.");
+      return;
+    }
+    setPage("payment");
+  }
+
+  function goToClassesAfterPaymentChoice() {
+    if (!paymentChoice) {
+      alert("Please choose Deposit or Full Payment before moving forward.");
+      return;
+    }
+    setPage("classes");
+  }
+
+  function PaymentButtons({ large = false }) {
+    const basePrimary =
+      "rounded-2xl border border-red-500/40 bg-red-600 text-white shadow-[0_0_24px_rgba(220,38,38,0.18)] hover:bg-red-700";
+    const baseSecondary =
+      "rounded-2xl border border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20";
+
+    const sizeClass = large
+      ? "px-6 py-4 text-base font-black uppercase tracking-[0.16em]"
+      : "px-5 py-3 text-sm font-black uppercase tracking-[0.14em]";
+
+    return (
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className={cardClass}>
+          <h3 className="text-2xl font-black uppercase">Pay Deposit</h3>
+          <p className="mt-3 text-white/70">
+            Reserve your class with a deposit.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setPaymentChoice("deposit");
+              window.open(SQUARE_DEPOSIT_URL, "_blank", "noopener,noreferrer");
+            }}
+            className={`mt-6 block w-full ${basePrimary} ${sizeClass}`}
+          >
+            Pay Deposit
+          </button>
+        </div>
+
+        <div className={cardClass}>
+          <h3 className="text-2xl font-black uppercase">Pay Full Fee</h3>
+          <p className="mt-3 text-white/70">
+            Pay the full class fee upfront.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setPaymentChoice("full");
+              window.open(
+                SQUARE_FULL_PAYMENT_URL,
+                "_blank",
+                "noopener,noreferrer"
+              );
+            }}
+            className={`mt-6 block w-full ${baseSecondary} ${sizeClass}`}
+          >
+            Pay Full Fee
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const NavBar = () => (
     <div className="sticky top-0 z-50 border-b border-red-900/40 bg-[linear-gradient(180deg,rgba(0,0,0,0.95),rgba(10,10,10,0.92))] backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.45)]">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 md:flex-row md:items-center md:justify-between md:px-10 lg:px-12">
         <button
           type="button"
           onClick={() => setPage("home")}
-          className="text-left text-lg font-black uppercase tracking-[0.2em] text-white"
+          className="flex items-center gap-3 text-left text-white"
         >
-          Illinois Protective Services
+          <img
+            src={LOGO_SRC}
+            alt="Illinois Protective Services logo"
+            className="h-12 w-12 rounded-full border border-white/10 object-cover bg-white/5"
+          />
+          <div>
+            <div className="text-sm font-black uppercase tracking-[0.22em] text-white">
+              Illinois Protective
+            </div>
+            <div className="text-xs font-bold uppercase tracking-[0.22em] text-blue-300">
+              Services
+            </div>
+          </div>
         </button>
 
         <div className="flex flex-wrap gap-3 text-sm font-bold uppercase tracking-wide">
@@ -317,6 +415,13 @@ export default function ConcealCarryTrainingWebsite() {
             className={navButtonClass}
           >
             Payment
+          </button>
+          <button
+            type="button"
+            onClick={() => setPage("classes")}
+            className={navButtonClass}
+          >
+            Classes
           </button>
           <button
             type="button"
@@ -361,6 +466,76 @@ export default function ConcealCarryTrainingWebsite() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  if (page === "classes") {
+    return (
+      <div className="min-h-screen bg-black text-white">
+        <NavBar />
+        <AiHelperChat />
+
+        <section className="mx-auto max-w-6xl px-6 py-16 md:px-10">
+          <div className="max-w-4xl">
+            <div className="inline-flex rounded-full border border-red-500/20 bg-red-600/10 px-4 py-2 text-sm font-black uppercase tracking-[0.2em] text-blue-300">
+              Class Services
+            </div>
+            <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.06em] sm:text-5xl">
+              Available Services for Booking
+            </h1>
+            <p className="mt-4 text-lg leading-8 text-white/75">
+              Review all training services currently available. Customers should
+              choose a date first, then payment, before moving to this page.
+            </p>
+
+            {selectedDate && selectedTime && (
+              <div className="mt-6 rounded-2xl border border-red-500/20 bg-red-600/10 p-5 text-white">
+                <div className="text-sm font-bold uppercase tracking-[0.2em] text-blue-300">
+                  Your Current Selection
+                </div>
+                <div className="mt-2 text-lg font-black">
+                  {formatSelectedDate()}
+                </div>
+                <div className="mt-1 text-white/90">{selectedTime}</div>
+                <div className="mt-2 text-sm text-white/80">
+                  Payment choice:{" "}
+                  <span className="font-bold uppercase">
+                    {paymentChoice || "Not selected"}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-10 grid gap-6 lg:grid-cols-3">
+            {classServices.map((service) => (
+              <div key={service.title} className={cardClass}>
+                <div className="inline-flex rounded-full border border-red-500/20 bg-red-600/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-blue-300">
+                  Bookable Service
+                </div>
+                <h2 className="mt-4 text-2xl font-black uppercase">
+                  {service.title}
+                </h2>
+                <p className="mt-4 leading-7 text-white/75">
+                  {service.description}
+                </p>
+                <ul className="mt-5 space-y-2 text-white/80">
+                  {service.includes.map((item) => (
+                    <li key={item}>• {item}</li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => setPage("contact")}
+                  className="mt-6 rounded-xl border border-red-500/40 bg-red-600 px-5 py-3 font-black uppercase tracking-[0.14em] text-white hover:bg-red-700"
+                >
+                  Ask About This Service
+                </button>
+              </div>
+            ))}
           </div>
         </section>
       </div>
@@ -444,7 +619,7 @@ export default function ConcealCarryTrainingWebsite() {
                 Step 2
               </div>
               <h2 className="mt-4 text-2xl font-black uppercase">
-                Confirm Your Selection
+                Confirm Selection
               </h2>
               <div className="mt-6 space-y-4 text-white/80">
                 <div>
@@ -465,22 +640,11 @@ export default function ConcealCarryTrainingWebsite() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    if (selectedDate && selectedTime) setPage("payment");
-                  }}
-                  disabled={!selectedDate || !selectedTime}
-                  className="mt-4 w-full rounded-2xl border border-red-500/40 bg-red-600 px-6 py-4 text-center text-base font-black uppercase tracking-[0.16em] text-white shadow-[0_0_24px_rgba(220,38,38,0.18)] transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={goToPaymentFromBooking}
+                  className="mt-4 w-full rounded-2xl border border-red-500/40 bg-red-600 px-6 py-4 text-center text-base font-black uppercase tracking-[0.16em] text-white shadow-[0_0_24px_rgba(220,38,38,0.18)] transition hover:bg-red-700"
                 >
                   Continue to Payment
                 </button>
-                <a
-                  href={SQUARE_BOOKING_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block w-full rounded-2xl border border-blue-500/30 bg-blue-500/10 px-6 py-4 text-center text-base font-black uppercase tracking-[0.16em] text-blue-300 transition hover:bg-blue-500/20"
-                >
-                  Book with Square Instead
-                </a>
               </div>
             </div>
           </div>
@@ -504,7 +668,8 @@ export default function ConcealCarryTrainingWebsite() {
               Complete Payment
             </h1>
             <p className="mt-4 text-lg leading-8 text-white/75">
-              Secure your seat by choosing a deposit or full payment option.
+              Choose Deposit or Full Payment. You cannot move forward to class
+              services until you select one.
             </p>
           </div>
 
@@ -521,36 +686,26 @@ export default function ConcealCarryTrainingWebsite() {
               </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-2">
-              <div className={cardClass}>
-                <h2 className="text-2xl font-black uppercase">Pay Deposit</h2>
-                <p className="mt-3 text-white/70">
-                  Reserve your class with a deposit.
-                </p>
-                <a
-                  href={SQUARE_DEPOSIT_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-6 block rounded-xl border border-red-500/40 bg-red-600 py-4 text-center font-black uppercase tracking-[0.14em] text-white hover:bg-red-700"
-                >
-                  Pay Deposit
-                </a>
-              </div>
+            <PaymentButtons large />
 
-              <div className={cardClass}>
-                <h2 className="text-2xl font-black uppercase">Pay Full Fee</h2>
-                <p className="mt-3 text-white/70">
-                  Pay the full class fee upfront.
-                </p>
-                <a
-                  href={SQUARE_FULL_PAYMENT_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-6 block rounded-xl border border-blue-500/30 bg-blue-500/10 py-4 text-center font-black uppercase tracking-[0.14em] text-blue-300 hover:bg-blue-500/20"
-                >
-                  Pay Full Fee
-                </a>
+            <div className={cardClass}>
+              <h2 className="text-2xl font-black uppercase">
+                Move Forward After Payment Choice
+              </h2>
+              <p className="mt-3 text-white/70">
+                After selecting Deposit or Full Payment, continue to the Classes
+                page to review all available services.
+              </p>
+              <div className="mt-4 text-sm uppercase tracking-[0.18em] text-blue-300">
+                Current payment choice: {paymentChoice || "None selected"}
               </div>
+              <button
+                type="button"
+                onClick={goToClassesAfterPaymentChoice}
+                className="mt-6 rounded-2xl border border-red-500/40 bg-red-600 px-6 py-4 text-base font-black uppercase tracking-[0.16em] text-white shadow-[0_0_24px_rgba(220,38,38,0.18)] hover:bg-red-700"
+              >
+                Continue to Classes
+              </button>
             </div>
           </div>
         </section>
@@ -681,8 +836,20 @@ export default function ConcealCarryTrainingWebsite() {
         </div>
 
         <div className="relative mx-auto max-w-6xl px-6 py-20 text-center md:px-10 lg:py-24">
-          <div className="mb-4 inline-flex items-center rounded-full border border-red-500/30 bg-red-600/10 px-4 py-2 text-sm font-semibold tracking-[0.22em] text-blue-300 uppercase">
-            Illinois Concealed Carry Training
+          <div className="mx-auto mb-5 flex w-fit items-center gap-4 rounded-full border border-red-500/30 bg-red-600/10 px-4 py-3">
+            <img
+              src={LOGO_SRC}
+              alt="Illinois Protective Services logo"
+              className="h-14 w-14 rounded-full border border-white/10 object-cover bg-white/5"
+            />
+            <div className="text-left">
+              <div className="text-sm font-black uppercase tracking-[0.22em] text-white">
+                Illinois Protective
+              </div>
+              <div className="text-xs font-bold uppercase tracking-[0.22em] text-blue-300">
+                Services
+              </div>
+            </div>
           </div>
 
           <h1 className="mx-auto max-w-5xl text-5xl font-black uppercase tracking-[0.06em] text-white drop-shadow-[0_8px_30px_rgba(0,0,0,0.5)] sm:text-6xl lg:text-7xl">
@@ -704,10 +871,10 @@ export default function ConcealCarryTrainingWebsite() {
             </button>
             <button
               type="button"
-              onClick={() => setPage("contact")}
-              className="rounded-2xl border border-white/15 bg-white/[0.03] px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-white transition hover:bg-white/10"
+              onClick={() => setPage("classes")}
+              className="rounded-2xl border border-blue-500/30 bg-blue-500/10 px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-blue-300 transition hover:bg-blue-500/20"
             >
-              Contact Us
+              View Class Services
             </button>
           </div>
         </div>
@@ -752,13 +919,13 @@ export default function ConcealCarryTrainingWebsite() {
               },
               {
                 step: "2",
-                title: "Complete Payment",
-                text: "Use deposit or full payment to secure your training slot.",
+                title: "Choose Payment",
+                text: "Select deposit or full payment to continue forward.",
               },
               {
                 step: "3",
-                title: "Attend Class",
-                text: "Arrive prepared and complete your instruction and range time.",
+                title: "Review Class Services",
+                text: "See all available services and contact us with questions.",
               },
             ].map((item) => (
               <div key={item.step} className={cardClass}>
@@ -785,8 +952,8 @@ export default function ConcealCarryTrainingWebsite() {
               Mission Ready Training
             </h2>
             <p className="mt-4 max-w-2xl leading-8 text-white/75">
-              Choose the booking path that works best for you. Use the Booking
-              page for date selection, or go directly to Square.
+              Choose your date first, complete a payment selection, then review
+              all class services available for booking.
             </p>
           </div>
 
@@ -810,16 +977,6 @@ export default function ConcealCarryTrainingWebsite() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div className="text-sm uppercase tracking-[0.18em] text-white/50">
-                    Contact
-                  </div>
-                  <div className="mt-1 text-xl font-bold">(224) 248-7021</div>
-                  <div className="break-all text-base">
-                    info@illinoisprotectiveservices.com
-                  </div>
-                </div>
-
                 <div className="grid gap-3">
                   <button
                     type="button"
@@ -830,45 +987,20 @@ export default function ConcealCarryTrainingWebsite() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setPage("contact")}
+                    onClick={() => setPage("classes")}
                     className="rounded-2xl border border-blue-500/30 bg-blue-500/10 px-4 py-4 text-center text-base font-black uppercase tracking-[0.14em] text-blue-300 transition hover:bg-blue-500/20"
                   >
-                    Ask a Question
+                    View Class Services
                   </button>
+                </div>
+
+                <div className="rounded-2xl border border-red-500/20 bg-red-600/10 p-4 text-sm leading-7 text-white/90">
+                  Choose a date first. Payment selection is required before
+                  moving forward to class services after booking.
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      </section>
-
-      <section
-        className="mx-auto max-w-6xl px-6 py-16 md:px-10"
-        id="classes"
-      >
-        <div className="max-w-3xl">
-          <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-400">
-            Training Options
-          </p>
-          <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
-            Choose the Right Format
-          </h2>
-        </div>
-
-        <div className="mt-10 grid gap-6 lg:grid-cols-3">
-          {trainingOptions.map((option) => (
-            <div key={option.title} className={cardClass}>
-              <div className="inline-flex rounded-full border border-red-500/20 bg-red-600/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-blue-300">
-                Training
-              </div>
-              <h3 className="mt-4 text-2xl font-black uppercase">
-                {option.title}
-              </h3>
-              <p className="mt-4 leading-7 text-white/75">
-                {option.description}
-              </p>
-            </div>
-          ))}
         </div>
       </section>
 
