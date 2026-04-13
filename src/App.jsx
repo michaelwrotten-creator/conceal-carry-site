@@ -600,101 +600,76 @@ export default function ConcealCarryTrainingWebsite() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-6 py-8 md:px-10 lg:px-12">
-        <div className="flex justify-center">
-          <div className="sticky top-24 w-full max-w-md rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-xl">
-            <div className="rounded-[1.5rem] border border-yellow-400/20 bg-neutral-900 p-6">
-              <div className="mb-4 inline-flex rounded-full bg-yellow-400 px-3 py-1 text-sm font-black uppercase tracking-wider text-black">
-                Enrollment Open
-              </div>
-              <h2 className="text-3xl font-black uppercase">Get Started Today</h2>
-              <div className="mt-6 space-y-4 text-white/80">
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div className="text-sm uppercase tracking-wider text-white/50">
-                    Range Fee
-                  </div>
-                  <div className="mt-1 text-4xl font-black text-yellow-400">
-                    $75
-                  </div>
-                </div>
+  <section className="mx-auto max-w-7xl px-6 py-8 md:px-10 lg:px-12">
+    <div className="flex justify-center">
+      <div className="sticky top-28 w-full max-w-lg">
 
-                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div className="text-sm uppercase tracking-wider text-white/50">
-                    Contact
-                  </div>
-                  <div className="mt-1 text-xl font-bold">(224) 248-7021</div>
-                  <div className="break-all text-base">
-                    info@illinoisprotectiveservices.com
-                  </div>
-                </div>
+    <div className="rounded-[2.5rem] border border-white/10 bg-gradient-to-b from-white/10 to-white/5 p-[2px] shadow-[0_20px_80px_rgba(0,0,0,0.6)]">
+      
+      <div className="rounded-[2.5rem] bg-neutral-900 px-8 py-10 text-center">
 
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <a
-                    href={SQUARE_BOOKING_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-2xl bg-yellow-400 px-4 py-4 text-center text-base font-black uppercase tracking-wide text-black transition hover:-translate-y-0.5"
-                  >
-                    Book with Square
-                  </a>
-                  <a
-                    href={SQUARE_BOOKING_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="rounded-2xl border border-yellow-400/30 bg-yellow-400/10 px-4 py-4 text-center text-base font-black uppercase tracking-wide text-yellow-300 transition hover:bg-yellow-400/20"
-                  >
-                    Book Online
-                  </a>
-                </div>
+        {/* Badge */}
+        <div className="mx-auto mb-5 inline-flex rounded-full bg-yellow-400 px-4 py-1 text-xs font-black uppercase tracking-widest text-black">
+          Enrollment Open
+        </div>
 
-                <div className="rounded-2xl border border-red-400/20 bg-red-500/10 p-4 text-sm leading-7 text-red-100">
-                  Registration is required and class space is limited. Early sign-up is strongly recommended.
-                </div>
-              </div>
-            </div>
+        {/* Title */}
+        <h2 className="text-3xl font-black uppercase leading-tight">
+          Get Started Today
+        </h2>
+
+        {/* Divider */}
+        <div className="mx-auto my-6 h-[2px] w-16 bg-yellow-400/60 rounded-full"></div>
+
+        {/* Price */}
+        <div className="mb-6">
+          <div className="text-sm uppercase tracking-widest text-white/50">
+            Range Fee
+          </div>
+          <div className="mt-2 text-5xl font-black text-yellow-400">
+            $75
           </div>
         </div>
-      </section>
 
-      <section
-        className="mx-auto max-w-7xl px-6 py-16 md:px-10 lg:px-12"
-        id="classes"
-      >
-        <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-400">
-              Training Options
-            </p>
-            <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
-              Choose the Right Class Format
-            </h2>
+        {/* Contact */}
+        <div className="mb-8 space-y-1 text-white/80">
+          <div className="font-bold">(224) 248-7021</div>
+          <div className="text-sm break-all">
+            info@illinoisprotectiveservices.com
           </div>
-          <p className="max-w-2xl text-white/70">
-            Built for first-time students, experienced gun owners seeking formal training, and private groups needing a professional instructor-led experience.
-          </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {classOptions.map((option) => (
-            <div
-              key={option.title}
-              className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-xl"
-            >
-              <div className="inline-flex rounded-full border border-yellow-400/20 bg-yellow-400/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-yellow-300">
-                {option.badge}
-              </div>
-              <h3 className="mt-4 text-2xl font-black uppercase">{option.title}</h3>
-              <p className="mt-4 leading-7 text-white/75">{option.description}</p>
-              <a
-                href="#register"
-                className="mt-6 inline-block rounded-2xl border border-white/15 px-5 py-3 text-center font-bold uppercase tracking-wide text-white transition hover:bg-white/10"
-              >
-                Request Info
-              </a>
-            </div>
-          ))}
+        {/* Buttons */}
+        <div className="flex flex-col gap-3">
+          <a
+            href={SQUARE_BOOKING_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-xl bg-yellow-400 py-4 text-center font-black uppercase tracking-wide text-black transition hover:scale-[1.02] hover:shadow-lg"
+          >
+            Book & Pay Now
+          </a>
+
+          <a
+            href={SQUARE_BOOKING_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-xl border border-yellow-400/40 py-4 text-center font-black uppercase tracking-wide text-yellow-300 transition hover:bg-yellow-400/10"
+          >
+            View Availability
+          </a>
         </div>
-      </section>
+
+        {/* Notice */}
+        <div className="mt-6 text-sm text-red-300/90">
+          Limited class size. Early registration recommended.
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+</section>
 
       <section className="border-y border-white/10 bg-white/[0.03]">
         <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:px-10 lg:grid-cols-2 lg:px-12">
