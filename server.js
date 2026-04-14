@@ -184,7 +184,7 @@ app.post("/api/create-payment-intent", async (req, res) => {
 });
 
 // Helpful fallback for unknown API routes
-app.use("/api/*", (_req, res) => {
+app.use("/api", (_req, res) => {
   res.status(404).json({
     error: "API route not found.",
   });
