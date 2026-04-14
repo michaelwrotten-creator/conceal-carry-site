@@ -33,9 +33,9 @@ function AiHelperChat() {
     phone: "(224) 248-7021",
     email: "info@illinoisprotectiveservices.com",
     refundPolicy:
-      "If you are unable to attend your scheduled class, notify the instructor at least 24 hours in advance to retain full credit toward a future class date. Rescheduling requests made with less than 48 hours’ notice will result in forfeiture of class credit, and a new payment and deposit will be required.",
+      "If you are unable to attend your scheduled class, notify the instructor at least 24 hours in advance to retain full credit toward a future class date. Rescheduling requests made with less than 48 hours’ notice will result in forfeiture of class credit and require a new payment and deposit.",
     bringItems:
-      "Students should be prepared to bring required identification, any required documentation, and follow all instructor guidance. Final class details should be confirmed directly before class.",
+      "Students should bring required identification and follow all instructor guidance. Final class details should be confirmed directly before class.",
   };
 
   function getBroadResponse(message) {
@@ -485,41 +485,38 @@ export default function ConcealCarryTrainingWebsite() {
     },
   ];
 
-useEffect(() => {
-  let isMounted = true;
+  useEffect(() => {
+    let isMounted = true;
 
-  async function loadConfig() {
-    try {
-      const response = await fetch(
-        "https://conceal-carry-backend.onrender.com/api/config"
-      );
-
-      const text = await response.text();
-      console.log("CONFIG RESPONSE:", text);
-
-      let data;
+    async function loadConfig() {
       try {
-        data = JSON.parse(text);
-      } catch (err) {
-        throw new Error(`Config did not return JSON. Response was: ${text}`);
-      }
+        const response = await fetch(`${API_BASE}/api/config`);
+        const text = await response.text();
+        console.log("CONFIG RESPONSE:", text);
 
-      if (isMounted) {
-        setPublishableKey(data.publishableKey || "");
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch {
+          throw new Error(`Config did not return JSON. Response was: ${text}`);
+        }
+
+        if (isMounted) {
+          setPublishableKey(data.publishableKey || "");
+        }
+      } catch (error) {
+        console.error("Failed to load Stripe config:", error);
       }
-    } catch (error) {
-      console.error("Failed to load Stripe config:", error);
     }
-  }
 
-  loadConfig();
+    loadConfig();
 
-  return () => {
-    isMounted = false;
-  };
-}, []);
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-function navigateTo(nextPage) {
+  function navigateTo(nextPage) {
     setPageHistory((prev) => [...prev, nextPage]);
     setPage(nextPage);
   }
@@ -572,57 +569,57 @@ function navigateTo(nextPage) {
     setBookingStep(1);
   }
 
-async function createPaymentIntent(mode) {
-  if (!selectedService || !selectedDate || !selectedTime) {
-    alert("Please complete your booking details first.");
-    return;
-  }
+  async function createPaymentIntent(mode) {
+    if (!selectedService || !selectedDate || !selectedTime) {
+      alert("Please complete your booking details first.");
+      return;
+    }
 
-  setLoadingPaymentIntent(true);
-  setPaymentLoadError("");
-  setClientSecret("");
-  setPaymentMode(mode);
+    setLoadingPaymentIntent(true);
+    setPaymentLoadError("");
+    setClientSecret("");
+    setPaymentMode(mode);
 
-  try {
-    const response = await fetch(`${API_BASE}/api/create-payment-intent`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        serviceId: selectedService,
-        paymentMode: mode,
-        customerName: formData.name,
-        customerEmail: formData.email,
-        customerPhone: formData.phone,
-        bookingDate: selectedDate,
-        bookingTime: selectedTime,
-      }),
-    });
-
-    const text = await response.text();
-    console.log("PAYMENT RESPONSE:", text);
-
-    let data;
     try {
-      data = JSON.parse(text);
-    } catch (err) {
-      throw new Error(`Backend did not return JSON. Response was: ${text}`);
-    }
+      const response = await fetch(`${API_BASE}/api/create-payment-intent`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          serviceId: selectedService,
+          paymentMode: mode,
+          customerName: formData.name,
+          customerEmail: formData.email,
+          customerPhone: formData.phone,
+          bookingDate: selectedDate,
+          bookingTime: selectedTime,
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error(data.error || "Unable to create payment intent.");
-    }
+      const text = await response.text();
+      console.log("PAYMENT RESPONSE:", text);
 
-    setClientSecret(data.clientSecret);
-    setPaymentIntentId(data.paymentIntentId);
-  } catch (error) {
-    console.error(error);
-    setPaymentLoadError(error.message || "Unable to load checkout.");
-  } finally {
-    setLoadingPaymentIntent(false);
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(`Backend did not return JSON. Response was: ${text}`);
+      }
+
+      if (!response.ok) {
+        throw new Error(data.error || "Unable to create payment intent.");
+      }
+
+      setClientSecret(data.clientSecret);
+      setPaymentIntentId(data.paymentIntentId);
+    } catch (error) {
+      console.error("createPaymentIntent error:", error);
+      setPaymentLoadError(error.message || "Unable to load checkout.");
+    } finally {
+      setLoadingPaymentIntent(false);
+    }
   }
-}
 
   function handlePaymentSuccess(intentId) {
     setPaymentCompleted(true);
