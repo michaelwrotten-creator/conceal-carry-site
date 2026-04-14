@@ -12,8 +12,13 @@ if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("Missing STRIPE_SECRET_KEY in .env");
 }
 
+if (!process.env.VITE_STRIPE_PUBLISHABLE_KEY) {
+  throw new Error("Missing VITE_STRIPE_PUBLISHABLE_KEY in .env");
+}
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
+// Full prices in cents
 const SERVICE_PRICES = {
   mini: 5000,
   "3hour": 7500,
@@ -21,6 +26,7 @@ const SERVICE_PRICES = {
   "16hour": 22500,
 };
 
+// Deposits in cents
 const SERVICE_DEPOSITS = {
   mini: 2500,
   "3hour": 7500,
@@ -28,6 +34,16 @@ const SERVICE_DEPOSITS = {
   "16hour": 7500,
 };
 
+// Allow requests from your frontend, including Wix
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+// Stripe webhook must use raw body BEFORE express.json()
 app.post(
   "/api/stripe/webhook",
   express.raw({ type: "application/json" }),
@@ -35,6 +51,7 @@ app.post(
     const signature = req.headers["stripe-signature"];
 
     if (!process.env.STRIPE_WEBHOOK_SECRET) {
+      console.error("Missing STRIPE_WEBHOOK_SECRET");
       return res.status(500).send("Missing STRIPE_WEBHOOK_SECRET");
     }
 
@@ -56,6 +73,10 @@ app.post(
         const paymentIntent = event.data.object;
         console.log("✅ Payment succeeded:", paymentIntent.id);
         console.log("Booking metadata:", paymentIntent.metadata);
+
+        // Future upgrade:
+        // Save booking to database here
+        // Send confirmation email here
         break;
       }
 
@@ -70,16 +91,27 @@ app.post(
         console.log(`Unhandled event type: ${event.type}`);
     }
 
-    res.json({ received: true });
+    return res.json({ received: true });
   }
 );
 
-app.use(cors());
+// Parse normal JSON for all non-webhook routes
 app.use(express.json());
+
+app.get("/", (_req, res) => {
+  res.send("Illinois Protective Services Stripe backend is running.");
+});
+
+app.get("/api/health", (_req, res) => {
+  res.json({
+    ok: true,
+    message: "Stripe backend is running",
+  });
+});
 
 app.get("/api/config", (_req, res) => {
   res.json({
-    publishableKey: process.env.VITE_STRIPE_PUBLISHABLE_KEY || "",
+    publishableKey: process.env.VITE_STRIPE_PUBLISHABLE_KEY,
   });
 });
 
@@ -132,8 +164,8 @@ app.post("/api/create-payment-intent", async (req, res) => {
         customerName: customerName || "",
         customerEmail: customerEmail || "",
         customerPhone: customerPhone || "",
-        bookingDate,
-        bookingTime,
+        bookingDate: bookingDate || "",
+        bookingTime: bookingTime || "",
       },
     });
 
@@ -151,10 +183,10 @@ app.post("/api/create-payment-intent", async (req, res) => {
   }
 });
 
-app.get("/api/health", (_req, res) => {
-  res.json({
-    ok: true,
-    message: "Stripe backend is running",
+// Helpful fallback for unknown API routes
+app.use("/api/*", (_req, res) => {
+  res.status(404).json({
+    error: "API route not found.",
   });
 });
 
