@@ -14,7 +14,7 @@ function AiHelperChat() {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      text: "Welcome to Illinois Protective Services. I can help with class options, pricing, booking, payment, refunds, what to bring, and general concealed carry training questions.",
+      text: "Welcome to Illinois Protective Services. I can help with class options, pricing, deposits, booking, payment, refunds, and general concealed carry training questions.",
     },
   ]);
 
@@ -310,6 +310,7 @@ function StripePaymentPanel({
 }
 
 export default function ConcealCarryTrainingWebsite() {
+  const API_BASE = "https://conceal-carry-backend.onrender.com";
   const LOGO_SRC = "/ips-logo.png";
 
   const [page, setPage] = useState("home");
@@ -438,46 +439,16 @@ export default function ConcealCarryTrainingWebsite() {
   ];
 
   const classPhotos = [
-    {
-      src: "/ips-class-1.jpeg",
-      alt: "Students reviewing target results during concealed carry training",
-    },
-    {
-      src: "/ips-class-2.jpeg",
-      alt: "Student holding training target after class session",
-    },
-    {
-      src: "/ips-class-3.jpeg",
-      alt: "Student and instructor after successful class completion",
-    },
-    {
-      src: "/ips-class-4.jpeg",
-      alt: "Student practicing firearm stance at the range",
-    },
-    {
-      src: "/ips-class-5.jpeg",
-      alt: "Instructor guiding student during range training",
-    },
-    {
-      src: "/ips-class-6.jpeg",
-      alt: "Instructor demonstrating shotgun training at the range",
-    },
-    {
-      src: "/ips-class-7.jpeg",
-      alt: "Student practicing handgun aim during live-fire session",
-    },
-    {
-      src: "/ips-class-8.jpeg",
-      alt: "Student at indoor range during target practice",
-    },
-    {
-      src: "/ips-class-9.jpeg",
-      alt: "Student smiling during concealed carry training session",
-    },
-    {
-      src: "/ips-class-10.jpeg",
-      alt: "Student firing handgun during training exercise",
-    },
+    { src: "/ips-class-1.jpeg", alt: "Students reviewing target results during concealed carry training" },
+    { src: "/ips-class-2.jpeg", alt: "Student holding training target after class session" },
+    { src: "/ips-class-3.jpeg", alt: "Student and instructor after successful class completion" },
+    { src: "/ips-class-4.jpeg", alt: "Student practicing firearm stance at the range" },
+    { src: "/ips-class-5.jpeg", alt: "Instructor guiding student during range training" },
+    { src: "/ips-class-6.jpeg", alt: "Instructor demonstrating shotgun training at the range" },
+    { src: "/ips-class-7.jpeg", alt: "Student practicing handgun aim during live-fire session" },
+    { src: "/ips-class-8.jpeg", alt: "Student at indoor range during target practice" },
+    { src: "/ips-class-9.jpeg", alt: "Student smiling during concealed carry training session" },
+    { src: "/ips-class-10.jpeg", alt: "Student firing handgun during training exercise" },
   ];
 
   const testimonials = [
@@ -514,28 +485,41 @@ export default function ConcealCarryTrainingWebsite() {
     },
   ];
 
-  useEffect(() => {
-    let isMounted = true;
+useEffect(() => {
+  let isMounted = true;
 
-    async function loadConfig() {
+  async function loadConfig() {
+    try {
+      const response = await fetch(
+        "https://conceal-carry-backend.onrender.com/api/config"
+      );
+
+      const text = await response.text();
+      console.log("CONFIG RESPONSE:", text);
+
+      let data;
       try {
-        const response = await fetch("/api/config");
-        const data = await response.json();
-        if (isMounted) {
-          setPublishableKey(data.publishableKey || "");
-        }
-      } catch (error) {
-        console.error("Failed to load Stripe config:", error);
+        data = JSON.parse(text);
+      } catch (err) {
+        throw new Error(`Config did not return JSON. Response was: ${text}`);
       }
+
+      if (isMounted) {
+        setPublishableKey(data.publishableKey || "");
+      }
+    } catch (error) {
+      console.error("Failed to load Stripe config:", error);
     }
+  }
 
-    loadConfig();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  loadConfig();
 
-  function navigateTo(nextPage) {
+  return () => {
+    isMounted = false;
+  };
+}, []);
+
+function navigateTo(nextPage) {
     setPageHistory((prev) => [...prev, nextPage]);
     setPage(nextPage);
   }
@@ -588,49 +572,57 @@ export default function ConcealCarryTrainingWebsite() {
     setBookingStep(1);
   }
 
-  async function createPaymentIntent(mode) {
-    if (!selectedService || !selectedDate || !selectedTime) {
-      alert("Please complete your booking details first.");
-      return;
-    }
-
-    setLoadingPaymentIntent(true);
-    setPaymentLoadError("");
-    setClientSecret("");
-    setPaymentMode(mode);
-
-    try {
-      const response = await fetch("/api/create-payment-intent", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          serviceId: selectedService,
-          paymentMode: mode,
-          customerName: formData.name,
-          customerEmail: formData.email,
-          customerPhone: formData.phone,
-          bookingDate: selectedDate,
-          bookingTime: selectedTime,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Unable to create payment intent.");
-      }
-
-      setClientSecret(data.clientSecret);
-      setPaymentIntentId(data.paymentIntentId);
-    } catch (error) {
-      console.error(error);
-      setPaymentLoadError(error.message || "Unable to load checkout.");
-    } finally {
-      setLoadingPaymentIntent(false);
-    }
+async function createPaymentIntent(mode) {
+  if (!selectedService || !selectedDate || !selectedTime) {
+    alert("Please complete your booking details first.");
+    return;
   }
+
+  setLoadingPaymentIntent(true);
+  setPaymentLoadError("");
+  setClientSecret("");
+  setPaymentMode(mode);
+
+  try {
+    const response = await fetch(`${API_BASE}/api/create-payment-intent`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        serviceId: selectedService,
+        paymentMode: mode,
+        customerName: formData.name,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        bookingDate: selectedDate,
+        bookingTime: selectedTime,
+      }),
+    });
+
+    const text = await response.text();
+    console.log("PAYMENT RESPONSE:", text);
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (err) {
+      throw new Error(`Backend did not return JSON. Response was: ${text}`);
+    }
+
+    if (!response.ok) {
+      throw new Error(data.error || "Unable to create payment intent.");
+    }
+
+    setClientSecret(data.clientSecret);
+    setPaymentIntentId(data.paymentIntentId);
+  } catch (error) {
+    console.error(error);
+    setPaymentLoadError(error.message || "Unable to load checkout.");
+  } finally {
+    setLoadingPaymentIntent(false);
+  }
+}
 
   function handlePaymentSuccess(intentId) {
     setPaymentCompleted(true);
