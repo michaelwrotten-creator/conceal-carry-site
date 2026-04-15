@@ -399,7 +399,7 @@ function InstructorCard({ imageSrc, imageAlt, name, title, bio1, bio2 }) {
         <img
           src={imageSrc}
           alt={imageAlt}
-          className="h-[420px] w-full object-cover"
+          className="block h-[420px] w-full object-cover"
         />
         <div className="absolute left-4 top-4">
           <VerifiedBadge />
@@ -928,18 +928,6 @@ export default function ConcealCarryTrainingWebsite() {
   function ScanLine() {
     return (
       <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-[linear-gradient(90deg,transparent_0%,rgba(65,105,225,0.65)_50%,transparent_100%)]" />
-    );
-  }
-
-  function StarRow() {
-    return (
-      <div className="mt-6 flex justify-center gap-3 text-3xl text-[#4169e1]">
-        <span>★</span>
-        <span>★</span>
-        <span>★</span>
-        <span>★</span>
-        <span>★</span>
-      </div>
     );
   }
 
@@ -1715,40 +1703,33 @@ export default function ConcealCarryTrainingWebsite() {
         <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_9px,rgba(88,130,255,0.03)_10px)]" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-20 md:px-10 lg:py-24">
-          <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-            <div>
-              <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-4 py-3">
-                <div className="flex items-center gap-4">
-                  <img
-                    src={LOGO_SRC}
-                    alt="Illinois Protective Services logo"
-                    className="h-14 w-14 rounded-2xl border border-[#d9dee8] bg-white object-cover p-1"
-                  />
-                  <div className="text-left">
-                    <div className="text-sm font-black uppercase tracking-[0.22em] text-[#111111]">
-                      Illinois Protective
-                    </div>
-                    <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#4169e1]">
-                      Services
-                    </div>
+          <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center gap-4 rounded-2xl border border-[#d9dee8] bg-white px-4 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
+                <img
+                  src={LOGO_SRC}
+                  alt="Illinois Protective Services logo"
+                  className="h-14 w-14 rounded-xl border border-[#d9dee8] bg-white object-cover p-1"
+                />
+                <div className="leading-tight">
+                  <div className="text-sm font-black uppercase tracking-[0.18em] text-[#111111]">
+                    Illinois Protective Services
+                  </div>
+                  <div className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-[#4169e1]">
+                    Premier Firearms Academy in Illinois
                   </div>
                 </div>
               </div>
 
-              <div className="mt-6 inline-flex rounded-full border border-[#b42318]/20 bg-[#fff3f4] px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-[#b42318]">
-                Expert Instruction • Hands-On Training • Certificate Guidance
-              </div>
-
-              <h1 className="mt-6 max-w-4xl text-5xl font-black uppercase tracking-[0.06em] text-[#111111] sm:text-6xl lg:text-7xl">
-                Elite Protection Training
+              <h1 className="mt-8 text-5xl font-black uppercase tracking-[0.05em] text-[#111111] sm:text-6xl lg:text-7xl">
+                Concealed Carry
+                <span className="block text-[#4169e1]">Training Done Right</span>
               </h1>
 
-              <StarRow />
-
               <p className="mt-6 max-w-2xl text-lg leading-8 text-[#4b5563] sm:text-xl">
-                Professional Illinois concealed carry training with clear
-                instruction, structured booking, and real confidence-building
-                support.
+                Professional Illinois concealed carry instruction with structured
+                booking, practical training, and a clear path toward responsible
+                firearm ownership.
               </p>
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -1758,50 +1739,71 @@ export default function ConcealCarryTrainingWebsite() {
                     setBookingStep(1);
                     navigateTo("booking");
                   }}
-                  className="rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-white transition hover:bg-[#3558c9]"
+                  className="rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-7 py-4 text-center text-lg font-black uppercase tracking-[0.14em] text-white transition hover:bg-[#3558c9]"
                 >
                   Book Now
                 </button>
+
                 <button
                   type="button"
                   onClick={() => navigateTo("classes")}
-                  className="rounded-2xl border border-[#d9dee8] bg-white px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-[#111111] transition hover:bg-[#f8fbff]"
+                  className="rounded-2xl border border-[#d9dee8] bg-white px-7 py-4 text-center text-lg font-black uppercase tracking-[0.14em] text-[#111111] transition hover:bg-[#f8fbff]"
                 >
                   View Classes
                 </button>
               </div>
 
+              <div className="mt-8 flex flex-wrap gap-3">
+                {[
+                  "Certified Instruction",
+                  "Weekday Classes",
+                  "Range Guidance",
+                  "Certificate Support",
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-full border border-[#d9dee8] bg-white px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-[#374151]"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+
               <div className="mt-6 text-sm font-semibold uppercase tracking-[0.14em] text-[#4169e1]">
-                Classes available Monday–Friday, 9:00 AM–5:00 PM
+                Monday–Friday • 9:00 AM–5:00 PM
               </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               {[
-                "Professional Instruction",
-                "Weekday Scheduling",
-                "Paperwork Guidance",
-                "Range Qualification Support",
-              ].map((item, index) => {
-                const styles = [
-                  "border-[#d6e4ff] bg-[#edf4ff] text-[#16325c]",
-                  "border-[#ffe0cc] bg-[#fff4ec] text-[#7c2d12]",
-                  "border-[#f8d6da] bg-[#fff3f4] text-[#8a1c2e]",
-                  "border-[#d6e4ff] bg-[#edf4ff] text-[#16325c]",
-                ];
-                return (
-                  <div
-                    key={item}
-                    className={`relative overflow-hidden rounded-[1.5rem] border p-5 shadow-[0_10px_24px_rgba(15,23,42,0.06)] ${styles[index]}`}
-                  >
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,transparent_0%,rgba(65,105,225,0.7)_35%,rgba(220,38,38,0.55)_65%,transparent_100%)]" />
-                    <div className="text-2xl text-[#4169e1]">★</div>
-                    <div className="mt-3 text-base font-black uppercase tracking-[0.08em]">
-                      {item}
-                    </div>
+                {
+                  title: "Professional Instruction",
+                  style: "border-[#d6e4ff] bg-[#edf4ff] text-[#16325c]",
+                },
+                {
+                  title: "Hands-On Training",
+                  style: "border-[#ffe0cc] bg-[#fff4ec] text-[#7c2d12]",
+                },
+                {
+                  title: "Paperwork Guidance",
+                  style: "border-[#f8d6da] bg-[#fff3f4] text-[#8a1c2e]",
+                },
+                {
+                  title: "Qualification Support",
+                  style: "border-[#d6e4ff] bg-[#edf4ff] text-[#16325c]",
+                },
+              ].map((item) => (
+                <div
+                  key={item.title}
+                  className={`relative overflow-hidden rounded-[1.5rem] border p-6 shadow-[0_10px_24px_rgba(15,23,42,0.06)] ${item.style}`}
+                >
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,transparent_0%,rgba(65,105,225,0.7)_35%,rgba(220,38,38,0.55)_65%,transparent_100%)]" />
+                  <div className="text-2xl text-[#4169e1]">★</div>
+                  <div className="mt-4 text-lg font-black uppercase tracking-[0.08em]">
+                    {item.title}
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
         </div>
