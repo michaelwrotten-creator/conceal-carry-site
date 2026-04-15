@@ -17,7 +17,7 @@ function OpeningGate({ onEnter }) {
       />
       <div className="absolute inset-0 bg-black/55" />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(65,105,225,0.08)_0%,transparent_25%,transparent_75%,rgba(65,105,225,0.08)_100%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_7px,rgba(88,130,255,0.06)_8px)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_9px,rgba(88,130,255,0.06)_10px)]" />
 
       <div className="absolute inset-0 flex items-center justify-center px-6">
         <div className="mx-auto max-w-3xl text-center text-white">
@@ -31,8 +31,7 @@ function OpeningGate({ onEnter }) {
 
           <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/85 sm:text-lg">
             Professional concealed carry instruction with disciplined training,
-            structured enrollment, and a confident path to responsible
-            protection.
+            structured booking, and a confident path to responsible protection.
           </p>
 
           <button
@@ -94,8 +93,8 @@ function AiHelperChat() {
     },
     paperwork: [
       "Complete all paperwork in black ink and print neatly.",
-      "A copy of your state ID or driver's license must be added to your class folder.",
-      "A copy of your FOID card must be added to your class folder.",
+      "A copy of your state ID or driver's license should be added to your class folder.",
+      "A copy of your FOID card should be added to your class folder.",
       "Renewal students should also have a copy of their CCL added to the class folder.",
       "Incomplete paperwork can delay certificate processing.",
     ],
@@ -113,7 +112,8 @@ function AiHelperChat() {
       "Students must hit at least 30 rounds out of 50 total rounds.",
       "Qualification stages include 5, 7, and 10 yards, with optional one-handed stages.",
     ],
-    veteran: "Veterans seeking the 8-hour credit should provide a DD-214 showing honorable discharge.",
+    veteran:
+      "Veterans seeking the 8-hour credit should provide a DD-214 showing honorable discharge.",
     refundPolicy:
       "No refunds. If a student cannot attend, they must notify the instructor at least 24 hours before class to keep credit for the next available class and pay a $55 rescheduling fee before the next scheduled class. Rescheduling with less than 24 hours' notice results in forfeiture of class credit and the student must pay for another class or deposit.",
     safety:
@@ -144,7 +144,7 @@ function AiHelperChat() {
     }
 
     if (mentions("book", "booking", "schedule", "enroll")) {
-      return `Enrollment is done in three steps: choose a class, choose date and time, then review, pay, and confirm. Booking hours are ${knowledge.business.bookingHours}`;
+      return `Booking is done in three steps: choose a class, choose date and time, then review, pay, and confirm. Booking hours are ${knowledge.business.bookingHours}`;
     }
 
     if (mentions("paperwork", "forms", "packet", "black ink")) {
@@ -152,7 +152,9 @@ function AiHelperChat() {
     }
 
     if (mentions("foid", "driver", "license", "id copy", "documents")) {
-      return `Students should bring and provide copies of required identification and firearms documents. ${knowledge.paperwork.join(" ")}`;
+      return `Students should bring and provide copies of required identification and firearms documents. ${knowledge.paperwork.join(
+        " "
+      )}`;
     }
 
     if (mentions("range", "qualification", "shooting", "pass", "score")) {
@@ -553,16 +555,46 @@ export default function ConcealCarryTrainingWebsite() {
   ];
 
   const classPhotos = [
-    { src: "/ips-class-1.jpeg", alt: "Students reviewing target results during concealed carry training" },
-    { src: "/ips-class-2.jpeg", alt: "Student holding training target after class session" },
-    { src: "/ips-class-3.jpeg", alt: "Student and instructor after successful class completion" },
-    { src: "/ips-class-4.jpeg", alt: "Student practicing firearm stance at the range" },
-    { src: "/ips-class-5.jpeg", alt: "Instructor guiding student during range training" },
-    { src: "/ips-class-6.jpeg", alt: "Instructor demonstrating range training" },
-    { src: "/ips-class-7.jpeg", alt: "Student practicing handgun aim during live-fire session" },
-    { src: "/ips-class-8.jpeg", alt: "Student at indoor range during target practice" },
-    { src: "/ips-class-9.jpeg", alt: "Student smiling during concealed carry training session" },
-    { src: "/ips-class-10.jpeg", alt: "Student firing handgun during training exercise" },
+    {
+      src: "/ips-class-1.jpeg",
+      alt: "Students reviewing target results during concealed carry training",
+    },
+    {
+      src: "/ips-class-2.jpeg",
+      alt: "Student holding training target after class session",
+    },
+    {
+      src: "/ips-class-3.jpeg",
+      alt: "Student and instructor after successful class completion",
+    },
+    {
+      src: "/ips-class-4.jpeg",
+      alt: "Student practicing firearm stance at the range",
+    },
+    {
+      src: "/ips-class-5.jpeg",
+      alt: "Instructor guiding student during range training",
+    },
+    {
+      src: "/ips-class-6.jpeg",
+      alt: "Instructor demonstrating range training",
+    },
+    {
+      src: "/ips-class-7.jpeg",
+      alt: "Student practicing handgun aim during live-fire session",
+    },
+    {
+      src: "/ips-class-8.jpeg",
+      alt: "Student at indoor range during target practice",
+    },
+    {
+      src: "/ips-class-9.jpeg",
+      alt: "Student smiling during concealed carry training session",
+    },
+    {
+      src: "/ips-class-10.jpeg",
+      alt: "Student firing handgun during training exercise",
+    },
   ];
 
   const testimonials = [
@@ -587,11 +619,11 @@ export default function ConcealCarryTrainingWebsite() {
     },
     {
       q: "What happens if I miss class or range?",
-      a: "The packet lists a $55 makeup fee for missed class or range and also notes no refunds.",
+      a: "There is a $55 makeup fee for missed class or range and no refunds.",
     },
     {
       q: "What score do I need to pass shooting qualification?",
-      a: "The packet states students must pass with at least 60 percent, which is at least 30 hits out of 50 rounds.",
+      a: "Students must pass with at least 60 percent, which is at least 30 hits out of 50 rounds.",
     },
     {
       q: "Do veterans get special credit?",
@@ -792,6 +824,18 @@ export default function ConcealCarryTrainingWebsite() {
     );
   }
 
+  function StarRow() {
+    return (
+      <div className="mt-6 flex justify-center gap-3 text-3xl text-[#4169e1]">
+        <span>★</span>
+        <span>★</span>
+        <span>★</span>
+        <span>★</span>
+        <span>★</span>
+      </div>
+    );
+  }
+
   function BackButton() {
     return (
       <button
@@ -840,7 +884,7 @@ export default function ConcealCarryTrainingWebsite() {
               Classes
             </button>
             <button type="button" onClick={() => navigateTo("booking")} className={navButtonClass}>
-              Enroll
+              Book Now
             </button>
             <button
               type="button"
@@ -882,7 +926,7 @@ export default function ConcealCarryTrainingWebsite() {
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              "Structured class enrollment",
+              "Structured class booking",
               "Paperwork and document readiness",
               "Range qualification guidance",
               "Professional instruction environment",
@@ -938,11 +982,11 @@ export default function ConcealCarryTrainingWebsite() {
               Class Services
             </div>
             <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.06em] sm:text-5xl">
-              Available Services
+              Available Classes
             </h1>
             <p className="mt-4 text-lg leading-8 text-white/75">
-              Review class details, tuition, deposit amount, and enrollment
-              expectations before selecting a class.
+              Review class details, full tuition, deposit amount, and what to
+              expect before selecting your class.
             </p>
           </div>
 
@@ -951,7 +995,7 @@ export default function ConcealCarryTrainingWebsite() {
               <div key={service.id} className={cardClass}>
                 <ScanLine />
                 <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#4169e1]/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-[#8ea6ff]">
-                  Service
+                  Class Option
                 </div>
 
                 <h2 className="mt-4 text-2xl font-black uppercase">
@@ -972,8 +1016,7 @@ export default function ConcealCarryTrainingWebsite() {
                     {formatPrice(Math.round((service.price / 3) * 100) / 100)}
                   </div>
                   <div>
-                    <span className="font-bold">Duration:</span>{" "}
-                    {service.duration}
+                    <span className="font-bold">Duration:</span> {service.duration}
                   </div>
                 </div>
 
@@ -1032,10 +1075,10 @@ export default function ConcealCarryTrainingWebsite() {
 
           <div className="max-w-3xl">
             <div className="inline-flex rounded-full border border-[#4169e1]/25 bg-[#4169e1]/10 px-4 py-2 text-sm font-black uppercase tracking-[0.2em] text-[#8ea6ff]">
-              Enrollment
+              Booking
             </div>
             <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.06em] sm:text-5xl">
-              Enroll in Training
+              Book Your Class
             </h1>
             <p className="mt-4 text-lg leading-8 text-white/75">
               Step 1: choose class. Step 2: choose date and time. Step 3:
@@ -1098,7 +1141,8 @@ export default function ConcealCarryTrainingWebsite() {
                             {formatPrice(service.price)}
                           </div>
                           <div className="text-xs text-white/70">
-                            Deposit {formatPrice(Math.round((service.price / 3) * 100) / 100)}
+                            Deposit{" "}
+                            {formatPrice(Math.round((service.price / 3) * 100) / 100)}
                           </div>
                         </div>
                       </div>
@@ -1158,8 +1202,8 @@ export default function ConcealCarryTrainingWebsite() {
                           date.disabled
                             ? "cursor-not-allowed border-white/10 bg-white/5 text-white/30 line-through"
                             : selectedDate === date.value
-                              ? "border-[#4169e1] bg-[#4169e1]/15 text-white"
-                              : "border-white/15 bg-white/[0.03] text-white hover:bg-white/10"
+                            ? "border-[#4169e1] bg-[#4169e1]/15 text-white"
+                            : "border-white/15 bg-white/[0.03] text-white hover:bg-white/10"
                         }`}
                       >
                         <div>{date.label}</div>
@@ -1204,35 +1248,45 @@ export default function ConcealCarryTrainingWebsite() {
 
                 <div className="mt-6 space-y-4 text-white/80">
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">Class</div>
+                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                      Class
+                    </div>
                     <div className="mt-1 text-lg font-bold">
                       {getSelectedService()?.title || "No class selected"}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">Full Price</div>
+                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                      Full Price
+                    </div>
                     <div className="mt-1 text-lg font-bold">
                       {formatPrice(getSelectedPrice())}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">Deposit</div>
+                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                      Deposit
+                    </div>
                     <div className="mt-1 text-lg font-bold">
                       {formatPrice(getSelectedDeposit())}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">Date</div>
+                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                      Date
+                    </div>
                     <div className="mt-1 text-lg font-bold">
                       {selectedDate ? formatSelectedDate() : "No date selected"}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">Time</div>
+                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                      Time
+                    </div>
                     <div className="mt-1 text-lg font-bold">
                       {selectedTime || "No time selected"}
                     </div>
@@ -1267,34 +1321,46 @@ export default function ConcealCarryTrainingWebsite() {
 
                 <div className="mt-6 space-y-4 text-white/85">
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">Class</div>
+                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                      Class
+                    </div>
                     <div className="mt-1 text-lg font-bold">
                       {getSelectedService()?.title || "No class selected"}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">Full Price</div>
+                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                      Full Price
+                    </div>
                     <div className="mt-1 text-lg font-bold">
                       {formatPrice(getSelectedPrice())}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">Deposit</div>
+                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                      Deposit
+                    </div>
                     <div className="mt-1 text-lg font-bold">
                       {formatPrice(getSelectedDeposit())}
                     </div>
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">Date</div>
+                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                      Date
+                    </div>
                     <div className="mt-1 text-lg font-bold">{formatSelectedDate()}</div>
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">Time</div>
-                    <div className="mt-1 text-lg font-bold">{selectedTime || "No time selected"}</div>
+                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                      Time
+                    </div>
+                    <div className="mt-1 text-lg font-bold">
+                      {selectedTime || "No time selected"}
+                    </div>
                   </div>
 
                   <div className="rounded-2xl border border-[#e85b66]/20 bg-[#e85b66]/10 p-4 text-sm text-red-100">
@@ -1304,7 +1370,9 @@ export default function ConcealCarryTrainingWebsite() {
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">Payment Type</div>
+                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                      Payment Type
+                    </div>
                     <div className="mt-3 grid gap-3">
                       <button
                         type="button"
@@ -1343,7 +1411,7 @@ export default function ConcealCarryTrainingWebsite() {
                     onClick={confirmBooking}
                     className="mt-4 w-full rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-6 py-4 text-center text-base font-black uppercase tracking-[0.16em] text-white hover:bg-[#3558c9]"
                   >
-                    Confirm Enrollment
+                    Confirm Booking
                   </button>
                 </div>
               </div>
@@ -1410,9 +1478,18 @@ export default function ConcealCarryTrainingWebsite() {
               <ScanLine />
               <h2 className="text-2xl font-black uppercase">Contact Details</h2>
               <div className="mt-6 space-y-4 text-lg text-white/85">
-                <p><span className="font-bold text-white">Phone:</span> (224) 248-7021</p>
-                <p className="break-all"><span className="font-bold text-white">Email:</span> support@illinoisprotectiveservices.com</p>
-                <p><span className="font-bold text-white">Address:</span> 7601 S. Cicero Ave, Chicago, IL 60652</p>
+                <p>
+                  <span className="font-bold text-white">Phone:</span> (224)
+                  248-7021
+                </p>
+                <p className="break-all">
+                  <span className="font-bold text-white">Email:</span>{" "}
+                  support@illinoisprotectiveservices.com
+                </p>
+                <p>
+                  <span className="font-bold text-white">Address:</span> 7601 S.
+                  Cicero Ave, Chicago, IL 60652
+                </p>
               </div>
             </div>
 
@@ -1422,25 +1499,33 @@ export default function ConcealCarryTrainingWebsite() {
               <div className="mt-6 grid gap-4">
                 <input
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   className="rounded-2xl border border-white/15 bg-black/20 px-5 py-4 text-white placeholder:text-white/40 outline-none"
                   placeholder="Full Name"
                 />
                 <input
                   value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
                   className="rounded-2xl border border-white/15 bg-black/20 px-5 py-4 text-white placeholder:text-white/40 outline-none"
                   placeholder="Phone Number"
                 />
                 <input
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   className="rounded-2xl border border-white/15 bg-black/20 px-5 py-4 text-white placeholder:text-white/40 outline-none"
                   placeholder="Email Address"
                 />
                 <select
                   value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, type: e.target.value })
+                  }
                   className="rounded-2xl border border-white/15 bg-black/20 px-5 py-4 text-white outline-none"
                 >
                   <option value="">Select Training Type</option>
@@ -1451,7 +1536,9 @@ export default function ConcealCarryTrainingWebsite() {
                 </select>
                 <textarea
                   value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, message: e.target.value })
+                  }
                   className="min-h-[140px] rounded-2xl border border-white/15 bg-black/20 px-5 py-4 text-white placeholder:text-white/40 outline-none"
                   placeholder="Questions about paperwork, eligibility, scheduling, or training"
                 />
@@ -1506,10 +1593,12 @@ export default function ConcealCarryTrainingWebsite() {
             Elite Protection Training
           </h1>
 
+          <StarRow />
+
           <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-white/75 sm:text-xl">
-            Executive-style concealed carry instruction with disciplined
-            enrollment, clear class expectations, paperwork readiness, and a
-            professional path to responsible protection.
+            Professional concealed carry instruction with disciplined booking,
+            practical firearms education, and a confident path to responsible
+            protection.
           </p>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -1528,7 +1617,7 @@ export default function ConcealCarryTrainingWebsite() {
               }}
               className="rounded-2xl border border-[#e85b66]/35 bg-[#e85b66]/10 px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-[#ffb1b8] transition hover:bg-[#e85b66]/20"
             >
-              Enroll Now
+              Book Now
             </button>
           </div>
         </div>
@@ -1538,7 +1627,7 @@ export default function ConcealCarryTrainingWebsite() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
             "Professional instruction",
-            "Weekday enrollment schedule",
+            "Weekday scheduling",
             "Paperwork guidance",
             "Range qualification support",
           ].map((item) => (
@@ -1555,41 +1644,78 @@ export default function ConcealCarryTrainingWebsite() {
         <div className="mx-auto max-w-6xl px-6 py-16 md:px-10">
           <div className="max-w-3xl">
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#8ea6ff]">
-              Enrollment Flow
+              Why Train With Us
             </p>
             <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
-              Book in Three Clear Steps
+              Structured. Professional. Clear.
             </h2>
           </div>
 
           <div className="mt-10 grid gap-5 md:grid-cols-3">
             {[
               {
-                step: "1",
-                title: "Choose Class",
-                text: "Select the class that fits your training needs and review the deposit amount.",
+                title: "Train With Confidence",
+                text: "Professional instruction focused on safety, discipline, and clear range expectations.",
               },
               {
-                step: "2",
-                title: "Pick Date & Time",
-                text: "Choose an available weekday date and training time.",
+                title: "Understand Illinois Requirements",
+                text: "Guidance on paperwork, qualification standards, and the importance of staying current on state law.",
               },
               {
-                step: "3",
-                title: "Review & Pay",
-                text: "Review your enrollment details, choose deposit or full payment, and confirm.",
+                title: "Protect Home & Family",
+                text: "Training designed to help responsible adults build confidence, readiness, and situational awareness.",
               },
             ].map((item) => (
-              <div key={item.step} className={cardClass}>
+              <div key={item.title} className={cardClass}>
                 <ScanLine />
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#4169e1] text-xl font-black text-white">
-                  {item.step}
-                </div>
-                <h3 className="mt-5 text-2xl font-black uppercase">{item.title}</h3>
+                <div className="text-2xl text-[#4169e1]">★</div>
+                <h3 className="mt-4 text-2xl font-black uppercase">
+                  {item.title}
+                </h3>
                 <p className="mt-3 leading-7 text-white/75">{item.text}</p>
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-6 py-16 md:px-10">
+        <div className="max-w-3xl">
+          <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#8ea6ff]">
+            How It Works
+          </p>
+          <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
+            Book in Three Simple Steps
+          </h2>
+        </div>
+
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
+          {[
+            {
+              step: "1",
+              title: "Choose Class",
+              text: "Select the class that fits your training needs and review the deposit amount.",
+            },
+            {
+              step: "2",
+              title: "Pick Date & Time",
+              text: "Choose an available weekday date and training time.",
+            },
+            {
+              step: "3",
+              title: "Review & Pay",
+              text: "Review your booking details, choose deposit or full payment, and confirm.",
+            },
+          ].map((item) => (
+            <div key={item.step} className={cardClass}>
+              <ScanLine />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#4169e1] text-xl font-black text-white">
+                {item.step}
+              </div>
+              <h3 className="mt-5 text-2xl font-black uppercase">{item.title}</h3>
+              <p className="mt-3 leading-7 text-white/75">{item.text}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -1602,23 +1728,25 @@ export default function ConcealCarryTrainingWebsite() {
 
           <div className="mt-6 space-y-5 leading-8 text-white/85">
             <p>
-              We understand that unexpected situations may arise. If you are unable to
-              attend your scheduled class, please notify the instructor at least
-              <span className="font-bold text-white"> 24 hours in advance </span>
+              We understand that unexpected situations may arise. If you are unable
+              to attend your scheduled class, please notify the instructor at
+              least <span className="font-bold text-white">24 hours in advance</span>{" "}
               to retain full credit toward a future class date.
             </p>
 
             <p>
-              Rescheduling requests made with
-              <span className="font-bold text-white"> less than 24 hours’ notice </span>
-              will result in the forfeiture of your class credit. In these cases, a
-              new payment and deposit will be required to secure a spot in a future
-              class.
+              Rescheduling requests made with{" "}
+              <span className="font-bold text-white">
+                less than 24 hours’ notice
+              </span>{" "}
+              will result in the forfeiture of your class credit. In these cases,
+              a new payment and deposit will be required to secure a spot in a
+              future class.
             </p>
 
             <p>
-              Please note that the student packet also states there are no refunds and
-              lists a $55 makeup fee for missed class or range.
+              Please note that missed class or range can also trigger a $55 makeup
+              fee.
             </p>
           </div>
         </div>
@@ -1657,19 +1785,20 @@ export default function ConcealCarryTrainingWebsite() {
               Contact
             </p>
             <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
-              Need Help Before Enrolling?
+              Need Help Before Booking?
             </h2>
             <div className="mt-6 space-y-4 text-lg text-white/85">
               <p>
-                <span className="font-bold text-white">Phone:</span> (224) 248-7021
+                <span className="font-bold text-white">Phone:</span> (224)
+                248-7021
               </p>
               <p className="break-all">
                 <span className="font-bold text-white">Email:</span>{" "}
                 support@illinoisprotectiveservices.com
               </p>
               <p>
-                <span className="font-bold text-white">Address:</span> 7601 S. Cicero Ave,
-                Chicago, IL 60652
+                <span className="font-bold text-white">Address:</span> 7601 S.
+                Cicero Ave, Chicago, IL 60652
               </p>
             </div>
             <button
