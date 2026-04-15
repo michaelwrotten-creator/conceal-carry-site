@@ -21,12 +21,9 @@ const SERVICE_PRICES = {
   "16hour": 22500,
 };
 
-const SERVICE_DEPOSITS = {
-  mini: 2500,
-  "3hour": 7500,
-  "8hour-veteran": 7500,
-  "16hour": 7500,
-};
+function calculateDeposit(amountInCents) {
+  return Math.round(amountInCents / 3);
+}
 
 app.use(
   cors({
@@ -132,7 +129,7 @@ app.post("/api/create-payment-intent", async (req, res) => {
     }
 
     const serviceAmount = SERVICE_PRICES[serviceId];
-    const depositAmount = SERVICE_DEPOSITS[serviceId];
+    const depositAmount = calculateDeposit(serviceAmount);
     const amount = paymentMode === "deposit" ? depositAmount : serviceAmount;
 
     const paymentIntent = await stripe.paymentIntents.create({
@@ -159,6 +156,8 @@ app.post("/api/create-payment-intent", async (req, res) => {
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
       amount,
+      serviceAmount,
+      depositAmount,
     });
   } catch (err) {
     console.error("Create PaymentIntent error:", err);
