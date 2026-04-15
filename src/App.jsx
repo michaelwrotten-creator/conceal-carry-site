@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
@@ -8,9 +8,18 @@ import {
 } from "@stripe/react-stripe-js";
 
 function OpeningGate({ onEnter }) {
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.playbackRate = 0.6;
+    }
+  }, []);
+
   return (
     <div className="fixed inset-0 z-[10000] overflow-hidden bg-black">
       <video
+        ref={videoRef}
         className="absolute inset-0 h-full w-full object-cover"
         autoPlay
         muted
@@ -20,11 +29,11 @@ function OpeningGate({ onEnter }) {
         <source src="/opening-flag.mp4" type="video/mp4" />
       </video>
 
-      <div className="absolute inset-0 bg-black/45" />
+      <div className="absolute inset-0 bg-black/55" />
       <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_9px,rgba(88,130,255,0.05)_10px)]" />
 
       <div className="absolute inset-0 flex items-center justify-center px-6">
-        <div className="mx-auto max-w-3xl text-center text-white">
+        <div className="mx-auto max-w-4xl text-center text-white">
           <div className="mb-5 inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.28em] text-white/90 backdrop-blur-sm">
             Illinois Protective Services
           </div>
@@ -33,9 +42,14 @@ function OpeningGate({ onEnter }) {
             Elite Protection Training
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/90 sm:text-lg">
-            Professional concealed carry instruction with disciplined training,
-            structured booking, and a confident path to responsible protection.
+          <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-white/90 sm:text-lg">
+            Welcome to Illinois Protective Services, the premier Firearms Academy
+            in Illinois. Our focus is to train responsible citizens in Illinois
+            to better protect themselves and their loved ones through our USCCA
+            Personal Protection and Home Defense Courses. Our experienced
+            instructors provide comprehensive training in a safe and supportive
+            environment. Join us today and take the first step towards becoming
+            a confident and responsible gun owner.
           </p>
 
           <button
@@ -80,7 +94,6 @@ function AiHelperChat() {
       "A copy of your state ID or driver's license should be added to your class folder.",
       "A copy of your FOID card should be added to your class folder.",
       "Renewal students should also have a copy of their CCL added to the class folder.",
-      "Incomplete paperwork can delay certificate processing.",
     ],
     range: [
       "Range fee listed in the packet is $75 due upfront and noted as non-refundable.",
@@ -88,9 +101,7 @@ function AiHelperChat() {
       "Students must hit at least 30 rounds out of 50 total rounds.",
     ],
     refundPolicy:
-      "No refunds. If a student cannot attend, they must notify the instructor at least 24 hours before class to keep credit for the next available class and pay a $55 rescheduling fee before the next scheduled class. Rescheduling with less than 24 hours' notice results in forfeiture of class credit and the student must pay for another class or deposit.",
-    safety:
-      "Students should verify current Illinois law, prohibited areas, storage requirements, and reporting requirements through the Illinois State Police because laws can change.",
+      "No refunds. If a student cannot attend, they must notify the instructor at least 24 hours before class to keep credit for the next available class. Rescheduling with less than 24 hours' notice results in forfeiture of class credit and the student must pay for another class or deposit.",
   };
 
   function formatServices() {
@@ -120,11 +131,6 @@ function AiHelperChat() {
     if (mentions("paperwork", "forms", "packet", "black ink")) {
       return `Paperwork reminders: ${knowledge.paperwork.join(" ")}`;
     }
-    if (mentions("foid", "driver", "license", "id copy", "documents")) {
-      return `Students should bring and provide copies of required identification and firearms documents. ${knowledge.paperwork.join(
-        " "
-      )}`;
-    }
     if (mentions("range", "qualification", "shooting", "pass", "score")) {
       return `Range information: ${knowledge.range.join(" ")}`;
     }
@@ -134,11 +140,8 @@ function AiHelperChat() {
     if (mentions("contact", "phone", "email", "call", "address")) {
       return `You can contact Illinois Protective Services at ${knowledge.business.phone}, ${knowledge.business.email}, and ${knowledge.business.address}.`;
     }
-    if (mentions("law", "laws", "illinois law", "prohibited areas")) {
-      return knowledge.safety;
-    }
 
-    return "I can help with class options, deposits, booking steps, paperwork, FOID and ID document reminders, range qualification, refund policy, and general concealed carry training guidance.";
+    return "I can help with class options, deposits, booking steps, paperwork, range qualification, refund policy, and general concealed carry training guidance.";
   }
 
   function handleSend() {
@@ -324,7 +327,7 @@ function StripeCheckoutForm({ onSuccess, customerName, customerEmail }) {
       <button
         type="submit"
         disabled={!stripe || status === "processing"}
-        className="w-full rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-6 py-4 text-base font-black uppercase tracking-[0.16em] text-white shadow-[0_0_24px_rgba(65,105,225,0.18)] transition hover:bg-[#3558c9] disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-6 py-4 text-base font-black uppercase tracking-[0.16em] text-white transition hover:bg-[#3558c9] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {status === "processing" ? "Processing..." : "Submit Payment"}
       </button>
@@ -374,6 +377,170 @@ function StripePaymentPanel({
         onSuccess={onSuccess}
       />
     </Elements>
+  );
+}
+
+function VerifiedBadge({ label = "Verified Instructor" }) {
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-[#4169e1] shadow-[0_6px_18px_rgba(65,105,225,0.08)]">
+      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#4169e1] text-[10px] text-white">
+        ✓
+      </span>
+      <span>{label}</span>
+    </div>
+  );
+}
+
+function InstructorCard({ imageSrc, imageAlt, name, title, bio1, bio2 }) {
+  return (
+    <div className="overflow-hidden rounded-[2rem] border border-[#d9dee8] bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+      <div className="relative">
+        <img
+          src={imageSrc}
+          alt={imageAlt}
+          className="h-[420px] w-full object-cover"
+        />
+        <div className="absolute left-4 top-4">
+          <VerifiedBadge />
+        </div>
+      </div>
+
+      <div className="p-6">
+        <h3 className="text-2xl font-black uppercase">{name}</h3>
+        <p className="mt-2 text-sm font-bold uppercase tracking-[0.14em] text-[#4169e1]">
+          {title}
+        </p>
+
+        <p className="mt-4 leading-7 text-[#4b5563]">{bio1}</p>
+        <p className="mt-3 leading-7 text-[#4b5563]">{bio2}</p>
+      </div>
+    </div>
+  );
+}
+
+function ExpandableClassCard({
+  service,
+  isSelected,
+  onSelect,
+  onAsk,
+  formatPrice,
+}) {
+  const [open, setOpen] = useState(false);
+  const deposit = Math.round((service.price / 3) * 100) / 100;
+
+  return (
+    <div className="relative overflow-hidden rounded-[2rem] border border-[#d9dee8] bg-white p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,transparent_0%,rgba(65,105,225,0.65)_35%,rgba(220,38,38,0.55)_65%,transparent_100%)]" />
+
+      <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-[#4169e1]">
+        Class Option
+      </div>
+
+      <h3 className="mt-4 text-2xl font-black uppercase">{service.title}</h3>
+      <p className="mt-2 text-sm font-semibold text-[#b42318]">
+        {service.audience}
+      </p>
+      <p className="mt-4 leading-7 text-[#4b5563]">{service.description}</p>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <div className="rounded-2xl border border-[#d9dee8] bg-[#f8fbff] p-4">
+          <div className="text-xs font-black uppercase tracking-[0.14em] text-[#6b7280]">
+            Pricing
+          </div>
+          <div className="mt-2 text-lg font-black text-[#111111]">
+            {formatPrice(service.price)}
+          </div>
+          <div className="text-sm text-[#4169e1]">
+            Deposit {formatPrice(deposit)}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-[#d9dee8] bg-[#fff8f2] p-4">
+          <div className="text-xs font-black uppercase tracking-[0.14em] text-[#6b7280]">
+            Duration
+          </div>
+          <div className="mt-2 text-lg font-black text-[#111111]">
+            {service.duration}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-[#d9dee8] bg-[#f5f8ff] p-4">
+          <div className="text-xs font-black uppercase tracking-[0.14em] text-[#6b7280]">
+            Best For
+          </div>
+          <div className="mt-2 text-sm font-bold text-[#111111]">
+            {service.audience}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 flex flex-wrap gap-3">
+        <button
+          type="button"
+          onClick={() => setOpen((prev) => !prev)}
+          className="rounded-xl border border-[#111111]/10 bg-white px-5 py-3 font-black uppercase tracking-[0.12em] text-[#111111] hover:bg-[#f8fbff]"
+        >
+          {open ? "Hide Details" : "View Details"}
+        </button>
+
+        <button
+          type="button"
+          onClick={onSelect}
+          className={`rounded-xl px-5 py-3 font-black uppercase tracking-[0.12em] transition ${
+            isSelected
+              ? "border border-[#4169e1]/40 bg-[#4169e1] text-white"
+              : "border border-[#4169e1]/40 bg-[#4169e1] text-white hover:bg-[#3558c9]"
+          }`}
+        >
+          Select This Class
+        </button>
+
+        <button
+          type="button"
+          onClick={onAsk}
+          className="rounded-xl border border-[#e85b66]/25 bg-[#fff3f4] px-5 py-3 font-black uppercase tracking-[0.12em] text-[#c2414f] hover:bg-[#ffe8eb]"
+        >
+          Ask A Question
+        </button>
+      </div>
+
+      {open && (
+        <div className="mt-6 grid gap-4 lg:grid-cols-3">
+          <div className="rounded-2xl border border-[#d9dee8] bg-[#f8fbff] p-5">
+            <div className="text-sm font-black uppercase tracking-[0.16em] text-[#4169e1]">
+              Included
+            </div>
+            <ul className="mt-3 space-y-2 text-[#4b5563]">
+              {service.included.map((item) => (
+                <li key={item}>• {item}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="rounded-2xl border border-[#d9dee8] bg-white p-5">
+            <div className="text-sm font-black uppercase tracking-[0.16em] text-[#111111]">
+              Requirements
+            </div>
+            <ul className="mt-3 space-y-2 text-[#4b5563]">
+              {service.requirements.map((item) => (
+                <li key={item}>• {item}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="rounded-2xl border border-[#d9dee8] bg-[#fff8f2] p-5">
+            <div className="text-sm font-black uppercase tracking-[0.16em] text-[#b45309]">
+              Pricing Notes
+            </div>
+            <ul className="mt-3 space-y-2 text-[#4b5563]">
+              {service.pricingNotes.map((item) => (
+                <li key={item}>• {item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -447,12 +614,22 @@ export default function ConcealCarryTrainingWebsite() {
       duration: "1 hr 30 min",
       description:
         "Quick training session designed for basic instruction, refreshers, and introductory firearm safety.",
-      details: [
-        "Mini Class instruction included",
-        "Range fee listed in the packet is $75 and separate from class tuition.",
-        "Required paperwork should be completed in black ink.",
-      ],
       audience: "Great for students wanting a shorter guided session.",
+      included: [
+        "Mini class instruction",
+        "Basic firearm safety guidance",
+        "Hands-on instructor support",
+      ],
+      requirements: [
+        "Completed paperwork in black ink",
+        "State ID or driver's license",
+        "FOID card if applicable",
+      ],
+      pricingNotes: [
+        "Deposit is one-third of class price",
+        "Range fee may apply separately",
+        "No refunds",
+      ],
     },
     {
       id: "3hour",
@@ -461,12 +638,22 @@ export default function ConcealCarryTrainingWebsite() {
       duration: "3 hr",
       description:
         "Renewal training for qualified students who need a 3-hour concealed carry renewal course.",
-      details: [
-        "3-hour renewal instruction included",
-        "Bring your FOID card and renewal documents.",
-        "Late arrival or missed class can trigger a $55 makeup fee.",
-      ],
       audience: "Best for renewal students needing required update training.",
+      included: [
+        "3-hour renewal instruction",
+        "Certificate guidance",
+        "Structured classroom review",
+      ],
+      requirements: [
+        "FOID card",
+        "Renewal documents",
+        "CCL copy if applicable",
+      ],
+      pricingNotes: [
+        "Deposit is one-third of class price",
+        "Late arrival may trigger a $55 makeup fee",
+        "No refunds",
+      ],
     },
     {
       id: "8hour-veteran",
@@ -475,12 +662,22 @@ export default function ConcealCarryTrainingWebsite() {
       duration: "8 hr",
       description:
         "Extended training course for veterans with structured instruction and state-credit considerations.",
-      details: [
-        "8-hour class included",
-        "Veteran students should provide a DD-214 showing honorable discharge.",
-        "Range qualification requires at least 30 hits out of 50 rounds.",
-      ],
       audience: "Designed for qualifying veterans needing 8-hour credit.",
+      included: [
+        "8-hour instruction",
+        "Qualification guidance",
+        "Structured training support",
+      ],
+      requirements: [
+        "DD-214 showing honorable discharge",
+        "State ID or driver's license",
+        "FOID card if applicable",
+      ],
+      pricingNotes: [
+        "Deposit is one-third of class price",
+        "Range qualification standards apply",
+        "No refunds",
+      ],
     },
     {
       id: "16hour",
@@ -489,12 +686,22 @@ export default function ConcealCarryTrainingWebsite() {
       duration: "16 hr",
       description:
         "Full concealed carry license training course for students who need complete instruction.",
-      details: [
-        "16-hour class included",
-        "Students should complete the full packet carefully and neatly in black ink.",
-        "If applicable, range qualification requires a passing score of at least 60 percent.",
-      ],
       audience: "Best for first-time students needing full CCL training.",
+      included: [
+        "16-hour class instruction",
+        "Hands-on training",
+        "Certificate upon completion when requirements are met",
+      ],
+      requirements: [
+        "Completed paperwork in black ink",
+        "State ID or driver's license",
+        "FOID card",
+      ],
+      pricingNotes: [
+        "Deposit is one-third of class price",
+        "Range fee may apply separately",
+        "No refunds",
+      ],
     },
   ];
 
@@ -799,7 +1006,7 @@ export default function ConcealCarryTrainingWebsite() {
             <button
               type="button"
               onClick={() => navigateTo("contact")}
-              className="rounded-full border border-[#4169e1]/40 bg-[#4169e1] px-4 py-2 text-white shadow-[0_0_18px_rgba(65,105,225,0.25)] hover:bg-[#3558c9] transition"
+              className="rounded-full border border-[#4169e1]/40 bg-[#4169e1] px-4 py-2 text-white hover:bg-[#3558c9] transition"
             >
               Contact
             </button>
@@ -824,22 +1031,24 @@ export default function ConcealCarryTrainingWebsite() {
             </div>
 
             <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.06em] sm:text-5xl">
-              Elite Protection Training
+              Premier Firearms Academy in Illinois
             </h1>
 
             <p className="mt-6 max-w-3xl text-lg leading-8 text-[#4b5563]">
-              Illinois Protective Services provides structured concealed carry
-              instruction with a focus on responsible protection, disciplined
-              training, paperwork readiness, and real-world safety awareness.
+              Illinois Protective Services focuses on training responsible
+              citizens to better protect themselves and their loved ones through
+              structured firearms education, USCCA-based training principles,
+              disciplined range expectations, and a supportive learning
+              environment.
             </p>
           </div>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              "Structured booking",
-              "Paperwork and document readiness",
-              "Range qualification guidance",
-              "Professional instruction environment",
+              "USCCA-inspired training approach",
+              "Supportive learning environment",
+              "Clear qualification guidance",
+              "Professional instruction standards",
             ].map((item) => (
               <div key={item} className={cardClass}>
                 <ScanLine />
@@ -848,14 +1057,61 @@ export default function ConcealCarryTrainingWebsite() {
             ))}
           </div>
 
-          <div className="mt-14">
+          <div className="mt-16">
             <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-4 py-2 text-sm font-black uppercase tracking-[0.18em] text-[#4169e1]">
-              Class Photos
+              Meet The Instructors
             </div>
 
-            <h2 className="mt-4 text-3xl font-black uppercase sm:text-4xl">
-              Training In Action
+            <h2 className="mt-4 text-3xl font-black uppercase">
+              Professional Leadership & Real Training Experience
             </h2>
+
+            <div className="mt-10 grid gap-8 md:grid-cols-2">
+              <InstructorCard
+                imageSrc="/instructor-michael.jpg"
+                imageAlt="Michael Wrotten-Simes instructor portrait"
+                name="Michael Wrotten-Simes"
+                title="CEO & Lead Instructor"
+                bio1="Michael Wrotten-Simes is the CEO and lead instructor of Illinois Protective Services, bringing a disciplined and professional approach to firearms training. His focus is on building responsible gun owners through structured instruction, safety-first standards, and practical defensive training."
+                bio2="Known for clear communication and hands-on guidance, Michael works to ensure students leave with confidence, knowledge, and a stronger understanding of firearm responsibility, personal protection, and Illinois training expectations."
+              />
+
+              <InstructorCard
+                imageSrc="/instructor-ron.jpg"
+                imageAlt="Ron Austin instructor portrait"
+                name="Ron Austin"
+                title="Firearms Instructor"
+                bio1="Ron Austin is a dedicated firearms instructor with a strong emphasis on precision, safety, and practical range performance. His calm, professional teaching style helps students build proper technique, awareness, and confidence under instruction."
+                bio2="Ron focuses on making training approachable while maintaining high standards, ensuring students understand not only how to handle a firearm correctly, but how to do so responsibly and with the discipline required for real-world preparedness."
+              />
+            </div>
+          </div>
+
+          <div className="mt-14 rounded-[2rem] border border-[#4169e1]/20 bg-[#f5f8ff] p-8 text-center shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+            <h3 className="text-2xl font-black uppercase">
+              Our Commitment to You
+            </h3>
+
+            <p className="mx-auto mt-4 max-w-3xl text-lg leading-8 text-[#374151]">
+              At Illinois Protective Services, we are committed to training
+              responsible, confident, and prepared individuals. Our mission is
+              to provide clear, professional instruction in a safe and
+              structured environment where every student is treated with
+              respect.
+            </p>
+
+            <p className="mx-auto mt-4 max-w-3xl text-lg leading-8 text-[#374151]">
+              We do not just teach firearm use—we teach accountability,
+              awareness, and discipline. Our goal is to ensure every student
+              leaves not only certified, but fully prepared to protect
+              themselves and their loved ones responsibly.
+            </p>
+          </div>
+
+          <div className="mt-14">
+            <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-4 py-2 text-sm font-black uppercase tracking-[0.18em] text-[#4169e1]">
+              Training In Action
+            </div>
 
             <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {classPhotos.map((photo, index) => (
@@ -884,91 +1140,43 @@ export default function ConcealCarryTrainingWebsite() {
         <NavBar />
         <AiHelperChat />
 
-        <section className="mx-auto max-w-6xl px-6 py-16 md:px-10">
+        <section className="mx-auto max-w-7xl px-6 py-16 md:px-10">
           <BackButton />
 
           <div className="max-w-4xl">
-            <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-4 py-2 text-sm font-black uppercase tracking-[0.2em] text-[#4169e1]">
+            <div className="inline-flex rounded-full border border-[#b42318]/20 bg-[#fff3f4] px-4 py-2 text-sm font-black uppercase tracking-[0.2em] text-[#b42318]">
               Class Services
             </div>
             <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.06em] sm:text-5xl">
-              Available Classes
+              Choose the Right Training Path
             </h1>
             <p className="mt-4 text-lg leading-8 text-[#4b5563]">
-              Review class details, full tuition, deposit amount, and what to
-              expect before selecting your class.
+              Review cleaner class details with included items, requirements,
+              and pricing before booking.
             </p>
           </div>
 
-          <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          <div className="mt-10 grid gap-6">
             {classServices.map((service) => (
-              <div key={service.id} className={cardClass}>
-                <ScanLine />
-                <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-[#4169e1]">
-                  Class Option
-                </div>
-
-                <h2 className="mt-4 text-2xl font-black uppercase">
-                  {service.title}
-                </h2>
-
-                <p className="mt-2 text-sm font-semibold text-[#4169e1]">
-                  {service.audience}
-                </p>
-
-                <p className="mt-4 leading-7 text-[#4b5563]">
-                  {service.description}
-                </p>
-
-                <div className="mt-4 space-y-2 text-[#374151]">
-                  <div>
-                    <span className="font-bold">Full Price:</span>{" "}
-                    {formatPrice(service.price)}
-                  </div>
-                  <div>
-                    <span className="font-bold">Deposit:</span>{" "}
-                    {formatPrice(Math.round((service.price / 3) * 100) / 100)}
-                  </div>
-                  <div>
-                    <span className="font-bold">Duration:</span> {service.duration}
-                  </div>
-                </div>
-
-                <ul className="mt-5 space-y-2 text-[#4b5563]">
-                  {service.details.map((detail) => (
-                    <li key={detail}>• {detail}</li>
-                  ))}
-                </ul>
-
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedService(service.id);
-                      setBookingStep(1);
-                      navigateTo("booking");
-                    }}
-                    className="rounded-xl border border-[#4169e1]/40 bg-[#4169e1] px-5 py-3 font-black uppercase tracking-[0.14em] text-white hover:bg-[#3558c9]"
-                  >
-                    Select This Class
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSelectedService(service.id);
-                      setFormData((prev) => ({
-                        ...prev,
-                        type: service.title,
-                      }));
-                      navigateTo("contact");
-                    }}
-                    className="rounded-xl border border-[#e85b66]/25 bg-[#fff3f4] px-5 py-3 font-black uppercase tracking-[0.14em] text-[#c2414f] hover:bg-[#ffe8eb]"
-                  >
-                    Ask A Question
-                  </button>
-                </div>
-              </div>
+              <ExpandableClassCard
+                key={service.id}
+                service={service}
+                isSelected={selectedService === service.id}
+                onSelect={() => {
+                  setSelectedService(service.id);
+                  setBookingStep(1);
+                  navigateTo("booking");
+                }}
+                onAsk={() => {
+                  setSelectedService(service.id);
+                  setFormData((prev) => ({
+                    ...prev,
+                    type: service.title,
+                  }));
+                  navigateTo("contact");
+                }}
+                formatPrice={formatPrice}
+              />
             ))}
           </div>
         </section>
@@ -1128,7 +1336,7 @@ export default function ConcealCarryTrainingWebsite() {
                 </div>
 
                 <div className="mt-8 relative overflow-hidden rounded-[2rem] border border-[#d9dee8] bg-white p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
-                  <ScanLine />
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,transparent_0%,rgba(65,105,225,0.7)_35%,rgba(220,38,38,0.55)_65%,transparent_100%)]" />
                   <h2 className="text-xl font-black uppercase text-[#4169e1]">
                     Available Time Frames
                   </h2>
@@ -1480,7 +1688,7 @@ export default function ConcealCarryTrainingWebsite() {
       <NavBar />
       <AiHelperChat />
 
-      <section className="relative overflow-hidden border-b border-[#e5e7eb] bg-[radial-gradient(circle_at_top_left,rgba(65,105,225,0.08),transparent_28%),radial-gradient(circle_at_top_right,rgba(232,91,102,0.05),transparent_20%),linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)]">
+      <section className="relative overflow-hidden border-b border-[#e5e7eb] bg-[radial-gradient(circle_at_top_left,rgba(65,105,225,0.08),transparent_28%),radial-gradient(circle_at_top_right,rgba(220,38,38,0.04),transparent_20%),linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)]">
         <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_9px,rgba(88,130,255,0.03)_10px)]" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-20 md:px-10 lg:py-24">
@@ -1504,8 +1712,8 @@ export default function ConcealCarryTrainingWebsite() {
                 </div>
               </div>
 
-              <div className="mt-6 inline-flex rounded-full border border-[#d9dee8] bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-[#4169e1]">
-                Illinois Concealed Carry Training
+              <div className="mt-6 inline-flex rounded-full border border-[#b42318]/20 bg-[#fff3f4] px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-[#b42318]">
+                Expert Instruction • Hands-On Training • Certificate Guidance
               </div>
 
               <h1 className="mt-6 max-w-4xl text-5xl font-black uppercase tracking-[0.06em] text-[#111111] sm:text-6xl lg:text-7xl">
@@ -1551,18 +1759,26 @@ export default function ConcealCarryTrainingWebsite() {
                 "Weekday Scheduling",
                 "Paperwork Guidance",
                 "Range Qualification Support",
-              ].map((item) => (
-                <div
-                  key={item}
-                  className="relative overflow-hidden rounded-[1.5rem] border border-[#d6e4ff] bg-[#edf4ff] p-5 shadow-[0_10px_24px_rgba(15,23,42,0.06)]"
-                >
-                  <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,transparent_0%,rgba(65,105,225,0.7)_50%,transparent_100%)]" />
-                  <div className="text-2xl text-[#4169e1]">★</div>
-                  <div className="mt-3 text-base font-black uppercase tracking-[0.08em] text-[#16325c]">
-                    {item}
+              ].map((item, index) => {
+                const styles = [
+                  "border-[#d6e4ff] bg-[#edf4ff] text-[#16325c]",
+                  "border-[#ffe0cc] bg-[#fff4ec] text-[#7c2d12]",
+                  "border-[#f8d6da] bg-[#fff3f4] text-[#8a1c2e]",
+                  "border-[#d6e4ff] bg-[#edf4ff] text-[#16325c]",
+                ];
+                return (
+                  <div
+                    key={item}
+                    className={`relative overflow-hidden rounded-[1.5rem] border p-5 shadow-[0_10px_24px_rgba(15,23,42,0.06)] ${styles[index]}`}
+                  >
+                    <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,transparent_0%,rgba(65,105,225,0.7)_35%,rgba(220,38,38,0.55)_65%,transparent_100%)]" />
+                    <div className="text-2xl text-[#4169e1]">★</div>
+                    <div className="mt-3 text-base font-black uppercase tracking-[0.08em]">
+                      {item}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
