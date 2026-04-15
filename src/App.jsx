@@ -10,14 +10,18 @@ import {
 function OpeningGate({ onEnter }) {
   return (
     <div className="fixed inset-0 z-[10000] overflow-hidden bg-black">
-      <img
-        src="/opening-flag.jpg"
-        alt="American flag background"
+      <video
         className="absolute inset-0 h-full w-full object-cover"
-      />
-      <div className="absolute inset-0 bg-black/55" />
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(65,105,225,0.08)_0%,transparent_25%,transparent_75%,rgba(65,105,225,0.08)_100%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_9px,rgba(88,130,255,0.06)_10px)]" />
+        autoPlay
+        muted
+        loop
+        playsInline
+      >
+        <source src="/opening-flag.mp4" type="video/mp4" />
+      </video>
+
+      <div className="absolute inset-0 bg-black/45" />
+      <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_9px,rgba(88,130,255,0.05)_10px)]" />
 
       <div className="absolute inset-0 flex items-center justify-center px-6">
         <div className="mx-auto max-w-3xl text-center text-white">
@@ -25,11 +29,11 @@ function OpeningGate({ onEnter }) {
             Illinois Protective Services
           </div>
 
-          <h1 className="text-4xl font-black uppercase tracking-[0.12em] text-white sm:text-5xl md:text-6xl">
+          <h1 className="text-4xl font-black uppercase tracking-[0.12em] sm:text-5xl md:text-6xl">
             Elite Protection Training
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/85 sm:text-lg">
+          <p className="mx-auto mt-6 max-w-2xl text-base leading-8 text-white/90 sm:text-lg">
             Professional concealed carry instruction with disciplined training,
             structured booking, and a confident path to responsible protection.
           </p>
@@ -211,9 +215,9 @@ function AiHelperChat() {
   return (
     <div className="fixed bottom-6 right-6 z-[9999]">
       {open && (
-        <div className="mb-4 w-[390px] overflow-hidden rounded-3xl border border-white/10 bg-[linear-gradient(180deg,#060606_0%,#0c1118_100%)] shadow-[0_25px_70px_rgba(0,0,0,0.6)]">
-          <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_9px,rgba(88,130,255,0.05)_10px)]" />
-          <div className="relative flex items-center justify-between border-b border-[#4169e1]/20 bg-[linear-gradient(90deg,#0b1220_0%,#131b29_100%)] px-5 py-4 text-white">
+        <div className="mb-4 w-[390px] overflow-hidden rounded-3xl border border-[#d9dee8] bg-white shadow-[0_25px_70px_rgba(0,0,0,0.18)]">
+          <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_9px,rgba(88,130,255,0.03)_10px)]" />
+          <div className="relative flex items-center justify-between border-b border-[#d9dee8] bg-black px-5 py-4 text-white">
             <div>
               <div className="text-sm font-black uppercase tracking-[0.22em]">
                 AI Navigator
@@ -252,7 +256,7 @@ function AiHelperChat() {
                     key={index}
                     className={`max-w-[88%] rounded-2xl border px-4 py-3 text-sm leading-6 ${
                       msg.role === "assistant"
-                        ? "border-white/10 bg-white/10 text-white"
+                        ? "border-[#d9dee8] bg-[#f8fbff] text-[#111111]"
                         : "ml-auto border-[#4169e1]/20 bg-[#4169e1] text-white"
                     }`}
                   >
@@ -261,7 +265,7 @@ function AiHelperChat() {
                 ))}
               </div>
 
-              <div className="relative border-t border-white/10 p-3">
+              <div className="relative border-t border-[#d9dee8] p-3">
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -271,7 +275,7 @@ function AiHelperChat() {
                       if (e.key === "Enter") handleSend();
                     }}
                     placeholder="Ask about paperwork, deposits, laws, class details..."
-                    className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white outline-none placeholder:text-white/40"
+                    className="flex-1 rounded-xl border border-[#d9dee8] bg-white px-4 py-3 text-sm text-[#111111] outline-none placeholder:text-[#6b7280]"
                   />
                   <button
                     type="button"
@@ -293,7 +297,7 @@ function AiHelperChat() {
           setOpen((prev) => !prev);
           if (!open) setMinimized(false);
         }}
-        className="flex h-16 w-16 items-center justify-center rounded-full border border-[#4169e1]/40 bg-[#4169e1] text-lg font-black uppercase text-white shadow-[0_0_30px_rgba(65,105,225,0.28)] transition hover:scale-105 hover:bg-[#3558c9]"
+        className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] text-lg font-black uppercase text-white shadow-[0_0_30px_rgba(65,105,225,0.28)] transition hover:scale-105 hover:bg-[#3558c9]"
       >
         AI
       </button>
@@ -354,7 +358,7 @@ function StripeCheckoutForm({ onSuccess, customerName, customerEmail }) {
           value={billingName}
           onChange={(e) => setBillingName(e.target.value)}
           placeholder="Cardholder Name"
-          className="rounded-2xl border border-white/15 bg-black/20 px-4 py-3 text-white outline-none placeholder:text-white/40"
+          className="rounded-2xl border border-[#d9dee8] bg-white px-4 py-3 text-[#111111] outline-none placeholder:text-[#6b7280]"
           required
         />
         <input
@@ -362,17 +366,17 @@ function StripeCheckoutForm({ onSuccess, customerName, customerEmail }) {
           value={billingEmail}
           onChange={(e) => setBillingEmail(e.target.value)}
           placeholder="Email for Receipt"
-          className="rounded-2xl border border-white/15 bg-black/20 px-4 py-3 text-white outline-none placeholder:text-white/40"
+          className="rounded-2xl border border-[#d9dee8] bg-white px-4 py-3 text-[#111111] outline-none placeholder:text-[#6b7280]"
           required
         />
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-black/30 p-4">
+      <div className="rounded-2xl border border-[#d9dee8] bg-white p-4">
         <PaymentElement />
       </div>
 
       {errorMessage ? (
-        <div className="rounded-2xl border border-[#e85b66]/20 bg-[#e85b66]/10 px-4 py-3 text-sm text-red-200">
+        <div className="rounded-2xl border border-[#e85b66]/20 bg-[#fff3f4] px-4 py-3 text-sm text-[#b42318]">
           {errorMessage}
         </div>
       ) : null}
@@ -402,7 +406,7 @@ function StripePaymentPanel({
 
   if (!publishableKey || !clientSecret || !stripePromise) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-white/70">
+      <div className="rounded-2xl border border-[#d9dee8] bg-white p-5 text-[#6b7280]">
         Select a payment option to load secure checkout.
       </div>
     );
@@ -414,11 +418,11 @@ function StripePaymentPanel({
       options={{
         clientSecret,
         appearance: {
-          theme: "night",
+          theme: "stripe",
           variables: {
             colorPrimary: "#4169e1",
-            colorBackground: "#0b1016",
-            colorText: "#ffffff",
+            colorBackground: "#ffffff",
+            colorText: "#111111",
             borderRadius: "16px",
           },
         },
@@ -816,11 +820,11 @@ export default function ConcealCarryTrainingWebsite() {
     "rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-white tracking-[0.14em] hover:border-[#4169e1]/50 hover:bg-[#4169e1]/10 hover:text-[#8ea6ff] transition";
 
   const cardClass =
-    "relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-6 shadow-[0_12px_30px_rgba(0,0,0,0.35)] backdrop-blur-sm";
+    "relative overflow-hidden rounded-[2rem] border border-[#d9dee8] bg-white p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)]";
 
   function ScanLine() {
     return (
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-[linear-gradient(90deg,transparent_0%,rgba(65,105,225,0.7)_50%,transparent_100%)]" />
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-[linear-gradient(90deg,transparent_0%,rgba(65,105,225,0.65)_50%,transparent_100%)]" />
     );
   }
 
@@ -841,7 +845,7 @@ export default function ConcealCarryTrainingWebsite() {
       <button
         type="button"
         onClick={goBack}
-        className="mb-6 rounded-full border border-white/15 bg-white/[0.03] px-4 py-2 text-sm font-bold uppercase tracking-[0.14em] text-white hover:bg-white/10"
+        className="mb-6 rounded-full border border-[#d9dee8] bg-white px-4 py-2 text-sm font-bold uppercase tracking-[0.14em] text-[#111111] hover:bg-[#f8fbff]"
       >
         ← Go Back
       </button>
@@ -850,7 +854,7 @@ export default function ConcealCarryTrainingWebsite() {
 
   function NavBar() {
     return (
-      <div className="sticky top-0 z-50 border-b border-[#4169e1]/15 bg-[linear-gradient(180deg,rgba(0,0,0,0.95),rgba(10,14,20,0.92))] backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.45)]">
+      <div className="sticky top-0 z-50 border-b border-white/10 bg-black shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-[linear-gradient(90deg,transparent_0%,rgba(65,105,225,0.65)_50%,transparent_100%)]" />
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 md:flex-row md:items-center md:justify-between md:px-10 lg:px-12">
           <button
@@ -861,7 +865,7 @@ export default function ConcealCarryTrainingWebsite() {
             <img
               src={LOGO_SRC}
               alt="Illinois Protective Services logo"
-              className="h-12 w-12 rounded-full border border-white/10 bg-white/5 object-cover"
+              className="h-12 w-12 rounded-xl border border-white/10 bg-white object-cover p-1"
             />
             <div>
               <div className="text-sm font-black uppercase tracking-[0.22em] text-white">
@@ -901,7 +905,7 @@ export default function ConcealCarryTrainingWebsite() {
 
   if (page === "about") {
     return (
-      <div className="min-h-screen bg-[#050607] text-white">
+      <div className="min-h-screen bg-white text-[#111111]">
         <NavBar />
         <AiHelperChat />
 
@@ -909,7 +913,7 @@ export default function ConcealCarryTrainingWebsite() {
           <BackButton />
 
           <div className="max-w-4xl">
-            <div className="inline-flex rounded-full border border-[#4169e1]/25 bg-[#4169e1]/10 px-4 py-2 text-sm font-black uppercase tracking-[0.2em] text-[#8ea6ff]">
+            <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-4 py-2 text-sm font-black uppercase tracking-[0.2em] text-[#4169e1]">
               About Us
             </div>
 
@@ -917,7 +921,7 @@ export default function ConcealCarryTrainingWebsite() {
               Elite Protection Training
             </h1>
 
-            <p className="mt-6 max-w-3xl text-lg leading-8 text-white/75">
+            <p className="mt-6 max-w-3xl text-lg leading-8 text-[#4b5563]">
               Illinois Protective Services provides structured concealed carry
               instruction with a focus on responsible protection, disciplined
               training, paperwork readiness, and real-world safety awareness.
@@ -933,13 +937,13 @@ export default function ConcealCarryTrainingWebsite() {
             ].map((item) => (
               <div key={item} className={cardClass}>
                 <ScanLine />
-                {item}
+                <div className="text-[#111111]">{item}</div>
               </div>
             ))}
           </div>
 
           <div className="mt-14">
-            <div className="inline-flex rounded-full border border-[#4169e1]/25 bg-[#4169e1]/10 px-4 py-2 text-sm font-black uppercase tracking-[0.18em] text-[#8ea6ff]">
+            <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-4 py-2 text-sm font-black uppercase tracking-[0.18em] text-[#4169e1]">
               Class Photos
             </div>
 
@@ -951,7 +955,7 @@ export default function ConcealCarryTrainingWebsite() {
               {classPhotos.map((photo, index) => (
                 <div
                   key={index}
-                  className="group overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/[0.03] shadow-[0_12px_30px_rgba(0,0,0,0.28)]"
+                  className="group overflow-hidden rounded-[1.75rem] border border-[#d9dee8] bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)]"
                 >
                   <img
                     src={photo.src}
@@ -970,7 +974,7 @@ export default function ConcealCarryTrainingWebsite() {
 
   if (page === "classes") {
     return (
-      <div className="min-h-screen bg-[#050607] text-white">
+      <div className="min-h-screen bg-white text-[#111111]">
         <NavBar />
         <AiHelperChat />
 
@@ -978,13 +982,13 @@ export default function ConcealCarryTrainingWebsite() {
           <BackButton />
 
           <div className="max-w-4xl">
-            <div className="inline-flex rounded-full border border-[#4169e1]/25 bg-[#4169e1]/10 px-4 py-2 text-sm font-black uppercase tracking-[0.2em] text-[#8ea6ff]">
+            <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-4 py-2 text-sm font-black uppercase tracking-[0.2em] text-[#4169e1]">
               Class Services
             </div>
             <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.06em] sm:text-5xl">
               Available Classes
             </h1>
-            <p className="mt-4 text-lg leading-8 text-white/75">
+            <p className="mt-4 text-lg leading-8 text-[#4b5563]">
               Review class details, full tuition, deposit amount, and what to
               expect before selecting your class.
             </p>
@@ -994,7 +998,7 @@ export default function ConcealCarryTrainingWebsite() {
             {classServices.map((service) => (
               <div key={service.id} className={cardClass}>
                 <ScanLine />
-                <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#4169e1]/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-[#8ea6ff]">
+                <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-[#4169e1]">
                   Class Option
                 </div>
 
@@ -1002,11 +1006,11 @@ export default function ConcealCarryTrainingWebsite() {
                   {service.title}
                 </h2>
 
-                <p className="mt-4 leading-7 text-white/75">
+                <p className="mt-4 leading-7 text-[#4b5563]">
                   {service.description}
                 </p>
 
-                <div className="mt-4 space-y-2 text-white/80">
+                <div className="mt-4 space-y-2 text-[#374151]">
                   <div>
                     <span className="font-bold">Full Price:</span>{" "}
                     {formatPrice(service.price)}
@@ -1020,7 +1024,7 @@ export default function ConcealCarryTrainingWebsite() {
                   </div>
                 </div>
 
-                <ul className="mt-5 space-y-2 text-white/80">
+                <ul className="mt-5 space-y-2 text-[#4b5563]">
                   {service.details.map((detail) => (
                     <li key={detail}>• {detail}</li>
                   ))}
@@ -1049,7 +1053,7 @@ export default function ConcealCarryTrainingWebsite() {
                       }));
                       navigateTo("contact");
                     }}
-                    className="rounded-xl border border-[#e85b66]/35 bg-[#e85b66]/10 px-5 py-3 font-black uppercase tracking-[0.14em] text-[#ffb1b8] hover:bg-[#e85b66]/20"
+                    className="rounded-xl border border-[#e85b66]/25 bg-[#fff3f4] px-5 py-3 font-black uppercase tracking-[0.14em] text-[#c2414f] hover:bg-[#ffe8eb]"
                   >
                     Ask A Question
                   </button>
@@ -1066,7 +1070,7 @@ export default function ConcealCarryTrainingWebsite() {
     const selectedServiceData = getSelectedService();
 
     return (
-      <div className="min-h-screen bg-[#050607] text-white">
+      <div className="min-h-screen bg-white text-[#111111]">
         <NavBar />
         <AiHelperChat />
 
@@ -1074,13 +1078,13 @@ export default function ConcealCarryTrainingWebsite() {
           <BackButton />
 
           <div className="max-w-3xl">
-            <div className="inline-flex rounded-full border border-[#4169e1]/25 bg-[#4169e1]/10 px-4 py-2 text-sm font-black uppercase tracking-[0.2em] text-[#8ea6ff]">
+            <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-4 py-2 text-sm font-black uppercase tracking-[0.2em] text-[#4169e1]">
               Booking
             </div>
             <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.06em] sm:text-5xl">
               Book Your Class
             </h1>
-            <p className="mt-4 text-lg leading-8 text-white/75">
+            <p className="mt-4 text-lg leading-8 text-[#4b5563]">
               Step 1: choose class. Step 2: choose date and time. Step 3:
               review, pay, and confirm.
             </p>
@@ -1096,8 +1100,8 @@ export default function ConcealCarryTrainingWebsite() {
                 key={item.step}
                 className={`relative overflow-hidden rounded-2xl border px-5 py-4 ${
                   bookingStep === item.step
-                    ? "border-[#4169e1] bg-[#4169e1]/15 text-white"
-                    : "border-white/10 bg-white/[0.03] text-white/70"
+                    ? "border-[#4169e1] bg-[#f5f8ff] text-[#111111]"
+                    : "border-[#d9dee8] bg-white text-[#6b7280]"
                 }`}
               >
                 {bookingStep === item.step ? <ScanLine /> : null}
@@ -1123,8 +1127,8 @@ export default function ConcealCarryTrainingWebsite() {
                       onClick={() => setSelectedService(service.id)}
                       className={`rounded-2xl border px-4 py-4 text-left transition ${
                         selectedService === service.id
-                          ? "border-[#4169e1] bg-[#4169e1]/15 text-white"
-                          : "border-white/15 bg-black/20 text-white hover:bg-white/10"
+                          ? "border-[#4169e1] bg-[#f5f8ff] text-[#111111]"
+                          : "border-[#d9dee8] bg-white text-[#111111] hover:bg-[#f8fbff]"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-4">
@@ -1132,7 +1136,7 @@ export default function ConcealCarryTrainingWebsite() {
                           <div className="text-base font-black uppercase">
                             {service.title}
                           </div>
-                          <div className="mt-1 text-sm text-white/80">
+                          <div className="mt-1 text-sm text-[#6b7280]">
                             {service.duration}
                           </div>
                         </div>
@@ -1140,7 +1144,7 @@ export default function ConcealCarryTrainingWebsite() {
                           <div className="text-base font-black">
                             {formatPrice(service.price)}
                           </div>
-                          <div className="text-xs text-white/70">
+                          <div className="text-xs text-[#6b7280]">
                             Deposit{" "}
                             {formatPrice(Math.round((service.price / 3) * 100) / 100)}
                           </div>
@@ -1171,15 +1175,15 @@ export default function ConcealCarryTrainingWebsite() {
             <div className="mt-10 grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
               <div>
                 {selectedServiceData && (
-                  <div className="mb-8 relative overflow-hidden rounded-2xl border border-[#4169e1]/20 bg-[#4169e1]/10 p-5 text-white shadow-[0_12px_30px_rgba(0,0,0,0.28)]">
+                  <div className="mb-8 relative overflow-hidden rounded-2xl border border-[#4169e1]/20 bg-[#f5f8ff] p-5 text-[#111111] shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
                     <ScanLine />
-                    <div className="text-sm font-bold uppercase tracking-[0.2em] text-[#8ea6ff]">
+                    <div className="text-sm font-bold uppercase tracking-[0.2em] text-[#4169e1]">
                       Selected Class
                     </div>
                     <div className="mt-2 text-lg font-black">
                       {selectedServiceData.title}
                     </div>
-                    <div className="mt-1 text-white/80">
+                    <div className="mt-1 text-[#6b7280]">
                       {selectedServiceData.duration} •{" "}
                       {formatPrice(selectedServiceData.price)}
                     </div>
@@ -1200,10 +1204,10 @@ export default function ConcealCarryTrainingWebsite() {
                         disabled={date.disabled}
                         className={`rounded-2xl border px-4 py-4 text-left text-sm font-black uppercase tracking-[0.12em] transition ${
                           date.disabled
-                            ? "cursor-not-allowed border-white/10 bg-white/5 text-white/30 line-through"
+                            ? "cursor-not-allowed border-[#e5e7eb] bg-[#f9fafb] text-[#9ca3af] line-through"
                             : selectedDate === date.value
-                            ? "border-[#4169e1] bg-[#4169e1]/15 text-white"
-                            : "border-white/15 bg-white/[0.03] text-white hover:bg-white/10"
+                            ? "border-[#4169e1] bg-[#f5f8ff] text-[#111111]"
+                            : "border-[#d9dee8] bg-white text-[#111111] hover:bg-[#f8fbff]"
                         }`}
                       >
                         <div>{date.label}</div>
@@ -1215,9 +1219,9 @@ export default function ConcealCarryTrainingWebsite() {
                   </div>
                 </div>
 
-                <div className="mt-8 relative overflow-hidden rounded-[2rem] border border-[#4169e1]/20 bg-[#4169e1]/10 p-6 shadow-[0_12px_30px_rgba(0,0,0,0.28)]">
+                <div className="mt-8 relative overflow-hidden rounded-[2rem] border border-[#d9dee8] bg-white p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
                   <ScanLine />
-                  <h2 className="text-xl font-black uppercase text-[#8ea6ff]">
+                  <h2 className="text-xl font-black uppercase text-[#4169e1]">
                     Available Time Frames
                   </h2>
                   <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -1229,7 +1233,7 @@ export default function ConcealCarryTrainingWebsite() {
                         className={`rounded-2xl border px-4 py-4 text-center text-sm font-black uppercase tracking-[0.12em] transition ${
                           selectedTime === slot
                             ? "border-[#4169e1] bg-[#4169e1] text-white"
-                            : "border-[#4169e1]/30 bg-[#4169e1]/10 text-[#8ea6ff] hover:bg-[#4169e1]/20"
+                            : "border-[#d9dee8] bg-white text-[#4169e1] hover:bg-[#f5f8ff]"
                         }`}
                       >
                         {slot}
@@ -1241,14 +1245,14 @@ export default function ConcealCarryTrainingWebsite() {
 
               <div className={cardClass}>
                 <ScanLine />
-                <div className="inline-flex rounded-full border border-[#4169e1]/25 bg-[#4169e1]/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-[#8ea6ff]">
+                <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-[#4169e1]">
                   Step 2 Summary
                 </div>
                 <h2 className="mt-4 text-2xl font-black uppercase">Review Availability</h2>
 
-                <div className="mt-6 space-y-4 text-white/80">
+                <div className="mt-6 space-y-4 text-[#374151]">
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                    <div className="text-sm uppercase tracking-[0.18em] text-[#6b7280]">
                       Class
                     </div>
                     <div className="mt-1 text-lg font-bold">
@@ -1257,7 +1261,7 @@ export default function ConcealCarryTrainingWebsite() {
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                    <div className="text-sm uppercase tracking-[0.18em] text-[#6b7280]">
                       Full Price
                     </div>
                     <div className="mt-1 text-lg font-bold">
@@ -1266,7 +1270,7 @@ export default function ConcealCarryTrainingWebsite() {
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                    <div className="text-sm uppercase tracking-[0.18em] text-[#6b7280]">
                       Deposit
                     </div>
                     <div className="mt-1 text-lg font-bold">
@@ -1275,7 +1279,7 @@ export default function ConcealCarryTrainingWebsite() {
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                    <div className="text-sm uppercase tracking-[0.18em] text-[#6b7280]">
                       Date
                     </div>
                     <div className="mt-1 text-lg font-bold">
@@ -1284,7 +1288,7 @@ export default function ConcealCarryTrainingWebsite() {
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                    <div className="text-sm uppercase tracking-[0.18em] text-[#6b7280]">
                       Time
                     </div>
                     <div className="mt-1 text-lg font-bold">
@@ -1314,14 +1318,14 @@ export default function ConcealCarryTrainingWebsite() {
             <div className="mt-10 grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
               <div className={cardClass}>
                 <ScanLine />
-                <div className="inline-flex rounded-full border border-[#4169e1]/25 bg-[#4169e1]/10 px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-[#8ea6ff]">
+                <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-[#4169e1]">
                   Step 3
                 </div>
                 <h2 className="mt-4 text-2xl font-black uppercase">Review & Pay</h2>
 
-                <div className="mt-6 space-y-4 text-white/85">
+                <div className="mt-6 space-y-4 text-[#374151]">
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                    <div className="text-sm uppercase tracking-[0.18em] text-[#6b7280]">
                       Class
                     </div>
                     <div className="mt-1 text-lg font-bold">
@@ -1330,7 +1334,7 @@ export default function ConcealCarryTrainingWebsite() {
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                    <div className="text-sm uppercase tracking-[0.18em] text-[#6b7280]">
                       Full Price
                     </div>
                     <div className="mt-1 text-lg font-bold">
@@ -1339,7 +1343,7 @@ export default function ConcealCarryTrainingWebsite() {
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                    <div className="text-sm uppercase tracking-[0.18em] text-[#6b7280]">
                       Deposit
                     </div>
                     <div className="mt-1 text-lg font-bold">
@@ -1348,14 +1352,14 @@ export default function ConcealCarryTrainingWebsite() {
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                    <div className="text-sm uppercase tracking-[0.18em] text-[#6b7280]">
                       Date
                     </div>
                     <div className="mt-1 text-lg font-bold">{formatSelectedDate()}</div>
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                    <div className="text-sm uppercase tracking-[0.18em] text-[#6b7280]">
                       Time
                     </div>
                     <div className="mt-1 text-lg font-bold">
@@ -1363,14 +1367,14 @@ export default function ConcealCarryTrainingWebsite() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-[#e85b66]/20 bg-[#e85b66]/10 p-4 text-sm text-red-100">
+                  <div className="rounded-2xl border border-[#e85b66]/20 bg-[#fff3f4] p-4 text-sm text-[#b42318]">
                     No refunds. Rescheduling requests made with less than 24
                     hours’ notice will result in forfeiture of class credit and
                     require another class payment or deposit.
                   </div>
 
                   <div>
-                    <div className="text-sm uppercase tracking-[0.18em] text-white/50">
+                    <div className="text-sm uppercase tracking-[0.18em] text-[#6b7280]">
                       Payment Type
                     </div>
                     <div className="mt-3 grid gap-3">
@@ -1379,8 +1383,8 @@ export default function ConcealCarryTrainingWebsite() {
                         onClick={() => createPaymentIntent("deposit")}
                         className={`rounded-2xl border px-4 py-4 text-left font-black uppercase tracking-[0.14em] transition ${
                           paymentMode === "deposit"
-                            ? "border-[#4169e1] bg-[#4169e1]/15 text-white"
-                            : "border-white/15 bg-white/[0.03] text-white hover:bg-white/10"
+                            ? "border-[#4169e1] bg-[#f5f8ff] text-[#111111]"
+                            : "border-[#d9dee8] bg-white text-[#111111] hover:bg-[#f8fbff]"
                         }`}
                       >
                         Pay Deposit — {formatPrice(getSelectedDeposit())}
@@ -1391,8 +1395,8 @@ export default function ConcealCarryTrainingWebsite() {
                         onClick={() => createPaymentIntent("full")}
                         className={`rounded-2xl border px-4 py-4 text-left font-black uppercase tracking-[0.14em] transition ${
                           paymentMode === "full"
-                            ? "border-[#4169e1] bg-[#4169e1]/15 text-white"
-                            : "border-white/15 bg-white/[0.03] text-white hover:bg-white/10"
+                            ? "border-[#4169e1] bg-[#f5f8ff] text-[#111111]"
+                            : "border-[#d9dee8] bg-white text-[#111111] hover:bg-[#f8fbff]"
                         }`}
                       >
                         Pay Full Amount — {formatPrice(getSelectedPrice())}
@@ -1401,7 +1405,7 @@ export default function ConcealCarryTrainingWebsite() {
                   </div>
 
                   {paymentCompleted ? (
-                    <div className="rounded-2xl border border-[#4169e1]/20 bg-[#4169e1]/10 p-4 text-sm text-[#b8c8ff]">
+                    <div className="rounded-2xl border border-[#4169e1]/20 bg-[#f5f8ff] p-4 text-sm text-[#3558c9]">
                       Payment completed successfully.
                     </div>
                   ) : null}
@@ -1421,13 +1425,13 @@ export default function ConcealCarryTrainingWebsite() {
                 <h2 className="text-2xl font-black uppercase">Secure Payment</h2>
 
                 {loadingPaymentIntent ? (
-                  <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] p-5 text-white/70">
+                  <div className="mt-6 rounded-2xl border border-[#d9dee8] bg-white p-5 text-[#6b7280]">
                     Loading secure payment form...
                   </div>
                 ) : null}
 
                 {paymentLoadError ? (
-                  <div className="mt-6 rounded-2xl border border-[#e85b66]/20 bg-[#e85b66]/10 p-5 text-red-200">
+                  <div className="mt-6 rounded-2xl border border-[#e85b66]/20 bg-[#fff3f4] p-5 text-[#b42318]">
                     {paymentLoadError}
                   </div>
                 ) : null}
@@ -1443,7 +1447,7 @@ export default function ConcealCarryTrainingWebsite() {
                 </div>
 
                 {paymentIntentId ? (
-                  <div className="mt-4 rounded-2xl border border-[#4169e1]/20 bg-[#4169e1]/10 p-4 text-sm text-[#b8c8ff]">
+                  <div className="mt-4 rounded-2xl border border-[#4169e1]/20 bg-[#f5f8ff] p-4 text-sm text-[#3558c9]">
                     Payment recorded: {paymentIntentId}
                   </div>
                 ) : null}
@@ -1457,7 +1461,7 @@ export default function ConcealCarryTrainingWebsite() {
 
   if (page === "contact") {
     return (
-      <div className="min-h-screen bg-[#050607] text-white">
+      <div className="min-h-screen bg-white text-[#111111]">
         <NavBar />
         <AiHelperChat />
 
@@ -1465,7 +1469,7 @@ export default function ConcealCarryTrainingWebsite() {
           <BackButton />
 
           <div className="max-w-3xl">
-            <div className="inline-flex rounded-full border border-[#4169e1]/25 bg-[#4169e1]/10 px-4 py-2 text-sm font-black uppercase tracking-[0.2em] text-[#8ea6ff]">
+            <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-4 py-2 text-sm font-black uppercase tracking-[0.2em] text-[#4169e1]">
               Contact
             </div>
             <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.06em] sm:text-5xl">
@@ -1477,17 +1481,17 @@ export default function ConcealCarryTrainingWebsite() {
             <div className={cardClass}>
               <ScanLine />
               <h2 className="text-2xl font-black uppercase">Contact Details</h2>
-              <div className="mt-6 space-y-4 text-lg text-white/85">
+              <div className="mt-6 space-y-4 text-lg text-[#374151]">
                 <p>
-                  <span className="font-bold text-white">Phone:</span> (224)
+                  <span className="font-bold text-[#111111]">Phone:</span> (224)
                   248-7021
                 </p>
                 <p className="break-all">
-                  <span className="font-bold text-white">Email:</span>{" "}
+                  <span className="font-bold text-[#111111]">Email:</span>{" "}
                   support@illinoisprotectiveservices.com
                 </p>
                 <p>
-                  <span className="font-bold text-white">Address:</span> 7601 S.
+                  <span className="font-bold text-[#111111]">Address:</span> 7601 S.
                   Cicero Ave, Chicago, IL 60652
                 </p>
               </div>
@@ -1502,7 +1506,7 @@ export default function ConcealCarryTrainingWebsite() {
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
-                  className="rounded-2xl border border-white/15 bg-black/20 px-5 py-4 text-white placeholder:text-white/40 outline-none"
+                  className="rounded-2xl border border-[#d9dee8] bg-white px-5 py-4 text-[#111111] placeholder:text-[#6b7280] outline-none"
                   placeholder="Full Name"
                 />
                 <input
@@ -1510,7 +1514,7 @@ export default function ConcealCarryTrainingWebsite() {
                   onChange={(e) =>
                     setFormData({ ...formData, phone: e.target.value })
                   }
-                  className="rounded-2xl border border-white/15 bg-black/20 px-5 py-4 text-white placeholder:text-white/40 outline-none"
+                  className="rounded-2xl border border-[#d9dee8] bg-white px-5 py-4 text-[#111111] placeholder:text-[#6b7280] outline-none"
                   placeholder="Phone Number"
                 />
                 <input
@@ -1518,7 +1522,7 @@ export default function ConcealCarryTrainingWebsite() {
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
-                  className="rounded-2xl border border-white/15 bg-black/20 px-5 py-4 text-white placeholder:text-white/40 outline-none"
+                  className="rounded-2xl border border-[#d9dee8] bg-white px-5 py-4 text-[#111111] placeholder:text-[#6b7280] outline-none"
                   placeholder="Email Address"
                 />
                 <select
@@ -1526,7 +1530,7 @@ export default function ConcealCarryTrainingWebsite() {
                   onChange={(e) =>
                     setFormData({ ...formData, type: e.target.value })
                   }
-                  className="rounded-2xl border border-white/15 bg-black/20 px-5 py-4 text-white outline-none"
+                  className="rounded-2xl border border-[#d9dee8] bg-white px-5 py-4 text-[#111111] outline-none"
                 >
                   <option value="">Select Training Type</option>
                   <option>Mini Class</option>
@@ -1539,7 +1543,7 @@ export default function ConcealCarryTrainingWebsite() {
                   onChange={(e) =>
                     setFormData({ ...formData, message: e.target.value })
                   }
-                  className="min-h-[140px] rounded-2xl border border-white/15 bg-black/20 px-5 py-4 text-white placeholder:text-white/40 outline-none"
+                  className="min-h-[140px] rounded-2xl border border-[#d9dee8] bg-white px-5 py-4 text-[#111111] placeholder:text-[#6b7280] outline-none"
                   placeholder="Questions about paperwork, eligibility, scheduling, or training"
                 />
                 <button
@@ -1551,7 +1555,7 @@ export default function ConcealCarryTrainingWebsite() {
                 </button>
 
                 {submitted ? (
-                  <div className="rounded-2xl border border-[#4169e1]/20 bg-[#4169e1]/10 px-5 py-4 font-bold text-[#b8c8ff]">
+                  <div className="rounded-2xl border border-[#4169e1]/20 bg-[#f5f8ff] px-5 py-4 font-bold text-[#3558c9]">
                     Request submitted successfully.
                   </div>
                 ) : null}
@@ -1564,42 +1568,41 @@ export default function ConcealCarryTrainingWebsite() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050607] text-white">
+    <div className="min-h-screen bg-white text-[#111111]">
       <NavBar />
       <AiHelperChat />
 
-      <section className="relative overflow-hidden border-b border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(65,105,225,0.14),transparent_28%),radial-gradient(circle_at_top_right,rgba(232,91,102,0.08),transparent_22%),linear-gradient(180deg,#050607_0%,#0b0e13_55%,#121720_100%)]">
-        <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_9px,rgba(88,130,255,0.04)_10px)]" />
-        <div className="absolute inset-0 opacity-[0.08] bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.06)_50%,transparent_100%)]" />
+      <section className="relative overflow-hidden border-b border-[#e5e7eb] bg-[radial-gradient(circle_at_top_left,rgba(65,105,225,0.08),transparent_28%),radial-gradient(circle_at_top_right,rgba(232,91,102,0.05),transparent_20%),linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)]">
+        <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_9px,rgba(88,130,255,0.03)_10px)]" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-20 md:px-10 lg:py-24">
           <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
             <div>
-              <div className="inline-flex rounded-full border border-[#4169e1]/30 bg-[#4169e1]/10 px-4 py-3">
+              <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-4 py-3">
                 <div className="flex items-center gap-4">
                   <img
                     src={LOGO_SRC}
                     alt="Illinois Protective Services logo"
-                    className="h-14 w-14 rounded-full border border-white/10 bg-white/5 object-cover"
+                    className="h-14 w-14 rounded-2xl border border-[#d9dee8] bg-white object-cover p-1"
                   />
                   <div className="text-left">
-                    <div className="text-sm font-black uppercase tracking-[0.22em] text-white">
+                    <div className="text-sm font-black uppercase tracking-[0.22em] text-[#111111]">
                       Illinois Protective
                     </div>
-                    <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#8ea6ff]">
+                    <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#4169e1]">
                       Services
                     </div>
                   </div>
                 </div>
               </div>
 
-              <h1 className="mt-6 max-w-4xl text-5xl font-black uppercase tracking-[0.06em] text-white sm:text-6xl lg:text-7xl">
+              <h1 className="mt-6 max-w-4xl text-5xl font-black uppercase tracking-[0.06em] text-[#111111] sm:text-6xl lg:text-7xl">
                 Elite Protection Training
               </h1>
 
               <StarRow />
 
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-white/75 sm:text-xl">
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-[#4b5563] sm:text-xl">
                 Professional concealed carry instruction with disciplined
                 booking, practical firearms education, and a confident path to
                 responsible protection.
@@ -1619,7 +1622,7 @@ export default function ConcealCarryTrainingWebsite() {
                     setBookingStep(1);
                     navigateTo("booking");
                   }}
-                  className="rounded-2xl border border-[#e85b66]/35 bg-[#e85b66]/10 px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-[#ffb1b8] transition hover:bg-[#e85b66]/20"
+                  className="rounded-2xl border border-[#d9dee8] bg-white px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-[#111111] transition hover:bg-[#f8fbff]"
                 >
                   Book Now
                 </button>
@@ -1644,10 +1647,10 @@ export default function ConcealCarryTrainingWebsite() {
         </div>
       </section>
 
-      <section className="border-y border-white/10 bg-white/[0.03]">
+      <section className="border-y border-[#e5e7eb] bg-[#fbfcfe]">
         <div className="mx-auto max-w-7xl px-6 py-16 md:px-10">
           <div className="max-w-3xl">
-            <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#8ea6ff]">
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#4169e1]">
               Why Train With Us
             </p>
             <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
@@ -1676,7 +1679,7 @@ export default function ConcealCarryTrainingWebsite() {
                 <h3 className="mt-4 text-2xl font-black uppercase">
                   {item.title}
                 </h3>
-                <p className="mt-3 leading-7 text-white/75">{item.text}</p>
+                <p className="mt-3 leading-7 text-[#4b5563]">{item.text}</p>
               </div>
             ))}
           </div>
@@ -1685,7 +1688,7 @@ export default function ConcealCarryTrainingWebsite() {
 
       <section className="mx-auto max-w-7xl px-6 py-16 md:px-10">
         <div className="max-w-3xl">
-          <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#8ea6ff]">
+          <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#4169e1]">
             How It Works
           </p>
           <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
@@ -1717,30 +1720,30 @@ export default function ConcealCarryTrainingWebsite() {
                 {item.step}
               </div>
               <h3 className="mt-5 text-2xl font-black uppercase">{item.title}</h3>
-              <p className="mt-3 leading-7 text-white/75">{item.text}</p>
+              <p className="mt-3 leading-7 text-[#4b5563]">{item.text}</p>
             </div>
           ))}
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-6 py-16 md:px-10">
-        <div className="relative overflow-hidden rounded-[2rem] border border-[#e85b66]/20 bg-[#e85b66]/10 p-8">
+        <div className="relative overflow-hidden rounded-[2rem] border border-[#e85b66]/20 bg-[#fff3f4] p-8">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-[linear-gradient(90deg,transparent_0%,rgba(232,91,102,0.7)_50%,transparent_100%)]" />
-          <div className="inline-flex rounded-full border border-[#e85b66]/30 bg-[#e85b66] px-4 py-2 text-sm font-black uppercase tracking-[0.18em] text-white">
+          <div className="inline-flex rounded-full border border-[#e85b66]/25 bg-[#e85b66] px-4 py-2 text-sm font-black uppercase tracking-[0.18em] text-white">
             Refund & Rescheduling Policy
           </div>
 
-          <div className="mt-6 space-y-5 leading-8 text-white/85">
+          <div className="mt-6 space-y-5 leading-8 text-[#4b5563]">
             <p>
               We understand that unexpected situations may arise. If you are unable
               to attend your scheduled class, please notify the instructor at
-              least <span className="font-bold text-white">24 hours in advance</span>{" "}
+              least <span className="font-bold text-[#111111]">24 hours in advance</span>{" "}
               to retain full credit toward a future class date.
             </p>
 
             <p>
               Rescheduling requests made with{" "}
-              <span className="font-bold text-white">
+              <span className="font-bold text-[#111111]">
                 less than 24 hours’ notice
               </span>{" "}
               will result in the forfeiture of your class credit. In these cases,
@@ -1755,10 +1758,10 @@ export default function ConcealCarryTrainingWebsite() {
         </div>
       </section>
 
-      <section className="border-y border-white/10 bg-white/[0.03]">
+      <section className="border-y border-[#e5e7eb] bg-[#fbfcfe]">
         <div className="mx-auto max-w-7xl px-6 py-16 md:px-10">
           <div className="max-w-3xl">
-            <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#8ea6ff]">
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#4169e1]">
               Testimonials
             </p>
             <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
@@ -1770,8 +1773,8 @@ export default function ConcealCarryTrainingWebsite() {
             {testimonials.map((t) => (
               <div key={t.name} className={cardClass}>
                 <ScanLine />
-                <p className="leading-7 text-white/80">“{t.text}”</p>
-                <div className="mt-4 text-sm font-bold uppercase tracking-[0.14em] text-[#8ea6ff]">
+                <p className="leading-7 text-[#4b5563]">“{t.text}”</p>
+                <div className="mt-4 text-sm font-bold uppercase tracking-[0.14em] text-[#4169e1]">
                   — {t.name}
                 </div>
               </div>
@@ -1784,23 +1787,23 @@ export default function ConcealCarryTrainingWebsite() {
         <div className="grid gap-8 lg:grid-cols-[1fr_1fr]">
           <div className={cardClass}>
             <ScanLine />
-            <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#8ea6ff]">
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#4169e1]">
               Contact
             </p>
             <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
               Need Help Before Booking?
             </h2>
-            <div className="mt-6 space-y-4 text-lg text-white/85">
+            <div className="mt-6 space-y-4 text-lg text-[#374151]">
               <p>
-                <span className="font-bold text-white">Phone:</span> (224)
+                <span className="font-bold text-[#111111]">Phone:</span> (224)
                 248-7021
               </p>
               <p className="break-all">
-                <span className="font-bold text-white">Email:</span>{" "}
+                <span className="font-bold text-[#111111]">Email:</span>{" "}
                 support@illinoisprotectiveservices.com
               </p>
               <p>
-                <span className="font-bold text-white">Address:</span> 7601 S.
+                <span className="font-bold text-[#111111]">Address:</span> 7601 S.
                 Cicero Ave, Chicago, IL 60652
               </p>
             </div>
@@ -1815,7 +1818,7 @@ export default function ConcealCarryTrainingWebsite() {
 
           <div className={cardClass}>
             <ScanLine />
-            <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#8ea6ff]">
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#4169e1]">
               FAQ
             </p>
             <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
@@ -1825,7 +1828,7 @@ export default function ConcealCarryTrainingWebsite() {
               {faqs.map((faq) => (
                 <div key={faq.q}>
                   <h3 className="text-lg font-black">{faq.q}</h3>
-                  <p className="mt-2 leading-7 text-white/75">{faq.a}</p>
+                  <p className="mt-2 leading-7 text-[#4b5563]">{faq.a}</p>
                 </div>
               ))}
             </div>
@@ -1833,8 +1836,8 @@ export default function ConcealCarryTrainingWebsite() {
         </div>
       </section>
 
-      <footer className="border-t border-white/10 bg-black">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-8 text-sm text-white/55 md:flex-row md:items-center md:justify-between md:px-10">
+      <footer className="border-t border-white/10 bg-black text-white">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-8 text-sm text-white/70 md:flex-row md:items-center md:justify-between md:px-10">
           <p>© 2026 Illinois Protective Services. All rights reserved.</p>
           <p>Responsible training. Professional instruction. Convenient scheduling.</p>
         </div>
