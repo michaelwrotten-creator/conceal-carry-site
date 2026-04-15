@@ -12,7 +12,7 @@ function OpeningGate({ onEnter }) {
 
   useEffect(() => {
     if (videoRef.current) {
-      videoRef.current.playbackRate = 0.6;
+      videoRef.current.playbackRate = 0.45;
     }
   }, []);
 
@@ -29,8 +29,9 @@ function OpeningGate({ onEnter }) {
         <source src="/opening-flag.mp4" type="video/mp4" />
       </video>
 
-      <div className="absolute inset-0 bg-black/55" />
-      <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_9px,rgba(88,130,255,0.05)_10px)]" />
+      <div className="absolute inset-0 bg-black/58" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(65,105,225,0.14),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(220,38,38,0.10),transparent_24%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_10px,rgba(255,255,255,0.03)_11px)]" />
 
       <div className="absolute inset-0 flex items-center justify-center px-6">
         <div className="mx-auto max-w-4xl text-center text-white">
@@ -38,8 +39,8 @@ function OpeningGate({ onEnter }) {
             Illinois Protective Services
           </div>
 
-          <h1 className="text-4xl font-black uppercase tracking-[0.12em] sm:text-5xl md:text-6xl">
-            Elite Protection Training
+          <h1 className="text-5xl font-black uppercase tracking-[0.18em] sm:text-6xl md:text-7xl">
+            Welcome!
           </h1>
 
           <p className="mx-auto mt-6 max-w-3xl text-base leading-8 text-white/90 sm:text-lg">
@@ -57,7 +58,7 @@ function OpeningGate({ onEnter }) {
             onClick={onEnter}
             className="mt-8 rounded-full border border-[#4169e1]/40 bg-[#4169e1] px-8 py-4 text-sm font-black uppercase tracking-[0.18em] text-white shadow-[0_0_30px_rgba(65,105,225,0.28)] transition hover:scale-[1.02] hover:bg-[#3558c9]"
           >
-            Enter Site
+            Click Here To Explore!
           </button>
         </div>
       </div>
@@ -778,17 +779,6 @@ export default function ConcealCarryTrainingWebsite() {
     };
   }, []);
 
-  if (showOpeningGate) {
-    return (
-      <OpeningGate
-        onEnter={() => {
-          sessionStorage.setItem("ips_opened", "yes");
-          setShowOpeningGate(false);
-        }}
-      />
-    );
-  }
-
   function navigateTo(nextPage) {
     setPageHistory((prev) => [...prev, nextPage]);
     setPage(nextPage);
@@ -967,9 +957,9 @@ export default function ConcealCarryTrainingWebsite() {
 
   function NavBar() {
     return (
-      <div className="sticky top-0 z-50 border-b border-white/10 bg-black shadow-[0_10px_30px_rgba(0,0,0,0.18)]">
+      <div className="sticky top-0 z-50 border-b border-white/10 bg-black shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-[linear-gradient(90deg,transparent_0%,rgba(65,105,225,0.65)_50%,transparent_100%)]" />
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-4 md:flex-row md:items-center md:justify-between md:px-10 lg:px-12">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-3 md:px-10 lg:px-12">
           <button
             type="button"
             onClick={() => navigateTo("home")}
@@ -978,19 +968,19 @@ export default function ConcealCarryTrainingWebsite() {
             <img
               src={LOGO_SRC}
               alt="Illinois Protective Services logo"
-              className="h-12 w-12 rounded-xl border border-white/10 bg-white object-cover p-1"
+              className="h-11 w-11 rounded-xl border border-white/10 bg-white object-cover p-1"
             />
-            <div>
-              <div className="text-sm font-black uppercase tracking-[0.22em] text-white">
+            <div className="leading-tight">
+              <div className="text-sm font-black uppercase tracking-[0.18em] text-white">
                 Illinois Protective
               </div>
-              <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#8ea6ff]">
+              <div className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#8ea6ff]">
                 Services
               </div>
             </div>
           </button>
 
-          <div className="flex flex-wrap gap-3 text-sm font-bold uppercase tracking-wide">
+          <div className="hidden flex-wrap gap-3 text-sm font-bold uppercase tracking-wide md:flex">
             <button type="button" onClick={() => navigateTo("home")} className={navButtonClass}>
               Home
             </button>
@@ -1012,13 +1002,46 @@ export default function ConcealCarryTrainingWebsite() {
             </button>
           </div>
         </div>
+
+        <div className="flex flex-wrap gap-2 px-4 pb-3 md:hidden">
+          <button type="button" onClick={() => navigateTo("home")} className={navButtonClass}>
+            Home
+          </button>
+          <button type="button" onClick={() => navigateTo("about")} className={navButtonClass}>
+            About
+          </button>
+          <button type="button" onClick={() => navigateTo("classes")} className={navButtonClass}>
+            Classes
+          </button>
+          <button type="button" onClick={() => navigateTo("booking")} className={navButtonClass}>
+            Book
+          </button>
+          <button
+            type="button"
+            onClick={() => navigateTo("contact")}
+            className="rounded-full border border-[#4169e1]/40 bg-[#4169e1] px-4 py-2 text-white transition hover:bg-[#3558c9]"
+          >
+            Contact
+          </button>
+        </div>
       </div>
+    );
+  }
+
+  if (showOpeningGate) {
+    return (
+      <OpeningGate
+        onEnter={() => {
+          sessionStorage.setItem("ips_opened", "yes");
+          setShowOpeningGate(false);
+        }}
+      />
     );
   }
 
   if (page === "about") {
     return (
-      <div className="min-h-screen bg-white text-[#111111]">
+      <div className="min-h-screen bg-[linear-gradient(180deg,#fffdfd_0%,#f7f9ff_38%,#fffaf8_100%)] text-[#111111]">
         <NavBar />
         <AiHelperChat />
 
@@ -1068,7 +1091,7 @@ export default function ConcealCarryTrainingWebsite() {
 
             <div className="mt-10 grid gap-8 md:grid-cols-2">
               <InstructorCard
-                imageSrc="/instructor-michael.jpg"
+                imageSrc="/instructor-michael.jpeg"
                 imageAlt="Michael Wrotten-Simes instructor portrait"
                 name="Michael Wrotten-Simes"
                 title="CEO & Lead Instructor"
@@ -1077,7 +1100,7 @@ export default function ConcealCarryTrainingWebsite() {
               />
 
               <InstructorCard
-                imageSrc="/instructor-ron.jpg"
+                imageSrc="/instructor-ron.jpeg"
                 imageAlt="Ron Austin instructor portrait"
                 name="Ron Austin"
                 title="Firearms Instructor"
@@ -1136,7 +1159,7 @@ export default function ConcealCarryTrainingWebsite() {
 
   if (page === "classes") {
     return (
-      <div className="min-h-screen bg-white text-[#111111]">
+      <div className="min-h-screen bg-[linear-gradient(180deg,#fffdfd_0%,#f7f9ff_38%,#fffaf8_100%)] text-[#111111]">
         <NavBar />
         <AiHelperChat />
 
@@ -1186,7 +1209,7 @@ export default function ConcealCarryTrainingWebsite() {
 
   if (page === "booking") {
     return (
-      <div className="min-h-screen bg-white text-[#111111]">
+      <div className="min-h-screen bg-[linear-gradient(180deg,#fffdfd_0%,#f7f9ff_38%,#fffaf8_100%)] text-[#111111]">
         <NavBar />
         <AiHelperChat />
 
@@ -1577,7 +1600,7 @@ export default function ConcealCarryTrainingWebsite() {
 
   if (page === "contact") {
     return (
-      <div className="min-h-screen bg-white text-[#111111]">
+      <div className="min-h-screen bg-[linear-gradient(180deg,#fffdfd_0%,#f7f9ff_38%,#fffaf8_100%)] text-[#111111]">
         <NavBar />
         <AiHelperChat />
 
@@ -1684,11 +1707,11 @@ export default function ConcealCarryTrainingWebsite() {
   }
 
   return (
-    <div className="min-h-screen bg-white text-[#111111]">
+    <div className="min-h-screen bg-[linear-gradient(180deg,#fffdfd_0%,#f7f9ff_38%,#fffaf8_100%)] text-[#111111]">
       <NavBar />
       <AiHelperChat />
 
-      <section className="relative overflow-hidden border-b border-[#e5e7eb] bg-[radial-gradient(circle_at_top_left,rgba(65,105,225,0.08),transparent_28%),radial-gradient(circle_at_top_right,rgba(220,38,38,0.04),transparent_20%),linear-gradient(180deg,#ffffff_0%,#f8fbff_100%)]">
+      <section className="relative overflow-hidden border-b border-[#e5e7eb] bg-[radial-gradient(circle_at_top_left,rgba(65,105,225,0.10),transparent_28%),radial-gradient(circle_at_top_right,rgba(220,38,38,0.06),transparent_22%),radial-gradient(circle_at_bottom_center,rgba(255,255,255,0.7),transparent_40%),linear-gradient(180deg,#fffefe_0%,#f5f8ff_45%,#fff8f5_100%)]">
         <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_9px,rgba(88,130,255,0.03)_10px)]" />
 
         <div className="relative mx-auto max-w-7xl px-6 py-20 md:px-10 lg:py-24">
@@ -1810,7 +1833,7 @@ export default function ConcealCarryTrainingWebsite() {
         </div>
       </section>
 
-      <section className="border-y border-[#e5e7eb] bg-[#fbfcfe]">
+      <section className="border-y border-[#e5e7eb] bg-[linear-gradient(180deg,#fbfcfe_0%,#f7f9ff_100%)]">
         <div className="mx-auto max-w-7xl px-6 py-16 md:px-10">
           <div className="max-w-3xl">
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#4169e1]">
@@ -1954,7 +1977,7 @@ export default function ConcealCarryTrainingWebsite() {
         </div>
       </section>
 
-      <section className="border-y border-[#e5e7eb] bg-[#fbfcfe]">
+      <section className="border-y border-[#e5e7eb] bg-[linear-gradient(180deg,#fbfcfe_0%,#f7f9ff_100%)]">
         <div className="mx-auto max-w-7xl px-6 py-16 md:px-10">
           <div className="max-w-3xl">
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#4169e1]">
