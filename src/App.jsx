@@ -64,30 +64,10 @@ function AiHelperChat() {
 
   const knowledge = {
     services: [
-      {
-        title: "Mini Class",
-        price: 50,
-        deposit: 16.67,
-        duration: "1 hr 30 min",
-      },
-      {
-        title: "3-Hour Renewal Course",
-        price: 75,
-        deposit: 25.0,
-        duration: "3 hr",
-      },
-      {
-        title: "8-Hours Class Veteran",
-        price: 100,
-        deposit: 33.33,
-        duration: "8 hr",
-      },
-      {
-        title: "16-Hour CCL Course",
-        price: 225,
-        deposit: 75.0,
-        duration: "16 hr",
-      },
+      { title: "Mini Class", price: 50, deposit: 16.67, duration: "1 hr 30 min" },
+      { title: "3-Hour Renewal Course", price: 75, deposit: 25.0, duration: "3 hr" },
+      { title: "8-Hours Class Veteran", price: 100, deposit: 33.33, duration: "8 hr" },
+      { title: "16-Hour CCL Course", price: 225, deposit: 75.0, duration: "16 hr" },
     ],
     business: {
       phone: "(224) 248-7021",
@@ -102,22 +82,11 @@ function AiHelperChat() {
       "Renewal students should also have a copy of their CCL added to the class folder.",
       "Incomplete paperwork can delay certificate processing.",
     ],
-    studentNotices: [
-      "If you miss class or range for any reason, there is a $55 makeup fee.",
-      "Late arrival to class or range results in a $55 makeup fee.",
-      "Shotgun can be added to training for an additional $75 and should be requested the day before range day.",
-      "Cell phone use is prohibited during instructional time unless approved by the instructor.",
-      "No audio or video recording is permitted.",
-      "A replacement state training certificate costs $75.",
-    ],
     range: [
       "Range fee listed in the packet is $75 due upfront and noted as non-refundable.",
       "Students must pass the shooting qualification with at least 60 percent.",
       "Students must hit at least 30 rounds out of 50 total rounds.",
-      "Qualification stages include 5, 7, and 10 yards, with optional one-handed stages.",
     ],
-    veteran:
-      "Veterans seeking the 8-hour credit should provide a DD-214 showing honorable discharge.",
     refundPolicy:
       "No refunds. If a student cannot attend, they must notify the instructor at least 24 hours before class to keep credit for the next available class and pay a $55 rescheduling fee before the next scheduled class. Rescheduling with less than 24 hours' notice results in forfeiture of class credit and the student must pay for another class or deposit.",
     safety:
@@ -142,62 +111,34 @@ function AiHelperChat() {
     if (mentions("class", "service", "services", "options")) {
       return `Available training options: ${formatServices()}.`;
     }
-
     if (mentions("deposit", "price", "cost", "payment")) {
       return `Current class pricing: ${formatServices()}. Deposits are set at one-third of the listed class price.`;
     }
-
     if (mentions("book", "booking", "schedule")) {
       return `Booking is done in three steps: choose a class, choose date and time, then review, pay, and confirm. Booking hours are ${knowledge.business.bookingHours}`;
     }
-
     if (mentions("paperwork", "forms", "packet", "black ink")) {
       return `Paperwork reminders: ${knowledge.paperwork.join(" ")}`;
     }
-
     if (mentions("foid", "driver", "license", "id copy", "documents")) {
       return `Students should bring and provide copies of required identification and firearms documents. ${knowledge.paperwork.join(
         " "
       )}`;
     }
-
     if (mentions("range", "qualification", "shooting", "pass", "score")) {
       return `Range information: ${knowledge.range.join(" ")}`;
     }
-
-    if (mentions("makeup", "late", "miss class")) {
-      return `Attendance notice: ${knowledge.studentNotices[0]} ${knowledge.studentNotices[1]}`;
-    }
-
-    if (mentions("shotgun")) {
-      return knowledge.studentNotices[2];
-    }
-
-    if (mentions("record", "recording", "video", "audio")) {
-      return knowledge.studentNotices[4];
-    }
-
-    if (mentions("certificate", "replacement certificate")) {
-      return `Certificate note: students receive one state training certificate after successful completion, and a replacement certificate fee is $75.`;
-    }
-
-    if (mentions("veteran", "dd214", "dd-214")) {
-      return knowledge.veteran;
-    }
-
     if (mentions("refund", "reschedule", "policy")) {
       return knowledge.refundPolicy;
     }
-
     if (mentions("contact", "phone", "email", "call", "address")) {
       return `You can contact Illinois Protective Services at ${knowledge.business.phone}, ${knowledge.business.email}, and ${knowledge.business.address}.`;
     }
-
     if (mentions("law", "laws", "illinois law", "prohibited areas")) {
       return knowledge.safety;
     }
 
-    return "I can help with class options, deposits, booking steps, paperwork, FOID and ID document reminders, range qualification, veteran credit, refund policy, and general concealed carry training guidance.";
+    return "I can help with class options, deposits, booking steps, paperwork, FOID and ID document reminders, range qualification, refund policy, and general concealed carry training guidance.";
   }
 
   function handleSend() {
@@ -216,11 +157,10 @@ function AiHelperChat() {
     <div className="fixed bottom-6 right-6 z-[9999]">
       {open && (
         <div className="mb-4 w-[390px] overflow-hidden rounded-3xl border border-[#d9dee8] bg-white shadow-[0_25px_70px_rgba(0,0,0,0.18)]">
-          <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_9px,rgba(88,130,255,0.03)_10px)]" />
           <div className="relative flex items-center justify-between border-b border-[#d9dee8] bg-black px-5 py-4 text-white">
             <div>
               <div className="text-sm font-black uppercase tracking-[0.22em]">
-                AI Navigator
+                Training Help
               </div>
               <div className="text-xs font-semibold text-white/80">
                 Concealed carry training assistant
@@ -250,7 +190,7 @@ function AiHelperChat() {
 
           {!minimized && (
             <>
-              <div className="relative h-[380px] space-y-3 overflow-y-auto p-4">
+              <div className="h-[380px] space-y-3 overflow-y-auto p-4">
                 {messages.map((msg, index) => (
                   <div
                     key={index}
@@ -265,7 +205,7 @@ function AiHelperChat() {
                 ))}
               </div>
 
-              <div className="relative border-t border-[#d9dee8] p-3">
+              <div className="border-t border-[#d9dee8] p-3">
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -274,7 +214,7 @@ function AiHelperChat() {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleSend();
                     }}
-                    placeholder="Ask about paperwork, deposits, laws, class details..."
+                    placeholder="Ask about classes, paperwork, deposits..."
                     className="flex-1 rounded-xl border border-[#d9dee8] bg-white px-4 py-3 text-sm text-[#111111] outline-none placeholder:text-[#6b7280]"
                   />
                   <button
@@ -297,9 +237,9 @@ function AiHelperChat() {
           setOpen((prev) => !prev);
           if (!open) setMinimized(false);
         }}
-        className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] text-lg font-black uppercase text-white shadow-[0_0_30px_rgba(65,105,225,0.28)] transition hover:scale-105 hover:bg-[#3558c9]"
+        className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] text-xs font-black uppercase text-white shadow-[0_0_30px_rgba(65,105,225,0.28)] transition hover:scale-105 hover:bg-[#3558c9]"
       >
-        AI
+        Help
       </button>
     </div>
   );
@@ -471,6 +411,10 @@ export default function ConcealCarryTrainingWebsite() {
     message: "",
   });
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page, bookingStep]);
+
   const availableDates = [
     { value: "2026-04-16", label: "Thursday, April 16", disabled: false },
     { value: "2026-04-17", label: "Friday, April 17", disabled: false },
@@ -506,10 +450,9 @@ export default function ConcealCarryTrainingWebsite() {
       details: [
         "Mini Class instruction included",
         "Range fee listed in the packet is $75 and separate from class tuition.",
-        "Ammunition may be required depending on class and range use.",
-        "Eye and ear protection may be needed if not already provided.",
         "Required paperwork should be completed in black ink.",
       ],
+      audience: "Great for students wanting a shorter guided session.",
     },
     {
       id: "3hour",
@@ -521,10 +464,9 @@ export default function ConcealCarryTrainingWebsite() {
       details: [
         "3-hour renewal instruction included",
         "Bring your FOID card and renewal documents.",
-        "Range qualification rules still apply where required.",
         "Late arrival or missed class can trigger a $55 makeup fee.",
-        "No audio or video recording is permitted during instruction.",
       ],
+      audience: "Best for renewal students needing required update training.",
     },
     {
       id: "8hour-veteran",
@@ -535,11 +477,10 @@ export default function ConcealCarryTrainingWebsite() {
         "Extended training course for veterans with structured instruction and state-credit considerations.",
       details: [
         "8-hour class included",
-        "Veteran students should provide a DD-214 showing honorable discharge for 8-hour credit consideration.",
-        "Bring required identification and firearms paperwork.",
+        "Veteran students should provide a DD-214 showing honorable discharge.",
         "Range qualification requires at least 30 hits out of 50 rounds.",
-        "Illinois law review remains the student’s responsibility.",
       ],
+      audience: "Designed for qualifying veterans needing 8-hour credit.",
     },
     {
       id: "16hour",
@@ -551,54 +492,19 @@ export default function ConcealCarryTrainingWebsite() {
       details: [
         "16-hour class included",
         "Students should complete the full packet carefully and neatly in black ink.",
-        "Copies of state ID or driver’s license and FOID should be added to the class folder.",
         "If applicable, range qualification requires a passing score of at least 60 percent.",
-        "No refunds. Rescheduling is controlled by the posted policy.",
       ],
+      audience: "Best for first-time students needing full CCL training.",
     },
   ];
 
   const classPhotos = [
-    {
-      src: "/ips-class-1.jpeg",
-      alt: "Students reviewing target results during concealed carry training",
-    },
-    {
-      src: "/ips-class-2.jpeg",
-      alt: "Student holding training target after class session",
-    },
-    {
-      src: "/ips-class-3.jpeg",
-      alt: "Student and instructor after successful class completion",
-    },
-    {
-      src: "/ips-class-4.jpeg",
-      alt: "Student practicing firearm stance at the range",
-    },
-    {
-      src: "/ips-class-5.jpeg",
-      alt: "Instructor guiding student during range training",
-    },
-    {
-      src: "/ips-class-6.jpeg",
-      alt: "Instructor demonstrating range training",
-    },
-    {
-      src: "/ips-class-7.jpeg",
-      alt: "Student practicing handgun aim during live-fire session",
-    },
-    {
-      src: "/ips-class-8.jpeg",
-      alt: "Student at indoor range during target practice",
-    },
-    {
-      src: "/ips-class-9.jpeg",
-      alt: "Student smiling during concealed carry training session",
-    },
-    {
-      src: "/ips-class-10.jpeg",
-      alt: "Student firing handgun during training exercise",
-    },
+    { src: "/ips-class-1.jpeg", alt: "Students reviewing target results during concealed carry training" },
+    { src: "/ips-class-2.jpeg", alt: "Student holding training target after class session" },
+    { src: "/ips-class-3.jpeg", alt: "Student and instructor after successful class completion" },
+    { src: "/ips-class-4.jpeg", alt: "Student practicing firearm stance at the range" },
+    { src: "/ips-class-5.jpeg", alt: "Instructor guiding student during range training" },
+    { src: "/ips-class-6.jpeg", alt: "Instructor demonstrating range training" },
   ];
 
   const testimonials = [
@@ -622,16 +528,16 @@ export default function ConcealCarryTrainingWebsite() {
       a: "Students should complete the packet neatly in black ink and provide required identification and firearms document copies.",
     },
     {
+      q: "What should I bring?",
+      a: "Bring your state ID or driver’s license, FOID card, renewal documents if applicable, and completed paperwork in black ink.",
+    },
+    {
       q: "What happens if I miss class or range?",
       a: "There is a $55 makeup fee for missed class or range and no refunds.",
     },
     {
       q: "What score do I need to pass shooting qualification?",
       a: "Students must pass with at least 60 percent, which is at least 30 hits out of 50 rounds.",
-    },
-    {
-      q: "Do veterans get special credit?",
-      a: "Veterans should provide a DD-214 showing honorable discharge to receive 8-hour credit where applicable.",
     },
   ];
 
@@ -1006,6 +912,10 @@ export default function ConcealCarryTrainingWebsite() {
                   {service.title}
                 </h2>
 
+                <p className="mt-2 text-sm font-semibold text-[#4169e1]">
+                  {service.audience}
+                </p>
+
                 <p className="mt-4 leading-7 text-[#4b5563]">
                   {service.description}
                 </p>
@@ -1067,8 +977,6 @@ export default function ConcealCarryTrainingWebsite() {
   }
 
   if (page === "booking") {
-    const selectedServiceData = getSelectedService();
-
     return (
       <div className="min-h-screen bg-white text-[#111111]">
         <NavBar />
@@ -1174,18 +1082,18 @@ export default function ConcealCarryTrainingWebsite() {
           {bookingStep === 2 && (
             <div className="mt-10 grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
               <div>
-                {selectedServiceData && (
+                {getSelectedService() && (
                   <div className="mb-8 relative overflow-hidden rounded-2xl border border-[#4169e1]/20 bg-[#f5f8ff] p-5 text-[#111111] shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
                     <ScanLine />
                     <div className="text-sm font-bold uppercase tracking-[0.2em] text-[#4169e1]">
                       Selected Class
                     </div>
                     <div className="mt-2 text-lg font-black">
-                      {selectedServiceData.title}
+                      {getSelectedService().title}
                     </div>
                     <div className="mt-1 text-[#6b7280]">
-                      {selectedServiceData.duration} •{" "}
-                      {formatPrice(selectedServiceData.price)}
+                      {getSelectedService().duration} •{" "}
+                      {formatPrice(getSelectedService().price)}
                     </div>
                   </div>
                 )}
@@ -1596,6 +1504,10 @@ export default function ConcealCarryTrainingWebsite() {
                 </div>
               </div>
 
+              <div className="mt-6 inline-flex rounded-full border border-[#d9dee8] bg-white px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-[#4169e1]">
+                Illinois Concealed Carry Training
+              </div>
+
               <h1 className="mt-6 max-w-4xl text-5xl font-black uppercase tracking-[0.06em] text-[#111111] sm:text-6xl lg:text-7xl">
                 Elite Protection Training
               </h1>
@@ -1603,29 +1515,33 @@ export default function ConcealCarryTrainingWebsite() {
               <StarRow />
 
               <p className="mt-6 max-w-2xl text-lg leading-8 text-[#4b5563] sm:text-xl">
-                Professional concealed carry instruction with disciplined
-                booking, practical firearms education, and a confident path to
-                responsible protection.
+                Professional Illinois concealed carry training with clear
+                instruction, structured booking, and real confidence-building
+                support.
               </p>
 
               <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => navigateTo("classes")}
-                  className="rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-white transition hover:bg-[#3558c9]"
-                >
-                  View Classes
-                </button>
                 <button
                   type="button"
                   onClick={() => {
                     setBookingStep(1);
                     navigateTo("booking");
                   }}
-                  className="rounded-2xl border border-[#d9dee8] bg-white px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-[#111111] transition hover:bg-[#f8fbff]"
+                  className="rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-white transition hover:bg-[#3558c9]"
                 >
                   Book Now
                 </button>
+                <button
+                  type="button"
+                  onClick={() => navigateTo("classes")}
+                  className="rounded-2xl border border-[#d9dee8] bg-white px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-[#111111] transition hover:bg-[#f8fbff]"
+                >
+                  View Classes
+                </button>
+              </div>
+
+              <div className="mt-6 text-sm font-semibold uppercase tracking-[0.14em] text-[#4169e1]">
+                Classes available Monday–Friday, 9:00 AM–5:00 PM
               </div>
             </div>
 
@@ -1636,14 +1552,45 @@ export default function ConcealCarryTrainingWebsite() {
                 "Paperwork Guidance",
                 "Range Qualification Support",
               ].map((item) => (
-                <div key={item} className={cardClass}>
-                  <ScanLine />
+                <div
+                  key={item}
+                  className="relative overflow-hidden rounded-[1.5rem] border border-[#d6e4ff] bg-[#edf4ff] p-5 shadow-[0_10px_24px_rgba(15,23,42,0.06)]"
+                >
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,transparent_0%,rgba(65,105,225,0.7)_50%,transparent_100%)]" />
                   <div className="text-2xl text-[#4169e1]">★</div>
-                  <div className="mt-3 text-lg font-black uppercase">{item}</div>
+                  <div className="mt-3 text-base font-black uppercase tracking-[0.08em] text-[#16325c]">
+                    {item}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-16 md:px-10">
+        <div className="max-w-3xl">
+          <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#4169e1]">
+            Who This Is For
+          </p>
+          <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
+            Training Paths for Different Students
+          </h2>
+        </div>
+
+        <div className="mt-10 grid gap-5 md:grid-cols-4">
+          {[
+            "First-Time Students",
+            "Renewal Students",
+            "Veterans",
+            "Students Needing Guidance",
+          ].map((item) => (
+            <div key={item} className={cardClass}>
+              <ScanLine />
+              <div className="text-2xl text-[#4169e1]">★</div>
+              <h3 className="mt-4 text-xl font-black uppercase">{item}</h3>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -1682,6 +1629,41 @@ export default function ConcealCarryTrainingWebsite() {
                 <p className="mt-3 leading-7 text-[#4b5563]">{item.text}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-6 py-16 md:px-10">
+        <div className="grid gap-8 lg:grid-cols-[1fr_1fr]">
+          <div className={cardClass}>
+            <ScanLine />
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#4169e1]">
+              What To Bring
+            </p>
+            <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
+              Be Ready Before Class
+            </h2>
+            <ul className="mt-6 space-y-3 text-[#4b5563]">
+              <li>• State ID or Driver’s License</li>
+              <li>• FOID card</li>
+              <li>• CCL for renewals</li>
+              <li>• Completed paperwork in black ink</li>
+              <li>• DD-214 if claiming veteran credit</li>
+            </ul>
+          </div>
+
+          <div className={cardClass}>
+            <ScanLine />
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#4169e1]">
+              Booking Hours
+            </p>
+            <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
+              Weekday Scheduling
+            </h2>
+            <p className="mt-6 leading-8 text-[#4b5563]">
+              Booking is currently scheduled Monday through Friday from 9:00 AM
+              to 5:00 PM. Weekend dates are marked unavailable.
+            </p>
           </div>
         </div>
       </section>
@@ -1751,9 +1733,7 @@ export default function ConcealCarryTrainingWebsite() {
               future class.
             </p>
 
-            <p>
-              Missed class or range can also trigger a $55 makeup fee.
-            </p>
+            <p>Missed class or range can also trigger a $55 makeup fee.</p>
           </div>
         </div>
       </section>
@@ -1773,7 +1753,8 @@ export default function ConcealCarryTrainingWebsite() {
             {testimonials.map((t) => (
               <div key={t.name} className={cardClass}>
                 <ScanLine />
-                <p className="leading-7 text-[#4b5563]">“{t.text}”</p>
+                <div className="mb-3 text-[#4169e1]">★★★★★</div>
+                <p className="text-lg leading-7 text-[#4b5563]">“{t.text}”</p>
                 <div className="mt-4 text-sm font-bold uppercase tracking-[0.14em] text-[#4169e1]">
                   — {t.name}
                 </div>
@@ -1837,9 +1818,68 @@ export default function ConcealCarryTrainingWebsite() {
       </section>
 
       <footer className="border-t border-white/10 bg-black text-white">
-        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-8 text-sm text-white/70 md:flex-row md:items-center md:justify-between md:px-10">
-          <p>© 2026 Illinois Protective Services. All rights reserved.</p>
-          <p>Responsible training. Professional instruction. Convenient scheduling.</p>
+        <div className="mx-auto max-w-7xl px-6 py-10 md:px-10">
+          <div className="grid gap-8 md:grid-cols-4">
+            <div>
+              <div className="flex items-center gap-3">
+                <img
+                  src={LOGO_SRC}
+                  alt="Illinois Protective Services logo"
+                  className="h-12 w-12 rounded-xl border border-white/10 bg-white object-cover p-1"
+                />
+                <div>
+                  <div className="text-sm font-black uppercase tracking-[0.2em]">
+                    Illinois Protective
+                  </div>
+                  <div className="text-xs font-bold uppercase tracking-[0.2em] text-[#8ea6ff]">
+                    Services
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div className="text-sm font-black uppercase tracking-[0.18em] text-[#8ea6ff]">
+                Contact
+              </div>
+              <div className="mt-3 space-y-2 text-white/75">
+                <div>(224) 248-7021</div>
+                <div>support@illinoisprotectiveservices.com</div>
+                <div>7601 S. Cicero Ave, Chicago, IL 60652</div>
+              </div>
+            </div>
+
+            <div>
+              <div className="text-sm font-black uppercase tracking-[0.18em] text-[#8ea6ff]">
+                Hours
+              </div>
+              <div className="mt-3 space-y-2 text-white/75">
+                <div>Monday–Friday</div>
+                <div>9:00 AM–5:00 PM</div>
+              </div>
+            </div>
+
+            <div>
+              <div className="text-sm font-black uppercase tracking-[0.18em] text-[#8ea6ff]">
+                Quick Links
+              </div>
+              <div className="mt-3 space-y-2 text-white/75">
+                <button onClick={() => navigateTo("classes")}>Classes</button>
+                <br />
+                <button onClick={() => navigateTo("booking")}>Book Now</button>
+                <br />
+                <button onClick={() => navigateTo("contact")}>Contact</button>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 border-t border-white/10 pt-6 text-sm text-white/60">
+            <div>© 2026 Illinois Protective Services. All rights reserved.</div>
+            <div className="mt-2">
+              Students are responsible for staying current with Illinois law and
+              prohibited-area restrictions.
+            </div>
+          </div>
         </div>
       </footer>
     </div>
