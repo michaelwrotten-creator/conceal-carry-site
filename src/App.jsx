@@ -143,7 +143,7 @@ function AiHelperChat() {
       return `Current class pricing: ${formatServices()}. Deposits are set at one-third of the listed class price.`;
     }
 
-    if (mentions("book", "booking", "schedule", "enroll")) {
+    if (mentions("book", "booking", "schedule")) {
       return `Booking is done in three steps: choose a class, choose date and time, then review, pay, and confirm. Booking hours are ${knowledge.business.bookingHours}`;
     }
 
@@ -926,7 +926,7 @@ export default function ConcealCarryTrainingWebsite() {
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              "Structured class booking",
+              "Structured booking",
               "Paperwork and document readiness",
               "Range qualification guidance",
               "Professional instruction environment",
@@ -1572,82 +1572,86 @@ export default function ConcealCarryTrainingWebsite() {
         <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_9px,rgba(88,130,255,0.04)_10px)]" />
         <div className="absolute inset-0 opacity-[0.08] bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.06)_50%,transparent_100%)]" />
 
-        <div className="relative mx-auto max-w-6xl px-6 py-20 text-center md:px-10 lg:py-24">
-          <div className="mx-auto mb-5 flex w-fit items-center gap-4 rounded-full border border-[#4169e1]/30 bg-[#4169e1]/10 px-4 py-3">
-            <img
-              src={LOGO_SRC}
-              alt="Illinois Protective Services logo"
-              className="h-14 w-14 rounded-full border border-white/10 bg-white/5 object-cover"
-            />
-            <div className="text-left">
-              <div className="text-sm font-black uppercase tracking-[0.22em] text-white">
-                Illinois Protective
+        <div className="relative mx-auto max-w-7xl px-6 py-20 md:px-10 lg:py-24">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+            <div>
+              <div className="inline-flex rounded-full border border-[#4169e1]/30 bg-[#4169e1]/10 px-4 py-3">
+                <div className="flex items-center gap-4">
+                  <img
+                    src={LOGO_SRC}
+                    alt="Illinois Protective Services logo"
+                    className="h-14 w-14 rounded-full border border-white/10 bg-white/5 object-cover"
+                  />
+                  <div className="text-left">
+                    <div className="text-sm font-black uppercase tracking-[0.22em] text-white">
+                      Illinois Protective
+                    </div>
+                    <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#8ea6ff]">
+                      Services
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="text-xs font-bold uppercase tracking-[0.22em] text-[#8ea6ff]">
-                Services
+
+              <h1 className="mt-6 max-w-4xl text-5xl font-black uppercase tracking-[0.06em] text-white sm:text-6xl lg:text-7xl">
+                Elite Protection Training
+              </h1>
+
+              <StarRow />
+
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-white/75 sm:text-xl">
+                Professional concealed carry instruction with disciplined
+                booking, practical firearms education, and a confident path to
+                responsible protection.
+              </p>
+
+              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={() => navigateTo("classes")}
+                  className="rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-white transition hover:bg-[#3558c9]"
+                >
+                  View Classes
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setBookingStep(1);
+                    navigateTo("booking");
+                  }}
+                  className="rounded-2xl border border-[#e85b66]/35 bg-[#e85b66]/10 px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-[#ffb1b8] transition hover:bg-[#e85b66]/20"
+                >
+                  Book Now
+                </button>
               </div>
             </div>
-          </div>
 
-          <h1 className="mx-auto max-w-5xl text-5xl font-black uppercase tracking-[0.06em] text-white sm:text-6xl lg:text-7xl">
-            Elite Protection Training
-          </h1>
-
-          <StarRow />
-
-          <p className="mx-auto mt-6 max-w-3xl text-lg leading-8 text-white/75 sm:text-xl">
-            Professional concealed carry instruction with disciplined booking,
-            practical firearms education, and a confident path to responsible
-            protection.
-          </p>
-
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => navigateTo("classes")}
-              className="rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-white transition hover:bg-[#3558c9]"
-            >
-              View Classes
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setBookingStep(1);
-                navigateTo("booking");
-              }}
-              className="rounded-2xl border border-[#e85b66]/35 bg-[#e85b66]/10 px-6 py-4 text-center text-lg font-black uppercase tracking-[0.16em] text-[#ffb1b8] transition hover:bg-[#e85b66]/20"
-            >
-              Book Now
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-6 py-14 md:px-10">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            "Professional instruction",
-            "Weekday scheduling",
-            "Paperwork guidance",
-            "Range qualification support",
-          ].map((item) => (
-            <div key={item} className={cardClass}>
-              <ScanLine />
-              <span className="mr-2 text-[#8ea6ff]">★</span>
-              {item}
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                "Professional Instruction",
+                "Weekday Scheduling",
+                "Paperwork Guidance",
+                "Range Qualification Support",
+              ].map((item) => (
+                <div key={item} className={cardClass}>
+                  <ScanLine />
+                  <div className="text-2xl text-[#4169e1]">★</div>
+                  <div className="mt-3 text-lg font-black uppercase">{item}</div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </section>
 
       <section className="border-y border-white/10 bg-white/[0.03]">
-        <div className="mx-auto max-w-6xl px-6 py-16 md:px-10">
+        <div className="mx-auto max-w-7xl px-6 py-16 md:px-10">
           <div className="max-w-3xl">
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#8ea6ff]">
               Why Train With Us
             </p>
             <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
-              Structured. Professional. Clear.
+              A Clearer Path to Preparedness
             </h2>
           </div>
 
@@ -1679,7 +1683,7 @@ export default function ConcealCarryTrainingWebsite() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-16 md:px-10">
+      <section className="mx-auto max-w-7xl px-6 py-16 md:px-10">
         <div className="max-w-3xl">
           <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#8ea6ff]">
             How It Works
@@ -1719,7 +1723,7 @@ export default function ConcealCarryTrainingWebsite() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-16 md:px-10">
+      <section className="mx-auto max-w-7xl px-6 py-16 md:px-10">
         <div className="relative overflow-hidden rounded-[2rem] border border-[#e85b66]/20 bg-[#e85b66]/10 p-8">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-[1px] bg-[linear-gradient(90deg,transparent_0%,rgba(232,91,102,0.7)_50%,transparent_100%)]" />
           <div className="inline-flex rounded-full border border-[#e85b66]/30 bg-[#e85b66] px-4 py-2 text-sm font-black uppercase tracking-[0.18em] text-white">
@@ -1745,15 +1749,14 @@ export default function ConcealCarryTrainingWebsite() {
             </p>
 
             <p>
-              Please note that missed class or range can also trigger a $55 makeup
-              fee.
+              Missed class or range can also trigger a $55 makeup fee.
             </p>
           </div>
         </div>
       </section>
 
       <section className="border-y border-white/10 bg-white/[0.03]">
-        <div className="mx-auto max-w-6xl px-6 py-16 md:px-10">
+        <div className="mx-auto max-w-7xl px-6 py-16 md:px-10">
           <div className="max-w-3xl">
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#8ea6ff]">
               Testimonials
@@ -1777,7 +1780,7 @@ export default function ConcealCarryTrainingWebsite() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-6 py-16 md:px-10">
+      <section className="mx-auto max-w-7xl px-6 py-16 md:px-10">
         <div className="grid gap-8 lg:grid-cols-[1fr_1fr]">
           <div className={cardClass}>
             <ScanLine />
@@ -1831,7 +1834,7 @@ export default function ConcealCarryTrainingWebsite() {
       </section>
 
       <footer className="border-t border-white/10 bg-black">
-        <div className="mx-auto flex max-w-6xl flex-col gap-5 px-6 py-8 text-sm text-white/55 md:flex-row md:items-center md:justify-between md:px-10">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 px-6 py-8 text-sm text-white/55 md:flex-row md:items-center md:justify-between md:px-10">
           <p>© 2026 Illinois Protective Services. All rights reserved.</p>
           <p>Responsible training. Professional instruction. Convenient scheduling.</p>
         </div>
