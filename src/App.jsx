@@ -29,8 +29,8 @@ function OpeningGate({ onEnter }) {
         <source src="/opening-flag.mp4" type="video/mp4" />
       </video>
 
-      <div className="absolute inset-0 bg-black/58" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(65,105,225,0.14),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(220,38,38,0.10),transparent_24%)]" />
+      <div className="absolute inset-0 bg-black/60" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(65,105,225,0.18),transparent_28%),radial-gradient(circle_at_bottom_right,rgba(220,38,38,0.14),transparent_24%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_10px,rgba(255,255,255,0.03)_11px)]" />
 
       <div className="absolute inset-0 flex items-center justify-center px-6">
@@ -399,7 +399,8 @@ function InstructorCard({ imageSrc, imageAlt, name, title, bio1, bio2 }) {
         <img
           src={imageSrc}
           alt={imageAlt}
-          className="block h-[420px] w-full object-cover"
+          className="block h-[380px] w-full bg-[#f3f4f6] object-contain p-4"
+          style={{ objectPosition: "center" }}
         />
         <div className="absolute left-4 top-4">
           <VerifiedBadge />
@@ -1029,7 +1030,7 @@ export default function ConcealCarryTrainingWebsite() {
 
   if (page === "about") {
     return (
-      <div className="min-h-screen bg-[linear-gradient(180deg,#fffdfd_0%,#f7f9ff_38%,#fffaf8_100%)] text-[#111111]">
+      <div className="min-h-screen bg-[linear-gradient(180deg,#fffdfd_0%,#f7f9ff_38%,#fffaf8_100%)] text-[#111111] pb-24 md:pb-0">
         <NavBar />
         <AiHelperChat />
 
@@ -1141,13 +1142,15 @@ export default function ConcealCarryTrainingWebsite() {
             </div>
           </div>
         </section>
+
+        <MobileStickyBookButton onClick={() => navigateTo("booking")} />
       </div>
     );
   }
 
   if (page === "classes") {
     return (
-      <div className="min-h-screen bg-[linear-gradient(180deg,#fffdfd_0%,#f7f9ff_38%,#fffaf8_100%)] text-[#111111]">
+      <div className="min-h-screen bg-[linear-gradient(180deg,#fffdfd_0%,#f7f9ff_38%,#fffaf8_100%)] text-[#111111] pb-24 md:pb-0">
         <NavBar />
         <AiHelperChat />
 
@@ -1191,13 +1194,15 @@ export default function ConcealCarryTrainingWebsite() {
             ))}
           </div>
         </section>
+
+        <MobileStickyBookButton onClick={() => navigateTo("booking")} />
       </div>
     );
   }
 
   if (page === "booking") {
     return (
-      <div className="min-h-screen bg-[linear-gradient(180deg,#fffdfd_0%,#f7f9ff_38%,#fffaf8_100%)] text-[#111111]">
+      <div className="min-h-screen bg-[linear-gradient(180deg,#fffdfd_0%,#f7f9ff_38%,#fffaf8_100%)] text-[#111111] pb-24 md:pb-0">
         <NavBar />
         <AiHelperChat />
 
@@ -1588,7 +1593,7 @@ export default function ConcealCarryTrainingWebsite() {
 
   if (page === "contact") {
     return (
-      <div className="min-h-screen bg-[linear-gradient(180deg,#fffdfd_0%,#f7f9ff_38%,#fffaf8_100%)] text-[#111111]">
+      <div className="min-h-screen bg-[linear-gradient(180deg,#fffdfd_0%,#f7f9ff_38%,#fffaf8_100%)] text-[#111111] pb-24 md:pb-0">
         <NavBar />
         <AiHelperChat />
 
@@ -1690,121 +1695,195 @@ export default function ConcealCarryTrainingWebsite() {
             </div>
           </div>
         </section>
+
+        <MobileStickyBookButton onClick={() => navigateTo("booking")} />
       </div>
     );
   }
 
+  const whyChooseUs = [
+    {
+      icon: "🛡️",
+      title: "Safety-First Instruction",
+      text: "Every class is built around responsible handling, clear guidance, and real defensive awareness.",
+    },
+    {
+      icon: "📘",
+      title: "Clear Illinois Guidance",
+      text: "We help students understand requirements, qualification standards, and what to expect before class day.",
+    },
+    {
+      icon: "🎯",
+      title: "Practical Range Support",
+      text: "Hands-on training and qualification support designed to build confidence, control, and consistency.",
+    },
+  ];
+
+  const trustBadges = [
+    "Professional Instruction",
+    "Structured Booking",
+    "Weekday Availability",
+    "Certificate Guidance",
+    "Supportive Environment",
+  ];
+
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#fffdfd_0%,#f7f9ff_38%,#fffaf8_100%)] text-[#111111]">
+    <div className="min-h-screen bg-[linear-gradient(180deg,#fffdfd_0%,#f7f9ff_38%,#fffaf8_100%)] text-[#111111] pb-24 md:pb-0">
       <NavBar />
       <AiHelperChat />
 
-      <section className="relative overflow-hidden border-b border-[#e5e7eb] bg-[radial-gradient(circle_at_top_left,rgba(65,105,225,0.10),transparent_28%),radial-gradient(circle_at_top_right,rgba(220,38,38,0.06),transparent_22%),radial-gradient(circle_at_bottom_center,rgba(255,255,255,0.7),transparent_40%),linear-gradient(180deg,#fffefe_0%,#f5f8ff_45%,#fff8f5_100%)]">
+      <section className="relative overflow-hidden border-b border-[#e5e7eb] bg-[linear-gradient(135deg,#fff1f1_0%,#ffffff_22%,#eef4ff_48%,#ffffff_70%,#fff4f4_100%)]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(220,38,38,0.24),transparent_28%),radial-gradient(circle_at_top_right,rgba(65,105,225,0.22),transparent_32%),radial-gradient(circle_at_bottom_left,rgba(220,38,38,0.10),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(65,105,225,0.12),transparent_28%)]" />
         <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_9px,rgba(88,130,255,0.03)_10px)]" />
 
-        <div className="relative mx-auto max-w-7xl px-6 py-20 md:px-10 lg:py-24">
-          <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-4 rounded-2xl border border-[#d9dee8] bg-white px-4 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.06)]">
-                <img
-                  src={LOGO_SRC}
-                  alt="Illinois Protective Services logo"
-                  className="h-14 w-14 rounded-xl border border-[#d9dee8] bg-white object-cover p-1"
-                />
-                <div className="leading-tight">
-                  <div className="text-sm font-black uppercase tracking-[0.18em] text-[#111111]">
-                    Illinois Protective Services
-                  </div>
-                  <div className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-[#4169e1]">
-                    Premier Firearms Academy in Illinois
-                  </div>
-                </div>
+        <img
+          src="/hero-flag-corner.jpg"
+          alt="American flag decorative corner"
+          className="pointer-events-none absolute left-0 top-0 z-10 w-[300px] max-w-[55vw] object-contain opacity-95 md:w-[420px]"
+        />
+
+        <div className="relative z-20 mx-auto flex max-w-5xl flex-col items-center px-6 py-24 text-center md:px-10">
+          <div className="inline-flex items-center gap-4 rounded-2xl border border-[#d9dee8] bg-white/90 px-4 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.06)] backdrop-blur-sm">
+            <img
+              src={LOGO_SRC}
+              alt="Illinois Protective Services logo"
+              className="h-14 w-14 rounded-xl border border-[#d9dee8] bg-white object-cover p-1"
+            />
+            <div className="leading-tight text-left">
+              <div className="text-sm font-black uppercase tracking-[0.18em] text-[#111111]">
+                Illinois Protective Services
               </div>
+              <div className="mt-1 text-xs font-bold uppercase tracking-[0.16em] text-[#4169e1]">
+                Premier Firearms Academy in Illinois
+              </div>
+            </div>
+          </div>
 
-              <h1 className="mt-8 text-5xl font-black uppercase tracking-[0.05em] text-[#111111] sm:text-6xl lg:text-7xl">
-                Concealed Carry
-                <span className="block text-[#4169e1]">Training Done Right</span>
-              </h1>
+          <h1 className="mt-10 text-5xl font-black uppercase tracking-[0.05em] text-[#111111] sm:text-6xl lg:text-7xl">
+            Concealed Carry
+            <span className="block text-[#4169e1]">Training Done Right</span>
+          </h1>
 
-              <p className="mt-6 max-w-2xl text-lg leading-8 text-[#4b5563] sm:text-xl">
-                Professional Illinois concealed carry instruction with structured
-                booking, practical training, and a clear path toward responsible
-                firearm ownership.
+          <p className="mt-6 max-w-3xl text-lg leading-8 text-[#4b5563] sm:text-xl">
+            Professional Illinois concealed carry instruction with structured
+            booking, practical training, and a clear path toward responsible
+            firearm ownership.
+          </p>
+
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => {
+                setBookingStep(1);
+                navigateTo("booking");
+              }}
+              className="rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-7 py-4 text-center text-lg font-black uppercase tracking-[0.14em] text-white transition hover:bg-[#3558c9]"
+            >
+              Book Now
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigateTo("classes")}
+              className="rounded-2xl border border-[#d9dee8] bg-white/95 px-7 py-4 text-center text-lg font-black uppercase tracking-[0.14em] text-[#111111] transition hover:bg-[#f8fbff]"
+            >
+              View Classes
+            </button>
+          </div>
+
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            {[
+              "Certified Instruction",
+              "Weekday Classes",
+              "Range Guidance",
+              "Certificate Support",
+            ].map((item) => (
+              <div
+                key={item}
+                className="rounded-full border border-[#d9dee8] bg-white/95 px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-[#374151]"
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-[#0f172a]/10 bg-[#0b1630] text-white">
+        <div className="mx-auto max-w-7xl px-6 py-12 md:px-10">
+          <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+            <div>
+              <div className="text-sm font-black uppercase tracking-[0.24em] text-[#8ea6ff]">
+                Trusted. Structured. Professional.
+              </div>
+              <h2 className="mt-3 text-3xl font-black uppercase sm:text-4xl">
+                Train With Confidence From Day One
+              </h2>
+              <p className="mt-4 max-w-3xl leading-8 text-white/80">
+                We help students move from interest to preparation with a cleaner
+                process, practical instruction, and supportive guidance that
+                keeps everything clear from booking through qualification.
               </p>
+            </div>
 
-              <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setBookingStep(1);
-                    navigateTo("booking");
-                  }}
-                  className="rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-7 py-4 text-center text-lg font-black uppercase tracking-[0.14em] text-white transition hover:bg-[#3558c9]"
-                >
-                  Book Now
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => navigateTo("classes")}
-                  className="rounded-2xl border border-[#d9dee8] bg-white px-7 py-4 text-center text-lg font-black uppercase tracking-[0.14em] text-[#111111] transition hover:bg-[#f8fbff]"
-                >
-                  View Classes
-                </button>
-              </div>
-
-              <div className="mt-8 flex flex-wrap gap-3">
-                {[
-                  "Certified Instruction",
-                  "Weekday Classes",
-                  "Range Guidance",
-                  "Certificate Support",
-                ].map((item) => (
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+              {["Beginner Friendly", "Professional Standards", "Structured Process"].map(
+                (item) => (
                   <div
                     key={item}
-                    className="rounded-full border border-[#d9dee8] bg-white px-4 py-2 text-sm font-bold uppercase tracking-[0.08em] text-[#374151]"
+                    className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-white/90"
                   >
                     {item}
                   </div>
-                ))}
-              </div>
-
-              <div className="mt-6 text-sm font-semibold uppercase tracking-[0.14em] text-[#4169e1]">
-                Monday–Friday • 9:00 AM–5:00 PM
-              </div>
+                )
+              )}
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              {[
-                {
-                  title: "Professional Instruction",
-                  style: "border-[#d6e4ff] bg-[#edf4ff] text-[#16325c]",
-                },
-                {
-                  title: "Hands-On Training",
-                  style: "border-[#ffe0cc] bg-[#fff4ec] text-[#7c2d12]",
-                },
-                {
-                  title: "Paperwork Guidance",
-                  style: "border-[#f8d6da] bg-[#fff3f4] text-[#8a1c2e]",
-                },
-                {
-                  title: "Qualification Support",
-                  style: "border-[#d6e4ff] bg-[#edf4ff] text-[#16325c]",
-                },
-              ].map((item) => (
-                <div
-                  key={item.title}
-                  className={`relative overflow-hidden rounded-[1.5rem] border p-6 shadow-[0_10px_24px_rgba(15,23,42,0.06)] ${item.style}`}
-                >
-                  <div className="pointer-events-none absolute inset-x-0 top-0 h-[2px] bg-[linear-gradient(90deg,transparent_0%,rgba(65,105,225,0.7)_35%,rgba(220,38,38,0.55)_65%,transparent_100%)]" />
-                  <div className="text-2xl text-[#4169e1]">★</div>
-                  <div className="mt-4 text-lg font-black uppercase tracking-[0.08em]">
-                    {item.title}
-                  </div>
-                </div>
-              ))}
+      <section className="mx-auto max-w-7xl px-6 py-16 md:px-10">
+        <div className="text-center">
+          <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#4169e1]">
+            Trust Signals
+          </p>
+          <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
+            Built To Feel Clear, Credible, And Professional
+          </h2>
+        </div>
+
+        <div className="mt-10 flex flex-wrap justify-center gap-4">
+          {trustBadges.map((item) => (
+            <div
+              key={item}
+              className="rounded-full border border-[#d9dee8] bg-white px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-[#374151] shadow-[0_10px_24px_rgba(15,23,42,0.05)]"
+            >
+              {item}
             </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="border-y border-[#e5e7eb] bg-[linear-gradient(180deg,#fbfcfe_0%,#f7f9ff_100%)]">
+        <div className="mx-auto max-w-7xl px-6 py-16 md:px-10">
+          <div className="max-w-3xl">
+            <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#4169e1]">
+              Why Choose Us
+            </p>
+            <h2 className="mt-2 text-3xl font-black uppercase sm:text-4xl">
+              A Better Training Experience
+            </h2>
+          </div>
+
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {whyChooseUs.map((item) => (
+              <div key={item.title} className={cardClass}>
+                <ScanLine />
+                <div className="text-4xl">{item.icon}</div>
+                <h3 className="mt-5 text-2xl font-black uppercase">{item.title}</h3>
+                <p className="mt-3 leading-7 text-[#4b5563]">{item.text}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -2123,6 +2202,22 @@ export default function ConcealCarryTrainingWebsite() {
           </div>
         </div>
       </footer>
+
+      <MobileStickyBookButton onClick={() => navigateTo("booking")} />
+    </div>
+  );
+}
+
+function MobileStickyBookButton({ onClick }) {
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-[9998] border-t border-[#d9dee8] bg-white/95 p-3 shadow-[0_-10px_30px_rgba(15,23,42,0.12)] backdrop-blur md:hidden">
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-6 py-4 text-center text-base font-black uppercase tracking-[0.16em] text-white hover:bg-[#3558c9]"
+      >
+        Book Now
+      </button>
     </div>
   );
 }
