@@ -73,76 +73,161 @@ function AiHelperChat() {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      text: "Welcome to Illinois Protective Services. I can help with class options, deposits, paperwork, range requirements, rescheduling, qualification rules, and general concealed carry training questions.",
+      text: "Welcome to Illinois Protective Services. I can help with class options, booking, paperwork, refunds, required items, and general concealed carry training questions.",
     },
   ]);
 
-  const knowledge = {
-    services: [
-      { title: "Mini Class", price: 50, deposit: 16.67, duration: "1 hr 30 min" },
-      { title: "3-Hour Renewal Course", price: 75, deposit: 25.0, duration: "3 hr" },
-      { title: "8-Hours Class Veteran", price: 100, deposit: 33.33, duration: "8 hr" },
-      { title: "16-Hour CCL Course", price: 225, deposit: 75.0, duration: "16 hr" },
-    ],
-    business: {
-      phone: "(224) 248-7021",
-      email: "support@illinoisprotectiveservices.com",
-      address: "7601 S. Cicero Ave, Chicago, IL 60652",
-      bookingHours: "Monday through Friday from 9:00 AM to 5:00 PM.",
-    },
-    paperwork: [
-      "Complete all paperwork in black ink and print neatly.",
-      "A copy of your state ID or driver's license should be added to your class folder.",
-      "A copy of your FOID card should be added to your class folder.",
-      "Renewal students should also have a copy of their CCL added to the class folder.",
-    ],
-    range: [
-      "Range fee listed in the packet is $75 due upfront and noted as non-refundable.",
-      "Students must pass the shooting qualification with at least 60 percent.",
-      "Students must hit at least 30 rounds out of 50 total rounds.",
-    ],
+  const websiteKnowledge = {
+    businessName: "Illinois Protective Services",
+    phone: "(224) 248-7021",
+    email: "support@illinoisprotectiveservices.com",
+    address: "7601 S. Cicero Ave, Chicago, IL 60652",
+    bookingHours: "Monday through Friday from 9:00 AM to 5:00 PM.",
+    bookingSteps:
+      "Booking is completed in three steps: choose a class, choose date and time, then review, pay, and confirm.",
     refundPolicy:
-      "No refunds. If a student cannot attend, they must notify the instructor at least 24 hours before class to keep credit for the next available class. Rescheduling with less than 24 hours' notice results in forfeiture of class credit and the student must pay for another class or deposit.",
+      "Website policy: If a student cannot attend, they should notify the instructor at least 24 hours in advance to retain full credit toward a future class date. Rescheduling requests made with less than 24 hours’ notice result in forfeiture of class credit and require a new class payment or deposit.",
+    services: [
+      {
+        id: "mini",
+        title: "Mini Class",
+        price: 50,
+        deposit: 16.67,
+        duration: "1 hr 30 min",
+        summary:
+          "Quick training session for basic instruction, refreshers, and introductory firearm safety.",
+      },
+      {
+        id: "3hour",
+        title: "3-Hour Renewal Course",
+        price: 75,
+        deposit: 25.0,
+        duration: "3 hr",
+        summary:
+          "Renewal training for students needing a 3-hour concealed carry renewal course.",
+      },
+      {
+        id: "8hour-veteran",
+        title: "8-Hours Class Veteran",
+        price: 100,
+        deposit: 33.33,
+        duration: "8 hr",
+        summary:
+          "Extended training option for qualifying veterans needing 8-hour instruction.",
+      },
+      {
+        id: "16hour",
+        title: "16-Hour CCL Course",
+        price: 225,
+        deposit: 75.0,
+        duration: "16 hr",
+        summary:
+          "Full concealed carry license training course for first-time students needing complete instruction.",
+      },
+    ],
+  };
+
+  const fileKnowledge = {
+    paperwork: [
+      "All paperwork should be completed fully in black ink and printed neatly.",
+      "A copy of the student’s state ID or driver’s license should be added to the class folder.",
+      "A copy of the FOID card should be added to the class folder.",
+      "Renewal students should also include a copy of their CCL in the class folder.",
+      "Failing to complete paperwork properly may delay certificate processing.",
+    ],
+    pricingNotes: [
+      "Some uploaded course documents mention Basic, Advanced, or Premium inclusions for certain class types.",
+      "The website’s pricing and policy should be treated as the primary source when there is any difference.",
+    ],
+    packetNotices: [
+      "Training dates and class schedules may change by the instructor or Illinois Protective Services.",
+      "Cell phone usage is prohibited during instructional time unless approved by the instructor.",
+      "No audio or video recording is permitted.",
+      "If a certificate is lost, the student packet lists replacement-fee language.",
+      "Failure to arrive to class or range on time may result in a $55 makeup fee.",
+    ],
+    safetyAndTraining: [
+      "Situational awareness and conflict avoidance are emphasized as top priorities.",
+      "Students should stay alert, avoid trouble when possible, and use good judgment.",
+      "Concealed carry training should include knowledge of laws, travel considerations, everyday carry choices, and regular practice.",
+      "The training guides emphasize responsible carry, practical training, and continued learning.",
+    ],
+    checklist: [
+      "Proof of registration and required class materials",
+      "Eye and ear protection",
+      "A firearm intended for practice if applicable",
+      "Ammunition and extra magazines if applicable",
+      "Notebook or journal and pen",
+      "Water and class-day essentials",
+    ],
   };
 
   function formatServices() {
-    return knowledge.services
+    return websiteKnowledge.services
       .map(
         (s) =>
-          `${s.title}: full ${s.price.toFixed(2)}, deposit ${s.deposit.toFixed(
+          `${s.title}: full payment $${s.price.toFixed(2)}, deposit $${s.deposit.toFixed(
             2
           )}, duration ${s.duration}`
       )
       .join("; ");
   }
 
-  function getBroadResponse(message) {
+  function answerFromKnowledge(message) {
     const lower = message.toLowerCase();
     const mentions = (...terms) => terms.some((term) => lower.includes(term));
 
-    if (mentions("class", "service", "services", "options")) {
-      return `Available training options: ${formatServices()}.`;
-    }
-    if (mentions("deposit", "price", "cost", "payment")) {
-      return `Current class pricing: ${formatServices()}. Deposits are set at one-third of the listed class price.`;
-    }
-    if (mentions("book", "booking", "schedule")) {
-      return `Booking is done in three steps: choose a class, choose date and time, then review, pay, and confirm. Booking hours are ${knowledge.business.bookingHours}`;
-    }
-    if (mentions("paperwork", "forms", "packet", "black ink")) {
-      return `Paperwork reminders: ${knowledge.paperwork.join(" ")}`;
-    }
-    if (mentions("range", "qualification", "shooting", "pass", "score")) {
-      return `Range information: ${knowledge.range.join(" ")}`;
-    }
-    if (mentions("refund", "reschedule", "policy")) {
-      return knowledge.refundPolicy;
-    }
-    if (mentions("contact", "phone", "email", "call", "address")) {
-      return `You can contact Illinois Protective Services at ${knowledge.business.phone}, ${knowledge.business.email}, and ${knowledge.business.address}.`;
+    if (mentions("class", "classes", "service", "services", "options")) {
+      return `Available classes: ${formatServices()}.`;
     }
 
-    return "I can help with class options, deposits, booking steps, paperwork, range qualification, refund policy, and general concealed carry training guidance.";
+    if (mentions("deposit", "price", "pricing", "cost", "payment", "pay")) {
+      return `Website pricing: ${formatServices()}. Some uploaded pricing documents mention extra bundled inclusions for certain course versions, but website-stated pricing and policy should be treated as the primary source.`;
+    }
+
+    if (mentions("book", "booking", "schedule", "appointment")) {
+      return `${websiteKnowledge.bookingSteps} Booking hours are ${websiteKnowledge.bookingHours}`;
+    }
+
+    if (mentions("paperwork", "forms", "packet", "black ink", "documents")) {
+      return `Paperwork guidance: ${fileKnowledge.paperwork.join(" ")}`;
+    }
+
+    if (mentions("what should i bring", "what do i bring", "bring", "items")) {
+      return `Helpful bring-items guidance: ${fileKnowledge.checklist.join(
+        "; "
+      )}. Students should also confirm final instructor instructions before class day.`;
+    }
+
+    if (mentions("refund", "reschedule", "policy")) {
+      return websiteKnowledge.refundPolicy;
+    }
+
+    if (mentions("late", "makeup", "miss class", "miss range")) {
+      return `Uploaded packet guidance mentions that missing class or range or arriving late may trigger a $55 makeup fee. The website refund and rescheduling policy should still be treated as primary for what is shown on the site.`;
+    }
+
+    if (mentions("certificate", "replacement")) {
+      return `The uploaded student packet mentions certificate and replacement-fee language for lost certificates.`;
+    }
+
+    if (mentions("laws", "travel", "permit", "illinois law", "reciprocity")) {
+      return `General concealed carry guidance: students should stay current with firearm laws, understand permit rules, and review travel and reciprocity considerations before carrying across jurisdictions.`;
+    }
+
+    if (mentions("safety", "situational awareness", "awareness", "conflict")) {
+      return `General training guidance: situational awareness and conflict avoidance are top priorities. The uploaded guides emphasize staying alert, using good judgment, and avoiding trouble whenever possible.`;
+    }
+
+    if (mentions("contact", "phone", "email", "call", "address")) {
+      return `You can contact ${websiteKnowledge.businessName} at ${websiteKnowledge.phone}, ${websiteKnowledge.email}, or ${websiteKnowledge.address}.`;
+    }
+
+    if (mentions("instructor", "michael", "ron")) {
+      return `Illinois Protective Services lists Michael Wrotten-Simes as CEO and Lead Instructor and Ron Austin as Firearms Instructor.`;
+    }
+
+    return "I can help with class options, website pricing, booking steps, paperwork, what to bring, refund policy, training guidance, and general concealed carry education.";
   }
 
   function handleSend() {
@@ -152,7 +237,7 @@ function AiHelperChat() {
     setMessages((prev) => [
       ...prev,
       { role: "user", text: trimmed },
-      { role: "assistant", text: getBroadResponse(trimmed) },
+      { role: "assistant", text: answerFromKnowledge(trimmed) },
     ]);
     setInput("");
   }
@@ -167,7 +252,7 @@ function AiHelperChat() {
                 Training Help
               </div>
               <div className="text-xs font-semibold text-white/80">
-                Concealed carry training assistant
+                Website + conceal carry assistant
               </div>
             </div>
 
@@ -176,6 +261,8 @@ function AiHelperChat() {
                 type="button"
                 onClick={() => setMinimized((prev) => !prev)}
                 className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white hover:bg-white/10"
+                aria-label="Minimize chat"
+                title="Minimize"
               >
                 —
               </button>
@@ -186,6 +273,8 @@ function AiHelperChat() {
                   setMinimized(false);
                 }}
                 className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 bg-white/5 text-white hover:bg-white/10"
+                aria-label="Close chat"
+                title="Close"
               >
                 ✕
               </button>
@@ -218,7 +307,7 @@ function AiHelperChat() {
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleSend();
                     }}
-                    placeholder="Ask about classes, paperwork, deposits..."
+                    placeholder="Ask about classes, paperwork, laws, refunds..."
                     className="flex-1 rounded-xl border border-[#d9dee8] bg-white px-4 py-3 text-sm text-[#111111] outline-none placeholder:text-[#6b7280]"
                   />
                   <button
@@ -243,7 +332,7 @@ function AiHelperChat() {
         }}
         className="flex h-16 w-16 items-center justify-center rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] text-xs font-black uppercase text-white shadow-[0_0_30px_rgba(65,105,225,0.28)] transition hover:scale-105 hover:bg-[#3558c9]"
       >
-        Help
+        A.I.
       </button>
     </div>
   );
@@ -399,7 +488,7 @@ function InstructorCard({
   title,
   bio1,
   bio2,
-  imagePosition = "center 20%",
+  imagePosition = "center 14%",
 }) {
   return (
     <div className="overflow-hidden rounded-[2rem] border border-[#d9dee8] bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
@@ -407,7 +496,7 @@ function InstructorCard({
         <img
           src={imageSrc}
           alt={imageAlt}
-          className="block h-[440px] w-full object-cover"
+          className="block h-[460px] w-full object-cover"
           style={{ objectPosition: imagePosition }}
         />
 
@@ -731,12 +820,30 @@ export default function ConcealCarryTrainingWebsite() {
   ];
 
   const classPhotos = [
-    { src: "/ips-class-1.jpeg", alt: "Students reviewing target results during concealed carry training" },
-    { src: "/ips-class-2.jpeg", alt: "Student holding training target after class session" },
-    { src: "/ips-class-3.jpeg", alt: "Student and instructor after successful class completion" },
-    { src: "/ips-class-4.jpeg", alt: "Student practicing firearm stance at the range" },
-    { src: "/ips-class-5.jpeg", alt: "Instructor guiding student during range training" },
-    { src: "/ips-class-6.jpeg", alt: "Instructor demonstrating range training" },
+    {
+      src: "/ips-class-1.jpeg",
+      alt: "Students reviewing target results during concealed carry training",
+    },
+    {
+      src: "/ips-class-2.jpeg",
+      alt: "Student holding training target after class session",
+    },
+    {
+      src: "/ips-class-3.jpeg",
+      alt: "Student and instructor after successful class completion",
+    },
+    {
+      src: "/ips-class-4.jpeg",
+      alt: "Student practicing firearm stance at the range",
+    },
+    {
+      src: "/ips-class-5.jpeg",
+      alt: "Instructor guiding student during range training",
+    },
+    {
+      src: "/ips-class-6.jpeg",
+      alt: "Instructor demonstrating range training",
+    },
   ];
 
   const testimonials = [
@@ -1107,7 +1214,7 @@ export default function ConcealCarryTrainingWebsite() {
                 imageAlt="Michael Wrotten-Simes instructor portrait"
                 name="Michael Wrotten-Simes"
                 title="CEO & Lead Instructor"
-                imagePosition="center 18%"
+                imagePosition="center 12%"
                 bio1="Michael Wrotten-Simes is the CEO and lead instructor of Illinois Protective Services, bringing a disciplined and professional approach to firearms training. His focus is on building responsible gun owners through structured instruction, safety-first standards, and practical defensive training."
                 bio2="Known for clear communication and hands-on guidance, Michael works to ensure students leave with confidence, knowledge, and a stronger understanding of firearm responsibility, personal protection, and Illinois training expectations."
               />
@@ -1117,7 +1224,7 @@ export default function ConcealCarryTrainingWebsite() {
                 imageAlt="Ron Austin instructor portrait"
                 name="Ron Austin"
                 title="Firearms Instructor"
-                imagePosition="center 12%"
+                imagePosition="center 10%"
                 bio1="Ron Austin is a dedicated firearms instructor with a strong emphasis on precision, safety, and practical range performance. His calm, professional teaching style helps students build proper technique, awareness, and confidence under instruction."
                 bio2="Ron focuses on making training approachable while maintaining high standards, ensuring students understand not only how to handle a firearm correctly, but how to do so responsibly and with the discipline required for real-world preparedness."
               />
@@ -1768,13 +1875,25 @@ export default function ConcealCarryTrainingWebsite() {
         />
 
         <div className="pointer-events-none absolute inset-0 z-10">
-          <div className="absolute top-10 right-16 text-2xl text-blue-500 opacity-20">★</div>
-          <div className="absolute top-20 right-32 text-lg text-blue-400 opacity-15">★</div>
-          <div className="absolute top-32 right-10 text-xl text-blue-600 opacity-10">★</div>
+          <div className="absolute right-16 top-10 text-2xl text-blue-500 opacity-20">
+            ★
+          </div>
+          <div className="absolute right-32 top-20 text-lg text-blue-400 opacity-15">
+            ★
+          </div>
+          <div className="absolute right-10 top-32 text-xl text-blue-600 opacity-10">
+            ★
+          </div>
 
-          <div className="absolute bottom-16 left-12 text-xl text-red-500 opacity-20">★</div>
-          <div className="absolute bottom-28 left-24 text-lg text-red-400 opacity-15">★</div>
-          <div className="absolute bottom-10 left-32 text-2xl text-red-600 opacity-10">★</div>
+          <div className="absolute bottom-16 left-12 text-xl text-red-500 opacity-20">
+            ★
+          </div>
+          <div className="absolute bottom-28 left-24 text-lg text-red-400 opacity-15">
+            ★
+          </div>
+          <div className="absolute bottom-10 left-32 text-2xl text-red-600 opacity-10">
+            ★
+          </div>
         </div>
 
         <div className="relative z-20 mx-auto flex max-w-5xl flex-col items-center px-6 py-24 text-center md:px-10">
@@ -1862,16 +1981,18 @@ export default function ConcealCarryTrainingWebsite() {
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-              {["Beginner Friendly", "Professional Standards", "Structured Process"].map(
-                (item) => (
-                  <div
-                    key={item}
-                    className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-white/90"
-                  >
-                    {item}
-                  </div>
-                )
-              )}
+              {[
+                "Beginner Friendly",
+                "Professional Standards",
+                "Structured Process",
+              ].map((item) => (
+                <div
+                  key={item}
+                  className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-white/90"
+                >
+                  {item}
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -1921,7 +2042,9 @@ export default function ConcealCarryTrainingWebsite() {
                   <span>{item.icon}</span>
                   <span className="text-red-500">★</span>
                 </div>
-                <h3 className="mt-5 text-2xl font-black uppercase">{item.title}</h3>
+                <h3 className="mt-5 text-2xl font-black uppercase">
+                  {item.title}
+                </h3>
                 <p className="mt-3 leading-7 text-[#4b5563]">{item.text}</p>
               </div>
             ))}
@@ -2062,7 +2185,9 @@ export default function ConcealCarryTrainingWebsite() {
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#4169e1] text-xl font-black text-white">
                 {item.step}
               </div>
-              <h3 className="mt-5 text-2xl font-black uppercase">{item.title}</h3>
+              <h3 className="mt-5 text-2xl font-black uppercase">
+                {item.title}
+              </h3>
               <p className="mt-3 leading-7 text-[#4b5563]">{item.text}</p>
             </div>
           ))}
@@ -2078,9 +2203,12 @@ export default function ConcealCarryTrainingWebsite() {
 
           <div className="mt-6 space-y-5 leading-8 text-[#4b5563]">
             <p>
-              We understand that unexpected situations may arise. If you are unable
-              to attend your scheduled class, please notify the instructor at
-              least <span className="font-bold text-[#111111]">24 hours in advance</span>{" "}
+              We understand that unexpected situations may arise. If you are
+              unable to attend your scheduled class, please notify the
+              instructor at least{" "}
+              <span className="font-bold text-[#111111]">
+                24 hours in advance
+              </span>{" "}
               to retain full credit toward a future class date.
             </p>
 
@@ -2089,9 +2217,9 @@ export default function ConcealCarryTrainingWebsite() {
               <span className="font-bold text-[#111111]">
                 less than 24 hours’ notice
               </span>{" "}
-              will result in the forfeiture of your class credit. In these cases,
-              a new payment and deposit will be required to secure a spot in a
-              future class.
+              will result in the forfeiture of your class credit. In these
+              cases, a new payment and deposit will be required to secure a spot
+              in a future class.
             </p>
 
             <p>Missed class or range can also trigger a $55 makeup fee.</p>
@@ -2145,8 +2273,8 @@ export default function ConcealCarryTrainingWebsite() {
                 support@illinoisprotectiveservices.com
               </p>
               <p>
-                <span className="font-bold text-[#111111]">Address:</span> 7601 S.
-                Cicero Ave, Chicago, IL 60652
+                <span className="font-bold text-[#111111]">Address:</span> 7601
+                S. Cicero Ave, Chicago, IL 60652
               </p>
             </div>
             <button
