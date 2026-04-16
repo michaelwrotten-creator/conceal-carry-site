@@ -383,7 +383,7 @@ function StripePaymentPanel({
 
 function VerifiedBadge({ label = "Verified Instructor" }) {
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-[#4169e1] shadow-[0_6px_18px_rgba(65,105,225,0.08)]">
+    <div className="inline-flex items-center gap-2 rounded-full border border-[#4169e1]/20 bg-white/95 px-3 py-1.5 text-xs font-black uppercase tracking-[0.16em] text-[#4169e1] shadow-[0_6px_18px_rgba(65,105,225,0.12)] backdrop-blur-sm">
       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#4169e1] text-[10px] text-white">
         ✓
       </span>
@@ -392,17 +392,26 @@ function VerifiedBadge({ label = "Verified Instructor" }) {
   );
 }
 
-function InstructorCard({ imageSrc, imageAlt, name, title, bio1, bio2 }) {
+function InstructorCard({
+  imageSrc,
+  imageAlt,
+  name,
+  title,
+  bio1,
+  bio2,
+  imagePosition = "center 20%",
+}) {
   return (
     <div className="overflow-hidden rounded-[2rem] border border-[#d9dee8] bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
-      <div className="relative">
+      <div className="relative bg-[#eceef2]">
         <img
           src={imageSrc}
           alt={imageAlt}
-          className="block h-[380px] w-full bg-[#f3f4f6] object-contain p-4"
-          style={{ objectPosition: "center" }}
+          className="block h-[440px] w-full object-cover"
+          style={{ objectPosition: imagePosition }}
         />
-        <div className="absolute left-4 top-4">
+
+        <div className="absolute bottom-4 left-4">
           <VerifiedBadge />
         </div>
       </div>
@@ -542,6 +551,20 @@ function ExpandableClassCard({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function MobileStickyBookButton({ onClick }) {
+  return (
+    <div className="fixed inset-x-0 bottom-0 z-[9998] border-t border-[#d9dee8] bg-white/95 p-3 shadow-[0_-10px_30px_rgba(15,23,42,0.12)] backdrop-blur md:hidden">
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-6 py-4 text-center text-base font-black uppercase tracking-[0.16em] text-white hover:bg-[#3558c9]"
+      >
+        Book Now
+      </button>
     </div>
   );
 }
@@ -1084,6 +1107,7 @@ export default function ConcealCarryTrainingWebsite() {
                 imageAlt="Michael Wrotten-Simes instructor portrait"
                 name="Michael Wrotten-Simes"
                 title="CEO & Lead Instructor"
+                imagePosition="center 18%"
                 bio1="Michael Wrotten-Simes is the CEO and lead instructor of Illinois Protective Services, bringing a disciplined and professional approach to firearms training. His focus is on building responsible gun owners through structured instruction, safety-first standards, and practical defensive training."
                 bio2="Known for clear communication and hands-on guidance, Michael works to ensure students leave with confidence, knowledge, and a stronger understanding of firearm responsibility, personal protection, and Illinois training expectations."
               />
@@ -1093,6 +1117,7 @@ export default function ConcealCarryTrainingWebsite() {
                 imageAlt="Ron Austin instructor portrait"
                 name="Ron Austin"
                 title="Firearms Instructor"
+                imagePosition="center 12%"
                 bio1="Ron Austin is a dedicated firearms instructor with a strong emphasis on precision, safety, and practical range performance. His calm, professional teaching style helps students build proper technique, awareness, and confidence under instruction."
                 bio2="Ron focuses on making training approachable while maintaining high standards, ensuring students understand not only how to handle a firearm correctly, but how to do so responsibly and with the discipline required for real-world preparedness."
               />
@@ -1737,10 +1762,20 @@ export default function ConcealCarryTrainingWebsite() {
         <div className="pointer-events-none absolute inset-0 bg-[repeating-linear-gradient(to_bottom,transparent_0px,transparent_9px,rgba(88,130,255,0.03)_10px)]" />
 
         <img
-          src="/hero-flag-corner.jpg"
+          src="/hero-flag-corner.png"
           alt="American flag decorative corner"
           className="pointer-events-none absolute left-0 top-0 z-10 w-[300px] max-w-[55vw] object-contain opacity-95 md:w-[420px]"
         />
+
+        <div className="pointer-events-none absolute inset-0 z-10">
+          <div className="absolute top-10 right-16 text-2xl text-blue-500 opacity-20">★</div>
+          <div className="absolute top-20 right-32 text-lg text-blue-400 opacity-15">★</div>
+          <div className="absolute top-32 right-10 text-xl text-blue-600 opacity-10">★</div>
+
+          <div className="absolute bottom-16 left-12 text-xl text-red-500 opacity-20">★</div>
+          <div className="absolute bottom-28 left-24 text-lg text-red-400 opacity-15">★</div>
+          <div className="absolute bottom-10 left-32 text-2xl text-red-600 opacity-10">★</div>
+        </div>
 
         <div className="relative z-20 mx-auto flex max-w-5xl flex-col items-center px-6 py-24 text-center md:px-10">
           <div className="inline-flex items-center gap-4 rounded-2xl border border-[#d9dee8] bg-white/90 px-4 py-3 shadow-[0_10px_24px_rgba(15,23,42,0.06)] backdrop-blur-sm">
@@ -1856,9 +1891,11 @@ export default function ConcealCarryTrainingWebsite() {
           {trustBadges.map((item) => (
             <div
               key={item}
-              className="rounded-full border border-[#d9dee8] bg-white px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-[#374151] shadow-[0_10px_24px_rgba(15,23,42,0.05)]"
+              className="flex items-center gap-2 rounded-full border border-[#d9dee8] bg-white px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-[#374151] shadow-[0_10px_24px_rgba(15,23,42,0.05)]"
             >
+              <span className="text-xs text-blue-500">★</span>
               {item}
+              <span className="text-xs text-red-500">★</span>
             </div>
           ))}
         </div>
@@ -1879,7 +1916,11 @@ export default function ConcealCarryTrainingWebsite() {
             {whyChooseUs.map((item) => (
               <div key={item.title} className={cardClass}>
                 <ScanLine />
-                <div className="text-4xl">{item.icon}</div>
+                <div className="flex items-center gap-2 text-3xl">
+                  <span className="text-blue-500">★</span>
+                  <span>{item.icon}</span>
+                  <span className="text-red-500">★</span>
+                </div>
                 <h3 className="mt-5 text-2xl font-black uppercase">{item.title}</h3>
                 <p className="mt-3 leading-7 text-[#4b5563]">{item.text}</p>
               </div>
@@ -2204,20 +2245,6 @@ export default function ConcealCarryTrainingWebsite() {
       </footer>
 
       <MobileStickyBookButton onClick={() => navigateTo("booking")} />
-    </div>
-  );
-}
-
-function MobileStickyBookButton({ onClick }) {
-  return (
-    <div className="fixed inset-x-0 bottom-0 z-[9998] border-t border-[#d9dee8] bg-white/95 p-3 shadow-[0_-10px_30px_rgba(15,23,42,0.12)] backdrop-blur md:hidden">
-      <button
-        type="button"
-        onClick={onClick}
-        className="w-full rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-6 py-4 text-center text-base font-black uppercase tracking-[0.16em] text-white hover:bg-[#3558c9]"
-      >
-        Book Now
-      </button>
     </div>
   );
 }
