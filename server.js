@@ -6,174 +6,124 @@ import Stripe from "stripe";
 dotenv.config();
 
 const app = express();
-const port = Number(process.env.PORT || 4242);
+const PORT = Number(process.env.PORT || 4242);
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("Missing STRIPE_SECRET_KEY");
-}
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-
-const SERVICE_PRICES = {
-  mini: 5000,
-  "3hour": 7500,
-  "8hour-veteran": 10000,
-  "16hour": 22500,
-};
-
-function calculateDeposit(amountInCents) {
-  return Math.round(amountInCents / 3);
-}
-
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
-app.post(
-  "/api/stripe/webhook",
-  express.raw({ type: "application/json" }),
-  (req, res) => {
-    const signature = req.headers["stripe-signature"];
-
-    if (!process.env.STRIPE_WEBHOOK_SECRET) {
-      return res.status(500).send("Missing STRIPE_WEBHOOK_SECRET");
-    }
-
-    let event;
-
-    try {
-      event = stripe.webhooks.constructEvent(
-        req.body,
-        signature,
-        process.env.STRIPE_WEBHOOK_SECRET
-      );
-    } catch (err) {
-      console.error("Webhook signature verification failed:", err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-
-    switch (event.type) {
-      case "payment_intent.succeeded": {
-        const paymentIntent = event.data.object;
-        console.log("✅ Payment succeeded:", paymentIntent.id);
-        console.log("Booking metadata:", paymentIntent.metadata);
-        break;
-      }
-
-      case "payment_intent.payment_failed": {
-        const paymentIntent = event.data.object;
-        console.log("❌ Payment failed:", paymentIntent.id);
-        console.log("Booking metadata:", paymentIntent.metadata);
-        break;
-      }
-
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
-    }
-
-    return res.json({ received: true });
-  }
-);
-
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
-app.get("/", (_req, res) => {
-  res.send("Illinois Protective Services Stripe backend is running.");
-});
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY || "";
+const stripePublishableKey =
+  process.env.VITE_STRIPE_PUBLISHABLE_KEY ||
+  process.env.STRIPE_PUBLISHABLE_KEY ||
+  "";
 
-app.get("/api/health", (_req, res) => {
+const stripe = stripeSecretKey ? new Stripe(stripeSecretKey) : null;
+
+const SERVICES = {
+  mini: {
+    id: "mini",
+    title: "Mini Class",
+    price: 50,
+  },
+  renewal3: {
+    id: "renewal3",
+    title: "3-Hour Renewal Course",
+    price: 75,
+  },
+  veteran8: {
+    id: "veteran8",
+    title: "8-Hours Class Veteran",
+    price: 100,
+  },
+  ccl16: {
+    id: "ccl16",
+    title: "16-Hour CCL Course",
+    price: 225,
+  },
+};
+
+function depositFor(service) {
+  if (!service) return 0;
+  return service.id === "mini" ? 25 : 75;
+}
+
+app.get("/", (_req, res) => {
   res.json({
     ok: true,
-    message: "Stripe backend is running",
+    message: "Illinois Protective Services API is running.",
   });
 });
 
 app.get("/api/config", (_req, res) => {
   res.json({
-    publishableKey: process.env.VITE_STRIPE_PUBLISHABLE_KEY || "",
+    publishableKey: stripePublishableKey,
+    stripeEnabled: Boolean(stripe && stripePublishableKey),
   });
 });
 
 app.post("/api/create-payment-intent", async (req, res) => {
   try {
+    if (!stripe) {
+      return res.status(500).json({
+        error: "Stripe is not configured yet.",
+      });
+    }
+
     const {
       serviceId,
       paymentMode,
       customerName,
       customerEmail,
-      customerPhone,
       bookingDate,
       bookingTime,
-    } = req.body ?? {};
+    } = req.body || {};
 
-    if (!serviceId || !SERVICE_PRICES[serviceId]) {
-      return res.status(400).json({
-        error: "Invalid or missing serviceId.",
-      });
-    }
+    const service = SERVICES[serviceId];
 
-    if (!paymentMode || !["deposit", "full"].includes(paymentMode)) {
-      return res.status(400).json({
-        error: "Invalid or missing paymentMode.",
-      });
+    if (!service) {
+      return res.status(400).json({ error: "Invalid service selected." });
     }
 
     if (!bookingDate || !bookingTime) {
-      return res.status(400).json({
-        error: "Booking date and time are required.",
-      });
+      return res
+        .status(400)
+        .json({ error: "Booking date and booking time are required." });
     }
 
-    const serviceAmount = SERVICE_PRICES[serviceId];
-    const depositAmount = calculateDeposit(serviceAmount);
-    const amount = paymentMode === "deposit" ? depositAmount : serviceAmount;
+    const fullAmount = service.price;
+    const depositAmount = depositFor(service);
+    const amount = paymentMode === "deposit" ? depositAmount : fullAmount;
 
     const paymentIntent = await stripe.paymentIntents.create({
-      amount,
+      amount: Math.round(amount * 100),
       currency: "usd",
-      automatic_payment_methods: {
-        enabled: true,
-      },
+      automatic_payment_methods: { enabled: true },
       receipt_email: customerEmail || undefined,
       metadata: {
-        serviceId,
-        paymentMode,
-        serviceAmount: String(serviceAmount),
+        serviceId: service.id,
+        serviceTitle: service.title,
+        paymentMode: paymentMode || "full",
+        fullAmount: String(fullAmount),
         depositAmount: String(depositAmount),
         customerName: customerName || "",
         customerEmail: customerEmail || "",
-        customerPhone: customerPhone || "",
-        bookingDate: bookingDate || "",
-        bookingTime: bookingTime || "",
+        bookingDate,
+        bookingTime,
       },
     });
 
     return res.json({
       clientSecret: paymentIntent.client_secret,
       paymentIntentId: paymentIntent.id,
-      amount,
-      serviceAmount,
-      depositAmount,
     });
-  } catch (err) {
-    console.error("Create PaymentIntent error:", err);
+  } catch (error) {
+    console.error("create-payment-intent error:", error);
     return res.status(500).json({
-      error: "Unable to create payment intent.",
-      details: err.message,
+      error: error?.message || "Unable to create payment intent.",
     });
   }
 });
 
-app.use("/api", (_req, res) => {
-  res.status(404).json({
-    error: "API route not found.",
-  });
-});
-
-app.listen(port, () => {
-  console.log(`Stripe backend running on http://localhost:${port}`);
+app.listen(PORT, () => {
+  console.log(`Server listening on http://localhost:${PORT}`);
 });
