@@ -17,9 +17,9 @@ const STRIPE_PUBLISHABLE_KEY =
   process.env.VITE_STRIPE_PUBLISHABLE_KEY ||
   process.env.STRIPE_PUBLISHABLE_KEY ||
   "";
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
-const OPENAI_ASSISTANT_MODEL =
-  process.env.OPENAI_ASSISTANT_MODEL || "gpt-5-mini";
+const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY || "";
+const MISTRAL_ASSISTANT_MODEL =
+  process.env.MISTRAL_ASSISTANT_MODEL || "mistral-medium-latest";
 
 const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY) : null;
 
@@ -36,6 +36,19 @@ const HANDBOOK_GUIDANCE = [
 ];
 
 const HANDBOOK_TOPICS = [
+  {
+    id: "why-choose-ips",
+    patterns: [
+      "why should i choose illinois protective services",
+      "why choose illinois protective services",
+      "why should i choose your company",
+      "why choose your company",
+      "why choose you",
+    ],
+    buildReply: (siteContext) =>
+      siteContext?.policies?.whyChooseMessage ||
+      "You should choose Illinois Protective Services because the focus is on teaching responsible American citizens gun rights and firearm ownership with professionalism, courteous service, integrity, and transparency. The training is structured, safety-focused, and designed to help students leave more confident, better informed, and prepared to handle firearm ownership responsibly. If you want, I can also help you compare the classes and choose the right one for your situation.",
+  },
   {
     id: "concealed-carry-class-purpose",
     patterns: [
@@ -210,7 +223,7 @@ const HANDBOOK_TOPICS = [
       "restricted places",
     ],
     buildReply: () =>
-      "I can share general guidance, but I do not want to guess about current carry laws. Permit rules, reciprocity, and restricted locations can change, so please verify current Illinois requirements and any travel rules with the Illinois State Police, an attorney, or your instructor before relying on them.",
+      "I can share general information, but I do not want to guess about current carry laws. Permit rules, reciprocity, and restricted locations can change, so please verify current Illinois requirements and any travel rules with the Illinois State Police, an attorney, or your instructor before relying on them.",
   },
   {
     id: "after-incident",
@@ -225,6 +238,21 @@ const HANDBOOK_TOPICS = [
     ],
     buildReply: () =>
       "The handbook says to call 911 immediately, report the incident, and cooperate physically with responding officers. It also stresses that the legal aftermath can be serious, so you should be careful about detailed statements and follow current law and legal advice. In any real incident, speak with qualified counsel as soon as possible.",
+  },
+  {
+    id: "certificate-replacement",
+    patterns: [
+      "lost certificate",
+      "lost my certificate",
+      "replace certificate",
+      "replacement certificate",
+      "certificate replacement",
+      "replacement fee",
+      "duplicate certificate",
+    ],
+    buildReply: (siteContext) =>
+      siteContext?.policies?.certificateReplacementMessage ||
+      "If you lost your certificate, the replacement fee is $75.00.",
   },
   {
     id: "certificate",
@@ -336,54 +364,27 @@ function getServiceListReply(siteContext = {}) {
     .join(" ");
 }
 
-function extractResponseText(payload) {
-  if (typeof payload?.output_text === "string" && payload.output_text.trim()) {
-    return normalizeAssistantText(payload.output_text);
+function extractMistralResponseText(payload) {
+  const content = payload?.choices?.[0]?.message?.content;
+
+  if (typeof content === "string") {
+    return normalizeAssistantText(content);
   }
 
-  const textParts = [];
-
-  function collect(value) {
-    if (!value) return;
-
-    if (typeof value === "string") {
-      textParts.push(value);
-      return;
-    }
-
-    if (Array.isArray(value)) {
-      value.forEach(collect);
-      return;
-    }
-
-    if (typeof value === "object") {
-      if (typeof value.text === "string") {
-        textParts.push(value.text);
-      }
-
-      if (value.content) {
-        collect(value.content);
-      }
-    }
+  if (Array.isArray(content)) {
+    return normalizeAssistantText(
+      content
+        .map((item) => {
+          if (typeof item === "string") return item;
+          if (typeof item?.text === "string") return item.text;
+          if (typeof item?.content === "string") return item.content;
+          return "";
+        })
+        .join("\n")
+    );
   }
 
-  collect(payload?.output);
-
-  return normalizeAssistantText(textParts.join("\n"));
-}
-
-function buildTranscript(history) {
-  if (!Array.isArray(history) || history.length === 0) {
-    return "No previous messages.";
-  }
-
-  return history
-    .slice(-8)
-    .map((item) => {
-      const speaker = item?.role === "ai" ? "Assistant" : "Customer";
-      return `${speaker}: ${String(item?.text || "").trim()}`;
-    })
-    .join("\n");
+  return "";
 }
 
 function buildAssistantInstructions(siteContext = {}) {
@@ -398,6 +399,7 @@ function buildAssistantInstructions(siteContext = {}) {
       ? siteContext.classServices
       : [],
     faqs: Array.isArray(siteContext?.faqs) ? siteContext.faqs : [],
+    policies: siteContext?.policies || {},
   };
 
   return `
@@ -417,7 +419,7 @@ Important rules:
 - Do not provide advice for harming people. Focus on safety, training, avoidance, responsible ownership, and lawful self-defense concepts.
 - When discussing force, emphasize that avoidance and de-escalation come first and that deadly force is a last resort.
 - If the answer is not supported by the site context or the handbook guidance, say what you can confirm and offer the closest helpful next step.
-- If the site context contains a business-specific fact, use it confidently. For this business, everyone who passes the class receives a certificate of completion at the end of class.
+- If the site context contains a business-specific fact, use it confidently. For this business, everyone who passes the class receives a certificate of completion at the end of class, and a lost certificate has a $75.00 replacement fee.
 - Avoid generic “I can help with booking” fallback language unless the user is actually asking about booking.
 
 Site context:
@@ -428,16 +430,32 @@ ${HANDBOOK_GUIDANCE.map((item) => `- ${item}`).join("\n")}
   `.trim();
 }
 
-function buildAssistantInput(message, history) {
-  return `
-Recent conversation:
-${buildTranscript(history)}
+function buildMistralMessages(message, history, siteContext = {}) {
+  const currentMessage = String(message || "").trim();
+  const recentHistory = Array.isArray(history) ? history.slice(-8) : [];
+  const dedupedHistory =
+    recentHistory.length &&
+    recentHistory.at(-1)?.role === "user" &&
+    String(recentHistory.at(-1)?.text || "").trim() === currentMessage
+      ? recentHistory.slice(0, -1)
+      : recentHistory;
 
-Current customer message:
-${message}
-
-Write one clear customer-ready reply.
-  `.trim();
+  return [
+    {
+      role: "system",
+      content: buildAssistantInstructions(siteContext),
+    },
+    ...dedupedHistory
+      .map((item) => ({
+        role: item?.role === "ai" ? "assistant" : "user",
+        content: String(item?.text || "").trim(),
+      }))
+      .filter((item) => item.content),
+    {
+      role: "user",
+      content: currentMessage,
+    },
+  ];
 }
 
 function buildAssistantFallback(message, siteContext = {}) {
@@ -446,6 +464,25 @@ function buildAssistantFallback(message, siteContext = {}) {
   const contactEmail =
     siteContext?.contact?.email || "support@illinoisprotectiveservices.com";
   const servicesReply = getServiceListReply(siteContext);
+  const certificateReplacementMessage =
+    siteContext?.policies?.certificateReplacementMessage ||
+    "If you lost your certificate, the replacement fee is $75.00.";
+  const certificateCompletionMessage =
+    siteContext?.policies?.certificateCompletionMessage ||
+    "Yes. Everyone who passes the class receives a certificate of completion at the end of class.";
+  const whyChooseMessage =
+    siteContext?.policies?.whyChooseMessage ||
+    "You should choose Illinois Protective Services because the focus is on teaching responsible American citizens gun rights and firearm ownership with professionalism, courteous service, integrity, and transparency. The training is structured, safety-focused, and designed to help students leave more confident, better informed, and prepared to handle firearm ownership responsibly. If you want, I can also help you compare the classes and choose the right one for your situation.";
+
+  if (
+    lower.includes("why should i choose illinois protective services") ||
+    lower.includes("why choose illinois protective services") ||
+    lower.includes("why should i choose your company") ||
+    lower.includes("why choose your company") ||
+    lower.includes("why choose you")
+  ) {
+    return whyChooseMessage;
+  }
 
   if (lower.includes("instructor")) {
     const instructorReply = Array.isArray(siteContext?.instructors)
@@ -460,8 +497,18 @@ function buildAssistantFallback(message, siteContext = {}) {
     if (instructorReply) return normalizeAssistantText(instructorReply);
   }
 
+  if (
+    (lower.includes("lost") && lower.includes("certificate")) ||
+    lower.includes("replacement certificate") ||
+    lower.includes("replace certificate") ||
+    lower.includes("certificate replacement") ||
+    lower.includes("replacement fee")
+  ) {
+    return certificateReplacementMessage;
+  }
+
   if (lower.includes("certificate") || lower.includes("completion")) {
-    return "Yes. Everyone who passes the class receives a certificate of completion at the end of class.";
+    return certificateCompletionMessage;
   }
 
   if (
@@ -509,7 +556,7 @@ function buildAssistantFallback(message, siteContext = {}) {
     lower.includes("legal") ||
     lower.includes("permit")
   ) {
-    return "I can share general concealed carry guidance, but I do not want to guess about current laws. Rules can change, so please verify current Illinois requirements with the Illinois State Police, an attorney, or your instructor.";
+    return "I can share general concealed carry information, but I do not want to guess about current laws. Rules can change, so please verify current Illinois requirements with the Illinois State Police, an attorney, or your instructor.";
   }
 
   if (
@@ -523,8 +570,25 @@ function buildAssistantFallback(message, siteContext = {}) {
   }
 
   return normalizeAssistantText(
-    `I can answer general questions, concealed carry questions, and class questions in plain language. If your question is about training here specifically, I can also help with pricing, instructors, certificates of completion, and booking. You can also contact Illinois Protective Services at ${contactPhone} or ${contactEmail}.`
+    `I can answer general questions, concealed carry questions, and class questions in plain language. If your question is about training here specifically, I can also help with pricing, instructors, certificates of completion, replacement certificates, and booking. You can also contact Illinois Protective Services at ${contactPhone} or ${contactEmail}.`
   );
+}
+
+function buildAssistantResponse(reply, extra = {}) {
+  const provider = extra.provider || "fallback";
+  const defaultModel = provider === "mistral" ? MISTRAL_ASSISTANT_MODEL : "";
+
+  return {
+    reply,
+    source: provider,
+    provider,
+    model: extra.model || defaultModel,
+    ...extra,
+  };
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || "").trim());
 }
 
 const SERVICES = {
@@ -532,7 +596,7 @@ const SERVICES = {
     id: "mini",
     title: "Mini Class",
     price: 50,
-    deposit: 25,
+    deposit: 16.67,
   },
   renewal3: {
     id: "renewal3",
@@ -544,7 +608,7 @@ const SERVICES = {
     id: "veteran8",
     title: "8-Hours Class Veteran",
     price: 100,
-    deposit: 75,
+    deposit: 33.33,
   },
   ccl16: {
     id: "ccl16",
@@ -553,6 +617,18 @@ const SERVICES = {
     deposit: 75,
   },
 };
+const SERVICE_ID_ALIASES = {
+  "3hour": "renewal3",
+  "8hour-veteran": "veteran8",
+  "16hour": "ccl16",
+};
+
+function getServiceById(serviceId) {
+  const normalizedId =
+    SERVICE_ID_ALIASES[String(serviceId || "").trim()] ||
+    String(serviceId || "").trim();
+  return SERVICES[normalizedId];
+}
 
 app.get("/", (_req, res) => {
   res.json({
@@ -568,6 +644,104 @@ app.get("/api/config", (_req, res) => {
   });
 });
 
+app.post("/api/create-checkout-session", async (req, res) => {
+  try {
+    if (!stripe) {
+      return res.status(500).json({
+        error: "Stripe is not configured yet.",
+      });
+    }
+
+    const {
+      serviceId,
+      paymentMode,
+      customerName,
+      customerEmail,
+      customerPhone,
+      bookingDate,
+      bookingTime,
+      origin,
+    } = req.body || {};
+
+    const service = getServiceById(serviceId);
+
+    if (!service) {
+      return res.status(400).json({ error: "Invalid service selected." });
+    }
+
+    if (!bookingDate || !bookingTime) {
+      return res
+        .status(400)
+        .json({ error: "Booking date and booking time are required." });
+    }
+
+    if (!String(customerName || "").trim()) {
+      return res.status(400).json({ error: "Customer name is required." });
+    }
+
+    if (!String(customerPhone || "").trim()) {
+      return res
+        .status(400)
+        .json({ error: "Customer phone number is required." });
+    }
+
+    if (!isValidEmail(customerEmail)) {
+      return res.status(400).json({ error: "A valid customer email is required." });
+    }
+
+    const safeOrigin =
+      typeof origin === "string" && origin.startsWith("http")
+        ? origin
+        : `http://localhost:${PORT}`;
+    const amount = paymentMode === "deposit" ? service.deposit : service.price;
+    const itemLabel =
+      paymentMode === "deposit"
+        ? `${service.title} Deposit`
+        : `${service.title} Full Payment`;
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      payment_method_types: ["card"],
+      customer_email: String(customerEmail || "").trim(),
+      success_url: `${safeOrigin}/?checkout=success`,
+      cancel_url: `${safeOrigin}/?checkout=cancelled`,
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            unit_amount: Math.round(amount * 100),
+            product_data: {
+              name: itemLabel,
+              description: `${service.title} on ${bookingDate} at ${bookingTime}`,
+            },
+          },
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        serviceId: service.id,
+        serviceTitle: service.title,
+        paymentMode: paymentMode || "full",
+        customerName: customerName || "",
+        customerEmail: customerEmail || "",
+        customerPhone: customerPhone || "",
+        bookingDate,
+        bookingTime,
+      },
+    });
+
+    return res.json({
+      checkoutUrl: session.url,
+      sessionId: session.id,
+    });
+  } catch (error) {
+    console.error("create-checkout-session error:", error);
+    return res.status(500).json({
+      error: error?.message || "Unable to start Stripe Checkout.",
+    });
+  }
+});
+
 app.post("/api/assistant", async (req, res) => {
   try {
     const { message, history, siteContext } = req.body || {};
@@ -578,48 +752,69 @@ app.post("/api/assistant", async (req, res) => {
         .json({ error: "A customer message is required." });
     }
 
-    if (!OPENAI_API_KEY) {
-      return res.json({
-        reply: buildAssistantFallback(message, siteContext),
-      });
+    if (!MISTRAL_API_KEY) {
+      return res.json(
+        buildAssistantResponse(buildAssistantFallback(message, siteContext), {
+          provider: "fallback",
+          fallbackReason: "missing_api_key",
+        })
+      );
     }
 
-    const openAiResponse = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: OPENAI_ASSISTANT_MODEL,
-        instructions: buildAssistantInstructions(siteContext),
-        input: buildAssistantInput(message, history),
-        max_output_tokens: 220,
-        reasoning: {
-          effort: "low",
+    const mistralResponse = await fetch(
+      "https://api.mistral.ai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${MISTRAL_API_KEY}`,
+          "Content-Type": "application/json",
         },
-      }),
-    });
+        body: JSON.stringify({
+          model: MISTRAL_ASSISTANT_MODEL,
+          messages: buildMistralMessages(message, history, siteContext),
+          max_tokens: 220,
+          temperature: 0.35,
+        }),
+      }
+    );
 
-    const payload = await openAiResponse.json();
+    const payload = await mistralResponse.json();
 
-    if (!openAiResponse.ok) {
-      console.error("assistant api error:", payload);
-      return res.json({
-        reply: buildAssistantFallback(message, siteContext),
-      });
+    if (!mistralResponse.ok) {
+      console.error("assistant mistral api error:", payload);
+      return res.json(
+        buildAssistantResponse(buildAssistantFallback(message, siteContext), {
+          provider: "mistral",
+          fallbackReason:
+            payload?.error?.code ||
+            payload?.error?.type ||
+            `http_${mistralResponse.status}`,
+          mistralStatus: mistralResponse.status,
+        })
+      );
     }
 
     const reply =
-      extractResponseText(payload) ||
+      extractMistralResponseText(payload) ||
       buildAssistantFallback(message, siteContext);
 
-    return res.json({ reply });
+    return res.json(
+      buildAssistantResponse(reply, {
+        provider: "mistral",
+        model: payload?.model || MISTRAL_ASSISTANT_MODEL,
+      })
+    );
   } catch (error) {
     console.error("assistant route error:", error);
-    return res.json({
-      reply: buildAssistantFallback(req.body?.message, req.body?.siteContext),
-    });
+    return res.json(
+      buildAssistantResponse(
+        buildAssistantFallback(req.body?.message, req.body?.siteContext),
+        {
+          provider: "fallback",
+          fallbackReason: "request_failed",
+        }
+      )
+    );
   }
 });
 
@@ -641,7 +836,7 @@ app.post("/api/create-payment-intent", async (req, res) => {
       bookingTime,
     } = req.body || {};
 
-    const service = SERVICES[serviceId];
+    const service = getServiceById(serviceId);
 
     if (!service) {
       return res.status(400).json({ error: "Invalid service selected." });
@@ -653,14 +848,26 @@ app.post("/api/create-payment-intent", async (req, res) => {
         .json({ error: "Booking date and booking time are required." });
     }
 
+    if (!String(customerName || "").trim()) {
+      return res.status(400).json({ error: "Customer name is required." });
+    }
+
+    if (!String(customerPhone || "").trim()) {
+      return res.status(400).json({ error: "Customer phone number is required." });
+    }
+
+    if (!isValidEmail(customerEmail)) {
+      return res.status(400).json({ error: "A valid customer email is required." });
+    }
+
     const amount =
       paymentMode === "deposit" ? service.deposit : service.price;
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100),
       currency: "usd",
-      automatic_payment_methods: { enabled: true },
-      receipt_email: customerEmail || undefined,
+      payment_method_types: ["card"],
+      receipt_email: String(customerEmail || "").trim(),
       metadata: {
         serviceId: service.id,
         serviceTitle: service.title,
@@ -683,6 +890,25 @@ app.post("/api/create-payment-intent", async (req, res) => {
       error: error?.message || "Unable to create payment intent.",
     });
   }
+});
+
+app.post("/api/post-booking-sms", (req, res) => {
+  const { customerName, customerPhone, serviceTitle, bookingDate, bookingTime } =
+    req.body || {};
+
+  console.log("post-booking-sms placeholder:", {
+    customerName: customerName || "",
+    customerPhone: customerPhone || "",
+    serviceTitle: serviceTitle || "",
+    bookingDate: bookingDate || "",
+    bookingTime: bookingTime || "",
+  });
+
+  return res.json({
+    ok: true,
+    delivered: false,
+    message: "Post-booking SMS is not configured yet.",
+  });
 });
 
 app.listen(PORT, () => {

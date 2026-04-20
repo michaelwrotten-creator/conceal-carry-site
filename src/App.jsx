@@ -1,11 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { loadStripe } from "@stripe/stripe-js";
-import {
-  Elements,
-  PaymentElement,
-  useElements,
-  useStripe,
-} from "@stripe/react-stripe-js";
+import { useEffect, useRef, useState } from "react";
 
 function OpeningGate({ onEnter }) {
   const videoRef = useRef(null);
@@ -66,74 +59,100 @@ function OpeningGate({ onEnter }) {
   );
 }
 
-function StripeCheckoutForm({ onSuccess, customerName, customerEmail }) {
-  const stripe = useStripe();
-  const elements = useElements();
+const CHECKOUT_STORAGE_KEY = "ips_pending_checkout";
+const SERVICE_ID_ALIASES = {
+  "3hour": "renewal3",
+  "8hour-veteran": "veteran8",
+  "16hour": "ccl16",
+};
+const EMPTY_FORM_STATE = {
+  firstName: "",
+  lastName: "",
+  name: "",
+  phone: "",
+  email: "",
+  type: "",
+  message: "",
+  smsConsent: false,
+};
 
-  const [status, setStatus] = useState("idle");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [billingName, setBillingName] = useState(customerName || "");
-  const [billingEmail, setBillingEmail] = useState(customerEmail || "");
+function normalizeServiceId(serviceId) {
+  const trimmed = String(serviceId || "").trim();
+  return SERVICE_ID_ALIASES[trimmed] || trimmed;
+}
 
-  async function handleSubmit(event) {
-    event.preventDefault();
-    setErrorMessage("");
+function splitFullName(fullName) {
+  const parts = String(fullName || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
 
-    if (!stripe || !elements) return;
+  return {
+    firstName: parts[0] || "",
+    lastName: parts.slice(1).join(" "),
+  };
+}
 
-    setStatus("processing");
+function getCustomerName(formData) {
+  const combined = [formData?.firstName, formData?.lastName]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+    .join(" ");
 
-    const { error, paymentIntent } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        payment_method_data: {
-          billing_details: {
-            name: billingName,
-            email: billingEmail,
-          },
-        },
-      },
-      redirect: "if_required",
-    });
+  return combined || String(formData?.name || "").trim();
+}
 
-    if (error) {
-      setStatus("error");
-      setErrorMessage(error.message || "Payment failed.");
-      return;
-    }
+function buildFormState(next = {}) {
+  const merged = {
+    ...EMPTY_FORM_STATE,
+    ...next,
+  };
 
-    if (paymentIntent?.status === "succeeded") {
-      setStatus("success");
-      onSuccess(paymentIntent.id);
-      return;
-    }
-
-    setStatus("idle");
+  if (!merged.firstName && !merged.lastName && merged.name) {
+    const split = splitFullName(merged.name);
+    if (!merged.firstName) merged.firstName = split.firstName;
+    if (!merged.lastName) merged.lastName = split.lastName;
   }
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <input
-          type="text"
-          value={billingName}
-          onChange={(e) => setBillingName(e.target.value)}
-          placeholder="Cardholder Name"
-          className="rounded-2xl border border-[#d9dee8] bg-white px-4 py-3 text-[#111111] outline-none placeholder:text-[#6b7280]"
-          required
-        />
-        <input
-          type="email"
-          value={billingEmail}
-          onChange={(e) => setBillingEmail(e.target.value)}
-          placeholder="Email for Receipt"
-          className="rounded-2xl border border-[#d9dee8] bg-white px-4 py-3 text-[#111111] outline-none placeholder:text-[#6b7280]"
-          required
-        />
-      </div>
+  merged.name = getCustomerName(merged);
+  return merged;
+}
 
-      <div className="rounded-2xl border border-[#d9dee8] bg-white p-4">
-        <PaymentElement />
+const WHY_CHOOSE_IPS_REPLY =
+  "You should choose Illinois Protective Services because the focus is on teaching responsible American citizens gun rights and firearm ownership with professionalism, courteous service, integrity, and transparency. The training is structured, safety-focused, and designed to help students leave more confident, better informed, and prepared to handle firearm ownership responsibly. If you want, I can also help you compare the classes and choose the right one for your situation.";
+
+function HostedCheckoutPanel({
+  paymentMode,
+  selectedPrice,
+  selectedDeposit,
+  loading,
+  errorMessage,
+  paymentCompleted,
+  onCheckout,
+}) {
+  const amount =
+    paymentMode === "deposit" ? selectedDeposit : selectedPrice;
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-2xl border border-[#d9dee8] bg-[#f8fbff] p-5 text-[#374151]">
+        <div className="text-xs font-black uppercase tracking-[0.16em] text-[#6b7280]">
+          Stripe Checkout
+        </div>
+        <p className="mt-3 leading-7">
+          Card entry opens on Stripe&apos;s secure hosted checkout page. This is
+          the most reliable option for real purchases, especially in in-app
+          browsers.
+        </p>
+        <div className="mt-4 rounded-2xl border border-[#d9dee8] bg-white p-4">
+          <div className="text-sm uppercase tracking-[0.18em] text-[#6b7280]">
+            Selected Payment
+          </div>
+          <div className="mt-2 text-lg font-black text-[#111111]">
+            {paymentMode === "deposit" ? "Deposit" : "Full Payment"} — $
+            {amount.toFixed(2)}
+          </div>
+        </div>
       </div>
 
       {errorMessage ? (
@@ -142,59 +161,30 @@ function StripeCheckoutForm({ onSuccess, customerName, customerEmail }) {
         </div>
       ) : null}
 
-      <button
-        type="submit"
-        disabled={!stripe || status === "processing"}
-        className="w-full rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-6 py-4 text-base font-black uppercase tracking-[0.16em] text-white transition hover:bg-[#3558c9] disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {status === "processing" ? "Processing..." : "Submit Payment"}
-      </button>
-    </form>
+      {paymentCompleted ? (
+        <div className="rounded-2xl border border-[#4169e1]/20 bg-[#f5f8ff] px-4 py-3 text-sm text-[#3558c9]">
+          Payment completed successfully. Review your details on the left, then
+          finish booking.
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={onCheckout}
+          disabled={loading}
+          className="w-full rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-6 py-4 text-base font-black uppercase tracking-[0.16em] text-white transition hover:bg-[#3558c9] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading ? "Redirecting..." : "Continue to Secure Stripe Checkout"}
+        </button>
+      )}
+    </div>
   );
 }
 
-function StripePaymentPanel({
-  publishableKey,
-  clientSecret,
-  customerName,
-  customerEmail,
-  onSuccess,
-}) {
-  const stripePromise = useMemo(() => {
-    if (!publishableKey) return null;
-    return loadStripe(publishableKey);
-  }, [publishableKey]);
-
-  if (!publishableKey || !clientSecret || !stripePromise) {
-    return (
-      <div className="rounded-2xl border border-[#d9dee8] bg-white p-5 text-[#6b7280]">
-        Select a payment option to load secure checkout.
-      </div>
-    );
-  }
-
+function RequiredFieldLabel({ children }) {
   return (
-    <Elements
-      stripe={stripePromise}
-      options={{
-        clientSecret,
-        appearance: {
-          theme: "stripe",
-          variables: {
-            colorPrimary: "#4169e1",
-            colorBackground: "#ffffff",
-            colorText: "#111111",
-            borderRadius: "16px",
-          },
-        },
-      }}
-    >
-      <StripeCheckoutForm
-        customerName={customerName}
-        customerEmail={customerEmail}
-        onSuccess={onSuccess}
-      />
-    </Elements>
+    <label className="mb-2 block text-sm font-black uppercase tracking-[0.14em] text-[#6b7280]">
+      {children} <span className="text-[#dc2626]">*</span>
+    </label>
   );
 }
 
@@ -386,10 +376,10 @@ function MobileStickyBookButton({ onClick }) {
 }
 
 const DEFAULT_ASSISTANT_MESSAGE =
-  "Welcome to Illinois Protective Services. I can answer class questions, concealed carry questions, and many general questions clearly, then guide you to the right next step.";
+  "Welcome to Illinois Protective Services. I can answer class questions, concealed carry questions, certificate questions, and many general questions clearly, then guide you to the right next step.";
 
 const MISSED_CALL_ASSISTANT_MESSAGE =
-  "Welcome back. I can help with class selection, pricing, booking, instructor questions, certificates of completion, concealed carry guidance, and many general questions.";
+  "Welcome back. I can help with class selection, pricing, booking, instructor questions, certificate replacement questions, concealed carry questions, and many general questions.";
 
 function getAssistantDeposit(service) {
   if (!service?.price) return 0;
@@ -491,14 +481,14 @@ function SmartAIChat({
       lower.includes("3-hour") ||
       lower.includes("3 hour")
     ) {
-      return classServices.find((s) => s.id === "3hour");
+      return classServices.find((s) => s.id === "renewal3");
     }
     if (
       lower.includes("veteran") ||
       lower.includes("8-hour") ||
       lower.includes("8 hour")
     ) {
-      return classServices.find((s) => s.id === "8hour-veteran");
+      return classServices.find((s) => s.id === "veteran8");
     }
     if (
       lower.includes("16-hour") ||
@@ -507,7 +497,7 @@ function SmartAIChat({
       lower.includes("full course") ||
       lower.includes("ccl")
     ) {
-      return classServices.find((s) => s.id === "16hour");
+      return classServices.find((s) => s.id === "ccl16");
     }
     return null;
   }
@@ -562,6 +552,26 @@ function SmartAIChat({
     const lower = text.toLowerCase().trim();
 
     if (
+      lower.includes("why should i choose illinois protective services") ||
+      lower.includes("why choose illinois protective services") ||
+      lower.includes("why should i choose your company") ||
+      lower.includes("why choose your company") ||
+      lower.includes("why choose you")
+    ) {
+      return WHY_CHOOSE_IPS_REPLY;
+    }
+
+    if (
+      (lower.includes("lost") && lower.includes("certificate")) ||
+      lower.includes("replacement certificate") ||
+      lower.includes("replace my certificate") ||
+      lower.includes("certificate replacement") ||
+      lower.includes("replacement fee")
+    ) {
+      return "If you lost your certificate, the replacement fee is $75.00.";
+    }
+
+    if (
       lower.includes("certificate") ||
       lower.includes("completion certificate") ||
       lower.includes("certificate of completion") ||
@@ -593,7 +603,7 @@ function SmartAIChat({
     }
 
     if (lower.includes("law") || lower.includes("legal") || lower.includes("permit")) {
-      return "I can share general concealed carry guidance, but I do not want to guess about current laws. Permit rules, reciprocity, and restricted places can change, so please verify current Illinois requirements with the Illinois State Police and your instructor. If you want, I can still help you choose the right class or explain the training process.";
+      return "I can share general concealed carry information, but I do not want to guess about current laws. Permit rules, reciprocity, and restricted places can change, so please verify current Illinois requirements with the Illinois State Police and your instructor. If you want, I can still help you choose the right class or explain the training process.";
     }
 
     if (
@@ -653,11 +663,37 @@ function SmartAIChat({
       return "Permit training is a starting point, not the finish line. The handbook recommends ongoing professional instruction, regular safe practice, and continued study of self-defense law and responsible carry habits. Our courses are built to help students keep building those fundamentals.";
     }
 
-    return "I can answer many general questions, class questions, booking questions, instructor questions, certificate questions, and concealed carry questions. Ask me something like “Which class do I need?”, “Do I get a certificate?”, or “What should I bring to class?”";
+    return "I can answer many general questions, class questions, booking questions, instructor questions, certificate questions, and concealed carry questions. Ask me something like “Which class do I need?”, “How much is a replacement certificate?”, or “What should I bring to class?”";
   }
 
   function getLocalAction(text) {
     const lower = text.toLowerCase().trim();
+
+    if (
+      lower.includes("why should i choose illinois protective services") ||
+      lower.includes("why choose illinois protective services") ||
+      lower.includes("why should i choose your company") ||
+      lower.includes("why choose your company") ||
+      lower.includes("why choose you")
+    ) {
+      return {
+        type: "reply-only",
+        reply: WHY_CHOOSE_IPS_REPLY,
+      };
+    }
+
+    if (
+      (lower.includes("lost") && lower.includes("certificate")) ||
+      lower.includes("replacement certificate") ||
+      lower.includes("replace my certificate") ||
+      lower.includes("certificate replacement") ||
+      lower.includes("replacement fee")
+    ) {
+      return {
+        type: "reply-only",
+        reply: "If you lost your certificate, the replacement fee is $75.00.",
+      };
+    }
 
     if (
       lower === "start booking" ||
@@ -726,7 +762,7 @@ function SmartAIChat({
       lower.includes("book renewal") ||
       lower.includes("select renewal")
     ) {
-      const service = classServices.find((s) => s.id === "3hour");
+      const service = classServices.find((s) => s.id === "renewal3");
       return {
         type: "booking-step-2",
         serviceId: service?.id,
@@ -739,7 +775,7 @@ function SmartAIChat({
       lower.includes("book veteran") ||
       lower.includes("select veteran")
     ) {
-      const service = classServices.find((s) => s.id === "8hour-veteran");
+      const service = classServices.find((s) => s.id === "veteran8");
       return {
         type: "booking-step-2",
         serviceId: service?.id,
@@ -754,7 +790,7 @@ function SmartAIChat({
       lower.includes("book ccl") ||
       lower.includes("select ccl")
     ) {
-      const service = classServices.find((s) => s.id === "16hour");
+      const service = classServices.find((s) => s.id === "ccl16");
       return {
         type: "booking-step-2",
         serviceId: service?.id,
@@ -792,7 +828,8 @@ function SmartAIChat({
     ) {
       return {
         type: "reply-only",
-        reply: "Bring your state ID or driver’s license, your FOID card if applicable, renewal documents if needed, and completed paperwork in black ink.",
+        reply:
+          "Bring your state ID or driver’s license. If you are claiming veteran credit, bring your DD-214.",
       };
     }
 
@@ -882,7 +919,7 @@ function SmartAIChat({
     if (!action) return;
 
     if (action.serviceId) {
-      setSelectedService(action.serviceId);
+      setSelectedService(normalizeServiceId(action.serviceId));
     }
 
     if (action.type === "booking-start") {
@@ -922,6 +959,7 @@ function SmartAIChat({
               duration: service.duration,
               audience: service.audience,
               description: service.description,
+              included: service.included,
               requirements: service.requirements,
               pricingNotes: service.pricingNotes,
             })),
@@ -930,6 +968,14 @@ function SmartAIChat({
             contact: {
               phone: contactPhone,
               email: contactEmail,
+            },
+            policies: {
+              certificateReplacementFee: 75,
+              certificateReplacementMessage:
+                "If you lost your certificate, the replacement fee is $75.00.",
+              certificateCompletionMessage:
+                "Everyone who passes the class receives a certificate of completion at the end of class.",
+              whyChooseMessage: WHY_CHOOSE_IPS_REPLY,
             },
           },
         }),
@@ -942,7 +988,10 @@ function SmartAIChat({
       }
 
       const reply = normalizeAssistantReply(data?.reply);
-      if (reply) return reply;
+      if (reply) {
+        return reply;
+      }
+
       throw new Error("Assistant returned an empty response.");
     } catch (error) {
       console.error("Assistant request failed:", error);
@@ -977,8 +1026,6 @@ function SmartAIChat({
     "Who are the instructors?",
     "Show class pricing",
     "Start booking",
-    "Explain the 16-hour course",
-    "Do I get a certificate?",
     "What should I bring?",
   ];
 
@@ -987,20 +1034,28 @@ function SmartAIChat({
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className="fixed bottom-6 right-6 z-[999999] flex h-16 w-16 items-center justify-center rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] text-sm font-black uppercase text-white shadow-[0_0_30px_rgba(65,105,225,0.28)] transition hover:scale-105 hover:bg-[#3558c9]"
+        aria-label="Open training assistant chat"
+        title="Open training assistant chat"
+        className="fixed bottom-6 right-6 z-[999999] flex h-16 w-16 items-center justify-center rounded-full border border-[#4169e1]/40 bg-[#4169e1] text-white shadow-[0_0_30px_rgba(65,105,225,0.28)] transition hover:scale-105 hover:bg-[#3558c9]"
       >
-        A.I.
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          className="h-7 w-7 fill-current"
+        >
+          <path d="M12 3C6.477 3 2 6.94 2 11.8c0 2.51 1.208 4.773 3.146 6.374L4 22l4.36-2.34c1.147.322 2.37.49 3.64.49 5.523 0 10-3.94 10-8.8S17.523 3 12 3Zm-4 6h8a1 1 0 1 1 0 2H8a1 1 0 1 1 0-2Zm0 4h5a1 1 0 1 1 0 2H8a1 1 0 1 1 0-2Z" />
+        </svg>
       </button>
 
       {open && (
-        <div className="fixed bottom-28 right-6 z-[999999] w-[360px] overflow-hidden rounded-3xl border border-[#d9dee8] bg-white shadow-[0_25px_70px_rgba(0,0,0,0.22)]">
+        <div className="fixed inset-x-4 bottom-24 top-24 z-[999999] flex flex-col overflow-hidden rounded-3xl border border-[#d9dee8] bg-white shadow-[0_25px_70px_rgba(0,0,0,0.22)] sm:inset-x-auto sm:right-6 sm:top-20 sm:w-[360px]">
           <div className="flex items-center justify-between bg-black px-5 py-4 text-white">
             <div>
               <div className="text-sm font-black uppercase tracking-[0.2em]">
                 Training Assistant
               </div>
               <div className="text-xs text-white/80">
-                Classes, concealed carry, and general help
+                Classes, certificates, and general help
               </div>
             </div>
 
@@ -1025,13 +1080,13 @@ function SmartAIChat({
             </div>
           </div>
 
-          <div className="h-[320px] space-y-3 overflow-y-auto bg-[#f8fbff] p-4">
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-[#f8fbff] p-4">
             {messages.map((msg, index) => (
               <div
                 key={index}
                 className={`max-w-[88%] whitespace-pre-wrap rounded-2xl border px-4 py-3 text-sm leading-6 ${
                   msg.role === "ai"
-                    ? "border-[#d9dee8] bg-white text-[#111111]"
+                    ? "border-[#bfd0ff] bg-[#eaf1ff] text-[#1f3f9e]"
                     : "ml-auto border-[#4169e1]/20 bg-[#4169e1] text-white"
                 }`}
               >
@@ -1039,7 +1094,7 @@ function SmartAIChat({
               </div>
             ))}
             {loading ? (
-              <div className="max-w-[88%] rounded-2xl border border-[#d9dee8] bg-white px-4 py-3 text-sm leading-6 text-[#4b5563]">
+              <div className="max-w-[88%] rounded-2xl border border-[#bfd0ff] bg-[#eaf1ff] px-4 py-3 text-sm leading-6 text-[#1f3f9e]">
                 Thinking through the best answer for you...
               </div>
             ) : null}
@@ -1104,28 +1159,87 @@ export default function ConcealCarryTrainingWebsite() {
   const [selectedService, setSelectedService] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
-  const [paymentMode, setPaymentMode] = useState("full");
+  const [paymentMode, setPaymentMode] = useState("deposit");
   const [paymentCompleted, setPaymentCompleted] = useState(false);
-  const [paymentIntentId, setPaymentIntentId] = useState("");
   const [submitted, setSubmitted] = useState(false);
-
-  const [publishableKey, setPublishableKey] = useState("");
-  const [clientSecret, setClientSecret] = useState("");
   const [loadingPaymentIntent, setLoadingPaymentIntent] = useState(false);
   const [paymentLoadError, setPaymentLoadError] = useState("");
 
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    email: "",
-    type: "",
-    message: "",
-    smsConsent: false,
-  });
+  const [formData, setFormData] = useState(() => buildFormState());
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [page, bookingStep]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const checkoutStatus = params.get("checkout");
+    const savedCheckout = sessionStorage.getItem(CHECKOUT_STORAGE_KEY);
+
+    if (!checkoutStatus && !savedCheckout) return;
+
+    let snapshot = null;
+
+    if (savedCheckout) {
+      try {
+        snapshot = JSON.parse(savedCheckout);
+      } catch {
+        snapshot = null;
+      }
+    }
+
+    if (snapshot) {
+      setSelectedService(normalizeServiceId(snapshot.selectedService || ""));
+      setSelectedDate(snapshot.selectedDate || "");
+      setSelectedTime(snapshot.selectedTime || "");
+      setPaymentMode(snapshot.paymentMode || "deposit");
+      setFormData(buildFormState(snapshot.formData));
+    }
+
+    if (checkoutStatus === "success") {
+      setPage("booking");
+      setPageHistory(["home", "booking"]);
+      setBookingStep(3);
+      setPaymentCompleted(true);
+      setPaymentLoadError("");
+
+      if (snapshot?.formData?.smsConsent) {
+        fetch(`${API_BASE}/api/post-booking-sms`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            customerName: getCustomerName(snapshot.formData || {}),
+            customerPhone: snapshot.formData.phone || "",
+            serviceTitle: snapshot.serviceTitle || "",
+            bookingDate: snapshot.selectedDate || "",
+            bookingTime: snapshot.selectedTime || "",
+            smsConsent: snapshot.formData.smsConsent,
+          }),
+        }).catch((error) => {
+          console.error("SMS follow-up request failed:", error);
+        });
+      }
+
+      sessionStorage.removeItem(CHECKOUT_STORAGE_KEY);
+    }
+
+    if (checkoutStatus === "cancelled") {
+      setPage("booking");
+      setPageHistory(["home", "booking"]);
+      setBookingStep(3);
+      setPaymentCompleted(false);
+      setPaymentLoadError(
+        "Stripe checkout was canceled before payment was completed."
+      );
+      sessionStorage.removeItem(CHECKOUT_STORAGE_KEY);
+    }
+
+    if (checkoutStatus) {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, [API_BASE]);
 
   const availableDates = [
     { value: "2026-04-16", label: "Thursday, April 16", disabled: false },
@@ -1162,15 +1276,11 @@ export default function ConcealCarryTrainingWebsite() {
       audience: "Great for students wanting a shorter guided session.",
       included: [
         "Mini class instruction",
-        "Basic firearm safety guidance",
+        "Basic firearm safety instruction",
         "Hands-on instructor support",
         "Certificate of completion for everyone who passes the class",
       ],
-      requirements: [
-        "Completed paperwork in black ink",
-        "State ID or driver's license",
-        "FOID card if applicable",
-      ],
+      requirements: ["State ID or driver's license"],
       pricingNotes: [
         "Deposit is one-third of class price",
         "Range fee may apply separately",
@@ -1178,7 +1288,7 @@ export default function ConcealCarryTrainingWebsite() {
       ],
     },
     {
-      id: "3hour",
+      id: "renewal3",
       title: "3-Hour Renewal Course",
       price: 75,
       duration: "3 hr",
@@ -1190,11 +1300,7 @@ export default function ConcealCarryTrainingWebsite() {
         "Certificate of completion for everyone who passes the class",
         "Structured classroom review",
       ],
-      requirements: [
-        "FOID card",
-        "Renewal documents",
-        "CCL copy if applicable",
-      ],
+      requirements: ["State ID or driver's license"],
       pricingNotes: [
         "Deposit is one-third of class price",
         "Late arrival may trigger a $55 makeup fee",
@@ -1202,7 +1308,7 @@ export default function ConcealCarryTrainingWebsite() {
       ],
     },
     {
-      id: "8hour-veteran",
+      id: "veteran8",
       title: "8-Hours Class Veteran",
       price: 100,
       duration: "8 hr",
@@ -1211,14 +1317,13 @@ export default function ConcealCarryTrainingWebsite() {
       audience: "Designed for qualifying veterans needing 8-hour credit.",
       included: [
         "8-hour instruction",
-        "Qualification guidance",
+        "Application assistance",
         "Structured training support",
         "Certificate of completion for everyone who passes the class",
       ],
       requirements: [
         "DD-214 showing honorable discharge",
         "State ID or driver's license",
-        "FOID card if applicable",
       ],
       pricingNotes: [
         "Deposit is one-third of class price",
@@ -1227,7 +1332,7 @@ export default function ConcealCarryTrainingWebsite() {
       ],
     },
     {
-      id: "16hour",
+      id: "ccl16",
       title: "16-Hour CCL Course",
       price: 225,
       duration: "16 hr",
@@ -1239,11 +1344,7 @@ export default function ConcealCarryTrainingWebsite() {
         "Hands-on training",
         "Certificate of completion for everyone who passes the class",
       ],
-      requirements: [
-        "Completed paperwork in black ink",
-        "State ID or driver's license",
-        "FOID card",
-      ],
+      requirements: ["State ID or driver's license"],
       pricingNotes: [
         "Deposit is one-third of class price",
         "Range fee may apply separately",
@@ -1253,6 +1354,46 @@ export default function ConcealCarryTrainingWebsite() {
   ];
 
   const classPhotos = [
+    {
+      src: "/training-action-user/IMG_4245.jpg",
+      alt: "Illinois Protective Services training photo 1",
+    },
+    {
+      src: "/training-action-user/C2C09DB7-97DB-4296-A03B-7D9C885469B0.jpg",
+      alt: "Illinois Protective Services training photo 2",
+    },
+    {
+      src: "/training-action-user/IMG_3702.jpg",
+      alt: "Illinois Protective Services training photo 3",
+    },
+    {
+      src: "/training-action-user/IMG_3788.jpg",
+      alt: "Illinois Protective Services training photo 4",
+    },
+    {
+      src: "/training-action-user/IMG_3835.jpg",
+      alt: "Illinois Protective Services training photo 5",
+    },
+    {
+      src: "/training-action-user/IMG_3840.jpg",
+      alt: "Illinois Protective Services training photo 6",
+    },
+    {
+      src: "/training-action-user/IMG_4142.jpg",
+      alt: "Illinois Protective Services training photo 7",
+    },
+    {
+      src: "/training-action-user/IMG_9509.jpg",
+      alt: "Illinois Protective Services training photo 8",
+    },
+    {
+      src: "/training-action-user/IMG_7730.jpg",
+      alt: "Illinois Protective Services training photo 9",
+    },
+    {
+      src: "/training-action-user/IMG_7731.jpg",
+      alt: "Illinois Protective Services training photo 10",
+    },
     {
       src: "/ips-class-1.jpeg",
       alt: "Students reviewing target results during concealed carry training",
@@ -1297,11 +1438,11 @@ export default function ConcealCarryTrainingWebsite() {
   const faqs = [
     {
       q: "What paperwork should I complete before class?",
-      a: "Students should complete the packet neatly in black ink and provide required identification and firearms document copies.",
+      a: "You do not need to bring paperwork to class. Bring a valid state ID or driver’s license, and veterans claiming credit should also bring a DD-214.",
     },
     {
       q: "What should I bring?",
-      a: "Bring your state ID or driver’s license, FOID card, renewal documents if applicable, and completed paperwork in black ink.",
+      a: "Bring your state ID or driver’s license. If you are claiming veteran credit, bring your DD-214.",
     },
     {
       q: "What happens if I miss class or range?",
@@ -1314,6 +1455,10 @@ export default function ConcealCarryTrainingWebsite() {
     {
       q: "Do I get a certificate of completion?",
       a: "Yes. Everyone who passes the class receives a certificate of completion at the end of class.",
+    },
+    {
+      q: "How much is a replacement certificate?",
+      a: "If you lost your certificate, the replacement fee is $75.00.",
     },
   ];
 
@@ -1331,36 +1476,6 @@ export default function ConcealCarryTrainingWebsite() {
         "He emphasizes precision, awareness, and calm hands-on coaching so students can build confidence and proper technique on the range.",
     },
   ];
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadConfig() {
-      try {
-        const response = await fetch(`${API_BASE}/api/config`);
-        const text = await response.text();
-
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch {
-          throw new Error(`Config did not return JSON. Response was: ${text}`);
-        }
-
-        if (isMounted) {
-          setPublishableKey(data.publishableKey || "");
-        }
-      } catch (error) {
-        console.error("Failed to load Stripe config:", error);
-      }
-    }
-
-    loadConfig();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [API_BASE]);
 
   function navigateTo(nextPage) {
     setPageHistory((prev) => [...prev, nextPage]);
@@ -1382,7 +1497,8 @@ export default function ConcealCarryTrainingWebsite() {
   }
 
   function getSelectedService() {
-    return classServices.find((service) => service.id === selectedService);
+    const normalizedServiceId = normalizeServiceId(selectedService);
+    return classServices.find((service) => service.id === normalizedServiceId);
   }
 
   function getSelectedPrice() {
@@ -1405,53 +1521,119 @@ export default function ConcealCarryTrainingWebsite() {
     return found ? found.label : selectedDate;
   }
 
+  function updateFormFields(updates) {
+    setFormData((prev) => buildFormState({ ...prev, ...updates }));
+  }
+
+  function updateSplitNameField(field, value) {
+    setFormData((prev) =>
+      buildFormState({
+        ...prev,
+        [field]: value,
+      })
+    );
+  }
+
+  function updateCombinedName(value) {
+    const split = splitFullName(value);
+    setFormData((prev) =>
+      buildFormState({
+        ...prev,
+        name: value,
+        firstName: split.firstName,
+        lastName: split.lastName,
+      })
+    );
+  }
+
   function resetBookingFlow() {
     setSelectedService("");
     setSelectedDate("");
     setSelectedTime("");
-    setPaymentMode("full");
+    setPaymentMode("deposit");
     setPaymentCompleted(false);
-    setPaymentIntentId("");
-    setClientSecret("");
     setPaymentLoadError("");
     setBookingStep(1);
-    setFormData((prev) => ({
-      ...prev,
-      smsConsent: false,
-    }));
+    setFormData((prev) =>
+      buildFormState({
+        ...prev,
+        smsConsent: false,
+      })
+    );
   }
 
-  async function createPaymentIntent(mode) {
-    if (!selectedService || !selectedDate || !selectedTime) {
+  async function startStripeCheckout(mode) {
+    const normalizedServiceId = normalizeServiceId(selectedService);
+    const preparedFormData = buildFormState(formData);
+    const customerName = getCustomerName(preparedFormData);
+
+    if (!normalizedServiceId || !selectedDate || !selectedTime) {
       alert("Please complete your booking details first.");
       return;
     }
 
-    if (!formData.smsConsent) {
+    if (
+      !preparedFormData.firstName.trim() ||
+      !preparedFormData.lastName.trim() ||
+      !preparedFormData.phone.trim() ||
+      !preparedFormData.email.trim()
+    ) {
+      alert(
+        "Please enter your first name, last name, phone number, and email before continuing."
+      );
+      return;
+    }
+
+    if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        String(preparedFormData.email || "").trim()
+      )
+    ) {
+      alert("Please enter a valid email address before loading payment.");
+      return;
+    }
+
+    if (!preparedFormData.smsConsent) {
       alert("Please agree to receive booking-related SMS updates before continuing.");
       return;
     }
 
     setLoadingPaymentIntent(true);
     setPaymentLoadError("");
-    setClientSecret("");
     setPaymentMode(mode);
+    setPaymentCompleted(false);
+
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(
+        CHECKOUT_STORAGE_KEY,
+        JSON.stringify({
+          selectedService: normalizedServiceId,
+          selectedDate,
+          selectedTime,
+          serviceTitle: getSelectedService()?.title || "",
+          paymentMode: mode,
+          formData: preparedFormData,
+        })
+      );
+    }
 
     try {
-      const response = await fetch(`${API_BASE}/api/create-payment-intent`, {
+      const response = await fetch(`${API_BASE}/api/create-checkout-session`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          serviceId: selectedService,
+          serviceId: normalizedServiceId,
           paymentMode: mode,
-          customerName: formData.name,
-          customerEmail: formData.email,
-          customerPhone: formData.phone,
+          customerName,
+          customerEmail: preparedFormData.email,
+          customerPhone: preparedFormData.phone,
           bookingDate: selectedDate,
           bookingTime: selectedTime,
-          smsConsent: formData.smsConsent,
+          origin:
+            typeof window !== "undefined" ? window.location.origin : "",
+          smsConsent: preparedFormData.smsConsent,
         }),
       });
 
@@ -1465,39 +1647,19 @@ export default function ConcealCarryTrainingWebsite() {
       }
 
       if (!response.ok) {
-        throw new Error(data.error || "Unable to create payment intent.");
+        throw new Error(data.error || "Unable to start secure checkout.");
       }
 
-      setClientSecret(data.clientSecret);
-      setPaymentIntentId(data.paymentIntentId);
+      if (!data.checkoutUrl) {
+        throw new Error("Stripe checkout URL was not returned.");
+      }
+
+      window.location.assign(data.checkoutUrl);
     } catch (error) {
-      console.error("createPaymentIntent error:", error);
-      setPaymentLoadError(error.message || "Unable to load checkout.");
+      console.error("startStripeCheckout error:", error);
+      setPaymentLoadError(error.message || "Unable to load secure checkout.");
     } finally {
       setLoadingPaymentIntent(false);
-    }
-  }
-
-  async function handlePaymentSuccess(intentId) {
-    setPaymentCompleted(true);
-    setPaymentIntentId(intentId);
-
-    try {
-      await fetch(`${API_BASE}/api/post-booking-sms`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          paymentIntentId: intentId,
-          customerName: formData.name,
-          customerPhone: formData.phone,
-          serviceTitle: getSelectedService()?.title || "",
-          bookingDate: selectedDate,
-          bookingTime: selectedTime,
-          smsConsent: formData.smsConsent,
-        }),
-      });
-    } catch (error) {
-      console.error("SMS follow-up request failed:", error);
     }
   }
 
@@ -1514,25 +1676,37 @@ export default function ConcealCarryTrainingWebsite() {
   }
 
   function handleFormSubmit() {
-    if (!formData.name || !formData.email || !formData.phone || !formData.type) {
+    if (
+      !getCustomerName(formData) ||
+      !formData.email ||
+      !formData.phone ||
+      !formData.type
+    ) {
       alert("Please fill out your name, phone, email, and training type.");
       return;
     }
 
     setSubmitted(true);
 
-    setFormData({
-      name: "",
-      phone: "",
-      email: "",
-      type: "",
-      message: "",
-      smsConsent: false,
-    });
+    setFormData(buildFormState());
   }
 
   const navButtonClass =
-    "rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-white tracking-[0.14em] hover:border-[#4169e1]/50 hover:bg-[#4169e1]/10 hover:text-[#8ea6ff] transition";
+    "rounded-full border px-4 py-2 tracking-[0.14em] transition";
+
+  function getNavButtonClass(tab, isPrimary = false) {
+    const isActive = page === tab;
+
+    if (isPrimary) {
+      return isActive
+        ? `${navButtonClass} border-[#8ea6ff] bg-[#4169e1] text-white shadow-[0_0_20px_rgba(65,105,225,0.28)]`
+        : `${navButtonClass} border-[#4169e1]/40 bg-[#4169e1] text-white hover:bg-[#3558c9]`;
+    }
+
+    return isActive
+      ? `${navButtonClass} border-[#8ea6ff] bg-[#4169e1]/20 text-[#8ea6ff] shadow-[0_0_20px_rgba(65,105,225,0.18)]`
+      : `${navButtonClass} border-white/10 bg-white/[0.03] text-white hover:border-[#4169e1]/50 hover:bg-[#4169e1]/10 hover:text-[#8ea6ff]`;
+  }
 
   const cardClass =
     "relative overflow-hidden rounded-[2rem] border border-[#d9dee8] bg-white p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)]";
@@ -1581,22 +1755,43 @@ export default function ConcealCarryTrainingWebsite() {
           </button>
 
           <div className="hidden flex-wrap gap-3 text-sm font-bold uppercase tracking-wide md:flex">
-            <button type="button" onClick={() => navigateTo("home")} className={navButtonClass}>
+            <button
+              type="button"
+              onClick={() => navigateTo("home")}
+              className={getNavButtonClass("home")}
+              aria-current={page === "home" ? "page" : undefined}
+            >
               Home
             </button>
-            <button type="button" onClick={() => navigateTo("about")} className={navButtonClass}>
+            <button
+              type="button"
+              onClick={() => navigateTo("about")}
+              className={getNavButtonClass("about")}
+              aria-current={page === "about" ? "page" : undefined}
+            >
               About Us
             </button>
-            <button type="button" onClick={() => navigateTo("classes")} className={navButtonClass}>
+            <button
+              type="button"
+              onClick={() => navigateTo("classes")}
+              className={getNavButtonClass("classes")}
+              aria-current={page === "classes" ? "page" : undefined}
+            >
               Classes
             </button>
-            <button type="button" onClick={() => navigateTo("booking")} className={navButtonClass}>
+            <button
+              type="button"
+              onClick={() => navigateTo("booking")}
+              className={getNavButtonClass("booking")}
+              aria-current={page === "booking" ? "page" : undefined}
+            >
               Book Now
             </button>
             <button
               type="button"
               onClick={() => navigateTo("contact")}
-              className="rounded-full border border-[#4169e1]/40 bg-[#4169e1] px-4 py-2 text-white hover:bg-[#3558c9] transition"
+              className={getNavButtonClass("contact", true)}
+              aria-current={page === "contact" ? "page" : undefined}
             >
               Contact
             </button>
@@ -1604,22 +1799,43 @@ export default function ConcealCarryTrainingWebsite() {
         </div>
 
         <div className="flex flex-wrap gap-2 px-4 pb-3 md:hidden">
-          <button type="button" onClick={() => navigateTo("home")} className={navButtonClass}>
+          <button
+            type="button"
+            onClick={() => navigateTo("home")}
+            className={getNavButtonClass("home")}
+            aria-current={page === "home" ? "page" : undefined}
+          >
             Home
           </button>
-          <button type="button" onClick={() => navigateTo("about")} className={navButtonClass}>
+          <button
+            type="button"
+            onClick={() => navigateTo("about")}
+            className={getNavButtonClass("about")}
+            aria-current={page === "about" ? "page" : undefined}
+          >
             About
           </button>
-          <button type="button" onClick={() => navigateTo("classes")} className={navButtonClass}>
+          <button
+            type="button"
+            onClick={() => navigateTo("classes")}
+            className={getNavButtonClass("classes")}
+            aria-current={page === "classes" ? "page" : undefined}
+          >
             Classes
           </button>
-          <button type="button" onClick={() => navigateTo("booking")} className={navButtonClass}>
+          <button
+            type="button"
+            onClick={() => navigateTo("booking")}
+            className={getNavButtonClass("booking")}
+            aria-current={page === "booking" ? "page" : undefined}
+          >
             Book
           </button>
           <button
             type="button"
             onClick={() => navigateTo("contact")}
-            className="rounded-full border border-[#4169e1]/40 bg-[#4169e1] px-4 py-2 text-white transition hover:bg-[#3558c9]"
+            className={getNavButtonClass("contact", true)}
+            aria-current={page === "contact" ? "page" : undefined}
           >
             Contact
           </button>
@@ -1672,28 +1888,46 @@ export default function ConcealCarryTrainingWebsite() {
             </div>
 
             <h1 className="mt-4 text-4xl font-black uppercase tracking-[0.06em] sm:text-5xl">
-              Premier Firearms Academy in Illinois
+              Illinois Protective Services
             </h1>
 
             <p className="mt-6 max-w-3xl text-lg leading-8 text-[#4b5563]">
-              Illinois Protective Services focuses on training responsible
-              citizens to better protect themselves and their loved ones through
-              structured firearms education, USCCA-based training principles,
-              disciplined range expectations, and a supportive learning
-              environment.
+              Illinois Protective Services Goal Is To Teach Every Responsible
+              American Citizen Gun Rights And Firearm Ownership. We Pride
+              Ourselves On Professionalism, Courteous, Integrity, And
+              Transparency. We Don&apos;t Just Aim To Shoot. We Aim To Please.
             </p>
           </div>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              "USCCA-inspired training approach",
-              "Supportive learning environment",
-              "Clear qualification guidance",
-              "Professional instruction standards",
+              "Professionalism",
+              "Courteous",
+              "Integrity",
+              "Transparency",
             ].map((item) => (
               <div key={item} className={cardClass}>
                 <ScanLine />
-                <div className="text-[#111111]">{item}</div>
+                <div className="flex items-center justify-center gap-3 text-center text-[#111111]">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[#4169e1]/20 bg-[linear-gradient(135deg,#fff3f4_0%,#f5f8ff_100%)] shadow-[0_8px_18px_rgba(15,23,42,0.08)]">
+                    <svg
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                      className="h-5 w-5"
+                    >
+                      <path
+                        d="M12 2.8l2.73 5.53 6.11.89-4.42 4.31 1.04 6.09L12 16.83 6.54 19.62l1.04-6.09-4.42-4.31 6.11-.89L12 2.8Z"
+                        fill="#dc2626"
+                        stroke="#4169e1"
+                        strokeWidth="1.25"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
+                  <div className="text-base font-bold tracking-[0.04em]">
+                    {item}
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -1715,7 +1949,7 @@ export default function ConcealCarryTrainingWebsite() {
                 title="CEO & Lead Instructor"
                 imagePosition="center top"
                 bio1="Michael Wrotten-Simes is the CEO and lead instructor of Illinois Protective Services, bringing a disciplined and professional approach to firearms training. His focus is on building responsible gun owners through structured instruction, safety-first standards, and practical defensive training."
-                bio2="Known for clear communication and hands-on guidance, Michael works to ensure students leave with confidence, knowledge, and a stronger understanding of firearm responsibility, personal protection, and Illinois training expectations."
+                bio2="Known for clear communication and hands-on application assistance, Michael works to ensure students leave with confidence, knowledge, and a stronger understanding of firearm responsibility, personal protection, and Illinois training expectations."
               />
 
               <InstructorCard
@@ -1736,18 +1970,18 @@ export default function ConcealCarryTrainingWebsite() {
             </h3>
 
             <p className="mx-auto mt-4 max-w-3xl text-lg leading-8 text-[#374151]">
-              At Illinois Protective Services, we are committed to training
-              responsible, confident, and prepared individuals. Our mission is
-              to provide clear, professional instruction in a safe and
-              structured environment where every student is treated with
-              respect.
+              At Illinois Protective Services, We Are Committed To Training
+              Responsible, Confident, And Prepared Individuals. Our Mission Is
+              To Provide Clear, Professional Instruction In A Safe And
+              Structured Environment Where Every Student Is Treated With
+              Respect.
             </p>
 
             <p className="mx-auto mt-4 max-w-3xl text-lg leading-8 text-[#374151]">
-              We do not just teach firearm use—we teach accountability,
-              awareness, and discipline. Our goal is to ensure every student
-              leaves not only certified, but fully prepared to protect
-              themselves and their loved ones responsibly.
+              We Do Not Just Teach Firearm Use—We Teach Accountability,
+              Awareness, And Discipline. Our Goal Is To Ensure Every Student
+              Leaves Not Only Certified, But Fully Prepared To Protect
+              Themselves And Their Loved Ones Responsibly.
             </p>
           </div>
 
@@ -1756,10 +1990,13 @@ export default function ConcealCarryTrainingWebsite() {
               Training In Action
             </div>
 
-            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {classPhotos.map((photo, index) => (
-                <div
+                <a
                   key={index}
+                  href={photo.src}
+                  target="_blank"
+                  rel="noreferrer"
                   className="group overflow-hidden rounded-[1.75rem] border border-[#d9dee8] bg-white shadow-[0_12px_30px_rgba(15,23,42,0.08)]"
                 >
                   <img
@@ -1768,7 +2005,7 @@ export default function ConcealCarryTrainingWebsite() {
                     className="h-[320px] w-full object-cover transition duration-300 group-hover:scale-[1.03]"
                     loading="lazy"
                   />
-                </div>
+                </a>
               ))}
             </div>
           </div>
@@ -1797,7 +2034,7 @@ export default function ConcealCarryTrainingWebsite() {
                 Choose the Right Training Path
               </h1>
               <p className="mt-4 text-lg leading-8 text-[#4b5563]">
-                Review cleaner class details with included items, requirements,
+                Review class details with included items, requirements,
                 and pricing before booking.
               </p>
             </div>
@@ -1834,10 +2071,7 @@ export default function ConcealCarryTrainingWebsite() {
                 }}
                 onAsk={() => {
                   setSelectedService(service.id);
-                  setFormData((prev) => ({
-                    ...prev,
-                    type: service.title,
-                  }));
+                  updateFormFields({ type: service.title });
                   navigateTo("contact");
                 }}
                 formatPrice={formatPrice}
@@ -2107,39 +2341,54 @@ export default function ConcealCarryTrainingWebsite() {
 
                 <div className="mt-6 space-y-4 text-[#374151]">
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <input
-                      value={formData.name}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          name: e.target.value,
-                        }))
-                      }
-                      placeholder="Full Name"
-                      className="rounded-2xl border border-[#d9dee8] bg-white px-4 py-3 text-[#111111] outline-none"
-                    />
-                    <input
-                      value={formData.phone}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          phone: e.target.value,
-                        }))
-                      }
-                      placeholder="Phone Number"
-                      className="rounded-2xl border border-[#d9dee8] bg-white px-4 py-3 text-[#111111] outline-none"
-                    />
-                    <input
-                      value={formData.email}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          email: e.target.value,
-                        }))
-                      }
-                      placeholder="Email Address"
-                      className="rounded-2xl border border-[#d9dee8] bg-white px-4 py-3 text-[#111111] outline-none sm:col-span-2"
-                    />
+                    <div>
+                      <RequiredFieldLabel>First Name</RequiredFieldLabel>
+                      <input
+                        type="text"
+                        value={formData.firstName}
+                        onChange={(e) =>
+                          updateSplitNameField("firstName", e.target.value)
+                        }
+                        placeholder="First Name"
+                        className="w-full rounded-2xl border border-[#d9dee8] bg-white px-4 py-3 text-[#111111] outline-none"
+                      />
+                    </div>
+                    <div>
+                      <RequiredFieldLabel>Last Name</RequiredFieldLabel>
+                      <input
+                        type="text"
+                        value={formData.lastName}
+                        onChange={(e) =>
+                          updateSplitNameField("lastName", e.target.value)
+                        }
+                        placeholder="Last Name"
+                        className="w-full rounded-2xl border border-[#d9dee8] bg-white px-4 py-3 text-[#111111] outline-none"
+                      />
+                    </div>
+                    <div>
+                      <RequiredFieldLabel>Phone Number</RequiredFieldLabel>
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) =>
+                          updateFormFields({ phone: e.target.value })
+                        }
+                        placeholder="Phone Number"
+                        className="w-full rounded-2xl border border-[#d9dee8] bg-white px-4 py-3 text-[#111111] outline-none"
+                      />
+                    </div>
+                    <div>
+                      <RequiredFieldLabel>Email Address</RequiredFieldLabel>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) =>
+                          updateFormFields({ email: e.target.value })
+                        }
+                        placeholder="Email Address"
+                        className="w-full rounded-2xl border border-[#d9dee8] bg-white px-4 py-3 text-[#111111] outline-none"
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -2191,10 +2440,7 @@ export default function ConcealCarryTrainingWebsite() {
                         type="checkbox"
                         checked={formData.smsConsent}
                         onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            smsConsent: e.target.checked,
-                          }))
+                          updateFormFields({ smsConsent: e.target.checked })
                         }
                         className="mt-1 h-4 w-4 rounded border-[#cbd5e1]"
                       />
@@ -2215,32 +2461,49 @@ export default function ConcealCarryTrainingWebsite() {
 
                   <div>
                     <div className="text-sm uppercase tracking-[0.18em] text-[#6b7280]">
-                      Payment Type
+                      Payment Option
                     </div>
-                    <div className="mt-3 grid gap-3">
-                      <button
-                        type="button"
-                        onClick={() => createPaymentIntent("deposit")}
-                        className={`rounded-2xl border px-4 py-4 text-left font-black uppercase tracking-[0.14em] transition ${
-                          paymentMode === "deposit"
-                            ? "border-[#4169e1] bg-[#f5f8ff] text-[#111111]"
-                            : "border-[#d9dee8] bg-white text-[#111111] hover:bg-[#f8fbff]"
-                        }`}
-                      >
-                        Pay Deposit — {formatPrice(getSelectedDeposit())}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => createPaymentIntent("full")}
-                        className={`rounded-2xl border px-4 py-4 text-left font-black uppercase tracking-[0.14em] transition ${
-                          paymentMode === "full"
-                            ? "border-[#4169e1] bg-[#f5f8ff] text-[#111111]"
-                            : "border-[#d9dee8] bg-white text-[#111111] hover:bg-[#f8fbff]"
-                        }`}
-                      >
-                        Pay Full Amount — {formatPrice(getSelectedPrice())}
-                      </button>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      {[
+                        {
+                          value: "deposit",
+                          label: `Deposit — ${formatPrice(getSelectedDeposit())}`,
+                          detail: "Reserve your seat today",
+                        },
+                        {
+                          value: "full",
+                          label: `Full Amount — ${formatPrice(getSelectedPrice())}`,
+                          detail: "Pay the full class amount now",
+                        },
+                      ].map((option) => (
+                        <label
+                          key={option.value}
+                          className={`cursor-pointer rounded-2xl border px-4 py-4 transition ${
+                            paymentMode === option.value
+                              ? "border-[#4169e1] bg-[#f5f8ff] text-[#111111]"
+                              : "border-[#d9dee8] bg-white text-[#111111] hover:bg-[#f8fbff]"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="paymentMode"
+                            value={option.value}
+                            checked={paymentMode === option.value}
+                            onChange={() => {
+                              setPaymentMode(option.value);
+                              setPaymentLoadError("");
+                            }}
+                            className="sr-only"
+                          />
+                          <div className="text-xs font-black uppercase tracking-[0.16em] text-[#6b7280]">
+                            {option.value === "deposit" ? "Deposit" : "Full Amount"}
+                          </div>
+                          <div className="mt-2 text-lg font-black">{option.label}</div>
+                          <div className="mt-1 text-sm text-[#6b7280]">
+                            {option.detail}
+                          </div>
+                        </label>
+                      ))}
                     </div>
                   </div>
 
@@ -2250,13 +2513,15 @@ export default function ConcealCarryTrainingWebsite() {
                     </div>
                   ) : null}
 
-                  <button
-                    type="button"
-                    onClick={confirmBooking}
-                    className="mt-4 w-full rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-6 py-4 text-center text-base font-black uppercase tracking-[0.16em] text-white hover:bg-[#3558c9]"
-                  >
-                    Confirm Booking
-                  </button>
+                  {paymentCompleted ? (
+                    <button
+                      type="button"
+                      onClick={confirmBooking}
+                      className="mt-4 w-full rounded-2xl border border-[#4169e1]/40 bg-[#4169e1] px-6 py-4 text-center text-base font-black uppercase tracking-[0.16em] text-white hover:bg-[#3558c9]"
+                    >
+                      Confirm Booking
+                    </button>
+                  ) : null}
                 </div>
               </div>
 
@@ -2266,31 +2531,21 @@ export default function ConcealCarryTrainingWebsite() {
 
                 {loadingPaymentIntent ? (
                   <div className="mt-6 rounded-2xl border border-[#d9dee8] bg-white p-5 text-[#6b7280]">
-                    Loading secure payment form...
-                  </div>
-                ) : null}
-
-                {paymentLoadError ? (
-                  <div className="mt-6 rounded-2xl border border-[#e85b66]/20 bg-[#fff3f4] p-5 text-[#b42318]">
-                    {paymentLoadError}
+                    Redirecting to Stripe Checkout...
                   </div>
                 ) : null}
 
                 <div className="mt-6">
-                  <StripePaymentPanel
-                    publishableKey={publishableKey}
-                    clientSecret={clientSecret}
-                    customerName={formData.name}
-                    customerEmail={formData.email}
-                    onSuccess={handlePaymentSuccess}
+                  <HostedCheckoutPanel
+                    paymentMode={paymentMode}
+                    selectedPrice={getSelectedPrice()}
+                    selectedDeposit={getSelectedDeposit()}
+                    loading={loadingPaymentIntent}
+                    errorMessage={paymentLoadError}
+                    paymentCompleted={paymentCompleted}
+                    onCheckout={() => startStripeCheckout(paymentMode)}
                   />
                 </div>
-
-                {paymentIntentId ? (
-                  <div className="mt-4 rounded-2xl border border-[#4169e1]/20 bg-[#f5f8ff] p-4 text-sm text-[#3558c9]">
-                    Payment completed successfully.
-                  </div>
-                ) : null}
               </div>
             </div>
           )}
@@ -2343,33 +2598,25 @@ export default function ConcealCarryTrainingWebsite() {
               <div className="mt-6 grid gap-4">
                 <input
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
+                  onChange={(e) => updateCombinedName(e.target.value)}
                   className="rounded-2xl border border-[#d9dee8] bg-white px-5 py-4 text-[#111111] placeholder:text-[#6b7280] outline-none"
                   placeholder="Full Name"
                 />
                 <input
                   value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
+                  onChange={(e) => updateFormFields({ phone: e.target.value })}
                   className="rounded-2xl border border-[#d9dee8] bg-white px-5 py-4 text-[#111111] placeholder:text-[#6b7280] outline-none"
                   placeholder="Phone Number"
                 />
                 <input
                   value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
+                  onChange={(e) => updateFormFields({ email: e.target.value })}
                   className="rounded-2xl border border-[#d9dee8] bg-white px-5 py-4 text-[#111111] placeholder:text-[#6b7280] outline-none"
                   placeholder="Email Address"
                 />
                 <select
                   value={formData.type}
-                  onChange={(e) =>
-                    setFormData({ ...formData, type: e.target.value })
-                  }
+                  onChange={(e) => updateFormFields({ type: e.target.value })}
                   className="rounded-2xl border border-[#d9dee8] bg-white px-5 py-4 text-[#111111] outline-none"
                 >
                   <option value="">Select Training Type</option>
@@ -2381,7 +2628,7 @@ export default function ConcealCarryTrainingWebsite() {
                 <textarea
                   value={formData.message}
                   onChange={(e) =>
-                    setFormData({ ...formData, message: e.target.value })
+                    updateFormFields({ message: e.target.value })
                   }
                   className="min-h-[140px] rounded-2xl border border-[#d9dee8] bg-white px-5 py-4 text-[#111111] placeholder:text-[#6b7280] outline-none"
                   placeholder="Questions about paperwork, eligibility, scheduling, or training"
@@ -2392,7 +2639,7 @@ export default function ConcealCarryTrainingWebsite() {
                     type="checkbox"
                     checked={formData.smsConsent}
                     onChange={(e) =>
-                      setFormData({ ...formData, smsConsent: e.target.checked })
+                      updateFormFields({ smsConsent: e.target.checked })
                     }
                     className="mt-1 h-4 w-4 rounded border-[#cbd5e1]"
                   />
@@ -2431,25 +2678,24 @@ export default function ConcealCarryTrainingWebsite() {
     {
       icon: "🛡️",
       title: "Safety-First Instruction",
-      text: "Every class is built around responsible handling, clear guidance, and real defensive awareness.",
+      text: "Every class is built around responsible handling, clear instruction, and real defensive awareness.",
     },
     {
       icon: "📘",
-      title: "Clear Illinois Guidance",
-      text: "We help students understand requirements, qualification standards, and what to expect before class day.",
+      title: "Application Assistance",
+      text: "We help students understand requirements, qualification standards, and application steps before class day.",
     },
     {
       icon: "🎯",
-      title: "Practical Range Support",
-      text: "Hands-on training and qualification support designed to build confidence, control, and consistency.",
+      title: "CCL Range Qualifications",
+      text: "Hands-on training and CCL range qualification support designed to build confidence, control, and consistency.",
     },
   ];
 
   const trustBadges = [
-    "Professional Instruction",
-    "Structured Booking",
+    "Certified Instructors",
     "Weekday Availability",
-    "Certificate Guidance",
+    "Application Assistance",
     "Supportive Environment",
   ];
 
@@ -2500,9 +2746,8 @@ export default function ConcealCarryTrainingWebsite() {
           </h1>
 
           <p className="mt-6 max-w-3xl text-lg leading-8 text-[#4b5563] sm:text-xl">
-            Professional Illinois concealed carry instruction with structured
-            booking, practical training, and a clear path toward responsible
-            firearm ownership.
+            Professional Illinois concealed carry instruction, practical
+            training, and a clear path toward responsible firearm ownership.
           </p>
 
           <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -2528,10 +2773,10 @@ export default function ConcealCarryTrainingWebsite() {
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             {[
-              "Certified Instruction",
+              "Certified Instructors",
               "Weekday Classes",
-              "Range Guidance",
-              "Certificate Support",
+              "CCL Range Qualifications",
+              "Application Assistance",
             ].map((item) => (
               <div
                 key={item}
@@ -2555,8 +2800,8 @@ export default function ConcealCarryTrainingWebsite() {
                 Train With Confidence From Day One
               </h2>
               <p className="mt-4 max-w-3xl leading-8 text-white/80">
-                We help students move from interest to preparation with a cleaner
-                process, practical instruction, and supportive guidance that
+                We help students move from interest to preparation with a clear
+                process, practical instruction, and application assistance that
                 keeps everything clear from booking through qualification.
               </p>
             </div>
@@ -2565,7 +2810,7 @@ export default function ConcealCarryTrainingWebsite() {
               {[
                 "Beginner Friendly",
                 "Professional Standards",
-                "Structured Process",
+                "Application Assistance",
               ].map((item) => (
                 <div
                   key={item}
@@ -2641,12 +2886,11 @@ export default function ConcealCarryTrainingWebsite() {
           </h2>
         </div>
 
-        <div className="mt-10 grid gap-5 md:grid-cols-4">
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
           {[
             "First-Time Students",
             "Renewal Students",
             "Veterans",
-            "Students Needing Guidance",
           ].map((item) => (
             <div key={item} className={cardClass}>
               <ScanLine />
@@ -2708,9 +2952,6 @@ export default function ConcealCarryTrainingWebsite() {
             </h2>
             <ul className="mt-6 space-y-3 text-[#4b5563]">
               <li>• State ID or Driver’s License</li>
-              <li>• FOID card</li>
-              <li>• CCL for renewals</li>
-              <li>• Completed paperwork in black ink</li>
               <li>• DD-214 if claiming veteran credit</li>
             </ul>
           </div>
