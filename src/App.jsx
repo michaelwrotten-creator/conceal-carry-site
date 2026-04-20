@@ -118,6 +118,76 @@ function buildFormState(next = {}) {
   return merged;
 }
 
+function getApiBaseCandidates(apiBase) {
+  const explicitBase = String(apiBase || "").trim().replace(/\/$/, "");
+  const candidates = [];
+
+  if (explicitBase) {
+    candidates.push(explicitBase);
+  }
+
+  candidates.push("");
+
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    if (/^(localhost|127\.0\.0\.1)$/.test(host)) {
+      candidates.push("http://localhost:4242");
+    }
+  }
+
+  return [...new Set(candidates)];
+}
+
+function looksLikeHtmlError(text) {
+  return /<!doctype html|<html|the page could not be found|not_found/i.test(
+    String(text || "")
+  );
+}
+
+async function postJsonWithFallback(
+  apiBase,
+  path,
+  payload,
+  unavailableMessage = "The backend is not available at this address."
+) {
+  let lastError = null;
+
+  for (const base of getApiBaseCandidates(apiBase)) {
+    try {
+      const response = await fetch(`${base}${path}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const text = await response.text();
+
+      let data = null;
+      try {
+        data = text ? JSON.parse(text) : {};
+      } catch {
+        if (looksLikeHtmlError(text)) {
+          lastError = new Error(unavailableMessage);
+          continue;
+        }
+        throw new Error(`Backend did not return JSON. Response was: ${text}`);
+      }
+
+      if (!response.ok) {
+        throw new Error(data?.error || "Request failed.");
+      }
+
+      return data;
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error("Unable to reach the backend.");
+}
+
 const WHY_CHOOSE_IPS_REPLY =
   "You should choose Illinois Protective Services because the focus is on teaching responsible American citizens gun rights and firearm ownership with professionalism, courteous service, integrity, and transparency. The training is structured, safety-focused, and designed to help students leave more confident, better informed, and prepared to handle firearm ownership responsibly. If you want, I can also help you compare the classes and choose the right one for your situation.";
 
@@ -421,9 +491,11 @@ function SmartAIChat({
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
   const recognitionRef = useRef(null);
   const handleSendRef = useRef(null);
   const scrollAnchorRef = useRef(null);
+  const speechEnabledRef = useRef(false);
 
   const contactPhone = "(224) 248-7027";
   const contactEmail = "support@illinoisprotectiveservices.com";
@@ -438,8 +510,7 @@ function SmartAIChat({
     const params = new URLSearchParams(window.location.search);
     if (params.get("ai") === "missedcall") {
       setOpen(true);
-      setMessages((prev) => [
-        ...prev,
+      setMessages([
         {
           role: "ai",
           text: MISSED_CALL_ASSISTANT_MESSAGE,
@@ -463,13 +534,78 @@ function SmartAIChat({
       if (text) handleSendRef.current?.(text);
     };
 
-    recognition.onerror = () => setListening(false);
+    recognition.onerror = (event) => {
+      setListening(false);
+
+      const voiceErrorReply =
+        {
+          "not-allowed":
+            "Microphone access is blocked right now. Please allow mic permission in your browser and try again.",
+          "service-not-allowed":
+            "Voice input is not allowed in this browser right now. Please use the keyboard or open the site in a browser that supports microphone access.",
+          "audio-capture":
+            "I could not detect a microphone. Please check your mic connection and try again.",
+          "no-speech":
+            "I did not hear anything that time. Please try the mic again or type your question.",
+          aborted: "Voice input was canceled.",
+        }[event?.error] ||
+        "Voice input is unavailable right now. Please type your question and I will still help you.";
+
+      setMessages((prev) => [...prev, { role: "ai", text: voiceErrorReply }]);
+    };
     recognition.onend = () => setListening(false);
     recognitionRef.current = recognition;
   }, [loading]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!speechEnabledRef.current) return;
+    if (!soundEnabled) {
+      window.speechSynthesis?.cancel?.();
+    }
+  }, [soundEnabled]);
+
+  function speakReply(text) {
+    if (
+      typeof window === "undefined" ||
+      !soundEnabled ||
+      !speechEnabledRef.current ||
+      !("speechSynthesis" in window)
+    ) {
+      return;
+    }
+
+    const spokenText = String(text || "").trim();
+    if (!spokenText) return;
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(spokenText);
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    window.speechSynthesis.speak(utterance);
+  }
+
   function startVoice() {
-    if (!recognitionRef.current || loading) return;
+    speechEnabledRef.current = true;
+
+    if (listening) {
+      recognitionRef.current?.stop?.();
+      setListening(false);
+      return;
+    }
+
+    if (!recognitionRef.current || loading) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "ai",
+          text: "Voice input is not supported in this browser. Please type your question and I will still help you.",
+        },
+      ]);
+      return;
+    }
+
     setListening(true);
     recognitionRef.current.start();
   }
@@ -942,50 +1078,43 @@ function SmartAIChat({
 
   async function requestAssistantReply(text, history) {
     try {
-      const response = await fetch(`${apiBase}/api/assistant`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      const data = await postJsonWithFallback(
+        apiBase,
+        "/api/assistant",
+        {
           message: text,
           history: history.slice(-8),
           siteContext: {
-            page: currentPage,
-            bookingSummary: currentBookingSummary(),
-            classServices: classServices.map((service) => ({
-              title: service.title,
-              price: service.price,
-              duration: service.duration,
-              audience: service.audience,
-              description: service.description,
-              included: service.included,
-              requirements: service.requirements,
-              pricingNotes: service.pricingNotes,
-            })),
-            faqs,
-            instructors,
-            contact: {
-              phone: contactPhone,
-              email: contactEmail,
-            },
-            policies: {
-              certificateReplacementFee: 75,
-              certificateReplacementMessage:
-                "If you lost your certificate, the replacement fee is $75.00.",
-              certificateCompletionMessage:
-                "Everyone who passes the class receives a certificate of completion at the end of class.",
-              whyChooseMessage: WHY_CHOOSE_IPS_REPLY,
-            },
+          page: currentPage,
+          bookingSummary: currentBookingSummary(),
+          classServices: classServices.map((service) => ({
+            title: service.title,
+            price: service.price,
+            duration: service.duration,
+            audience: service.audience,
+            description: service.description,
+            included: service.included,
+            requirements: service.requirements,
+            pricingNotes: service.pricingNotes,
+          })),
+          faqs,
+          instructors,
+          contact: {
+            phone: contactPhone,
+            email: contactEmail,
           },
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data?.error || "Assistant request failed.");
-      }
+          policies: {
+            certificateReplacementFee: 75,
+            certificateReplacementMessage:
+              "If you lost your certificate, the replacement fee is $75.00.",
+            certificateCompletionMessage:
+              "Everyone who passes the class receives a certificate of completion at the end of class.",
+            whyChooseMessage: WHY_CHOOSE_IPS_REPLY,
+          },
+        },
+      },
+        "The assistant backend is not available at this address."
+      );
 
       const reply = normalizeAssistantReply(data?.reply);
       if (reply) {
@@ -1000,6 +1129,7 @@ function SmartAIChat({
   }
 
   async function handleSend(textOverride) {
+    speechEnabledRef.current = true;
     const text = (textOverride ?? input).trim();
     if (!text || loading) return;
 
@@ -1011,12 +1141,14 @@ function SmartAIChat({
     if (localAction) {
       runLocalAction(localAction);
       setMessages((prev) => [...prev, { role: "ai", text: localAction.reply }]);
+      speakReply(localAction.reply);
       return;
     }
 
     setLoading(true);
     const aiReply = await requestAssistantReply(text, nextMessages);
     setMessages((prev) => [...prev, { role: "ai", text: aiReply }]);
+    speakReply(aiReply);
     setLoading(false);
   }
 
@@ -1060,6 +1192,17 @@ function SmartAIChat({
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  speechEnabledRef.current = true;
+                  setSoundEnabled((prev) => !prev);
+                }}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 hover:bg-white/10"
+                title={soundEnabled ? "Sound on" : "Sound off"}
+              >
+                {soundEnabled ? "🔊" : "🔇"}
+              </button>
               <button
                 type="button"
                 onClick={startVoice}
@@ -1206,18 +1349,14 @@ export default function ConcealCarryTrainingWebsite() {
       setPaymentLoadError("");
 
       if (snapshot?.formData?.smsConsent) {
-        fetch(`${API_BASE}/api/post-booking-sms`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            customerName: getCustomerName(snapshot.formData || {}),
-            customerPhone: snapshot.formData.phone || "",
-            serviceTitle: snapshot.serviceTitle || "",
-            bookingDate: snapshot.selectedDate || "",
-            bookingTime: snapshot.selectedTime || "",
-            smsConsent: snapshot.formData.smsConsent,
-          }),
-        }).catch((error) => {
+        postJsonWithFallback(API_BASE, "/api/post-booking-sms", {
+          customerName: getCustomerName(snapshot.formData || {}),
+          customerPhone: snapshot.formData.phone || "",
+          serviceTitle: snapshot.serviceTitle || "",
+          bookingDate: snapshot.selectedDate || "",
+          bookingTime: snapshot.selectedTime || "",
+          smsConsent: snapshot.formData.smsConsent,
+        }, "The SMS follow-up backend is not available at this address.").catch((error) => {
           console.error("SMS follow-up request failed:", error);
         });
       }
@@ -1618,12 +1757,10 @@ export default function ConcealCarryTrainingWebsite() {
     }
 
     try {
-      const response = await fetch(`${API_BASE}/api/create-checkout-session`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      const data = await postJsonWithFallback(
+        API_BASE,
+        "/api/create-checkout-session",
+        {
           serviceId: normalizedServiceId,
           paymentMode: mode,
           customerName,
@@ -1631,24 +1768,11 @@ export default function ConcealCarryTrainingWebsite() {
           customerPhone: preparedFormData.phone,
           bookingDate: selectedDate,
           bookingTime: selectedTime,
-          origin:
-            typeof window !== "undefined" ? window.location.origin : "",
+          origin: typeof window !== "undefined" ? window.location.origin : "",
           smsConsent: preparedFormData.smsConsent,
-        }),
-      });
-
-      const text = await response.text();
-
-      let data;
-      try {
-        data = JSON.parse(text);
-      } catch {
-        throw new Error(`Backend did not return JSON. Response was: ${text}`);
-      }
-
-      if (!response.ok) {
-        throw new Error(data.error || "Unable to start secure checkout.");
-      }
+        },
+        "The checkout backend is not available at this address."
+      );
 
       if (!data.checkoutUrl) {
         throw new Error("Stripe checkout URL was not returned.");
