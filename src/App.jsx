@@ -198,6 +198,31 @@ async function postJsonWithFallback(
   throw lastError || new Error("Unable to reach the backend.");
 }
 
+function redirectToTopLevel(url) {
+  if (typeof window === "undefined") return;
+
+  const targetUrl = String(url || "").trim();
+  if (!targetUrl) return;
+
+  try {
+    if (window.top && window.top !== window) {
+      window.top.location.href = targetUrl;
+      return;
+    }
+  } catch {
+    // Ignore cross-frame access issues and keep falling back.
+  }
+
+  try {
+    const opened = window.open(targetUrl, "_top");
+    if (opened) return;
+  } catch {
+    // Fall back to same-frame navigation below.
+  }
+
+  window.location.assign(targetUrl);
+}
+
 const WHY_CHOOSE_IPS_REPLY =
   "You should choose Illinois Protective Services because the focus is on teaching responsible American citizens gun rights and firearm ownership with professionalism, courteous service, integrity, and transparency. The training is structured, safety-focused, and designed to help students leave more confident, better informed, and prepared to handle firearm ownership responsibly. If you want, I can also help you compare the classes and choose the right one for your situation.";
 
@@ -1788,7 +1813,7 @@ export default function ConcealCarryTrainingWebsite() {
         throw new Error("Stripe checkout URL was not returned.");
       }
 
-      window.location.assign(data.checkoutUrl);
+      redirectToTopLevel(data.checkoutUrl);
     } catch (error) {
       console.error("startStripeCheckout error:", error);
       setPaymentLoadError(error.message || "Unable to load secure checkout.");
