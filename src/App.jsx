@@ -1328,19 +1328,19 @@ function SmartAIChat({
       </button>
 
       {open && (
-        <div className="fixed inset-x-4 bottom-24 top-24 z-[999999] flex flex-col overflow-hidden rounded-[2rem] border border-[#c7d6ff] bg-white shadow-[0_28px_80px_rgba(28,56,134,0.24)] sm:inset-x-auto sm:right-6 sm:top-16 sm:w-[420px]">
-          <div className="bg-[linear-gradient(180deg,#2873f0_0%,#2366d6_100%)] px-5 pb-5 pt-4 text-white">
+        <div className="fixed inset-x-4 bottom-24 top-24 z-[999999] flex max-h-[calc(100vh-6rem)] flex-col overflow-hidden rounded-[2rem] border border-[#c7d6ff] bg-white shadow-[0_28px_80px_rgba(28,56,134,0.24)] sm:inset-x-auto sm:right-6 sm:top-16 sm:w-[392px]">
+          <div className="bg-[linear-gradient(180deg,#2873f0_0%,#2366d6_100%)] px-5 pb-4 pt-4 text-white">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex rounded-full bg-[#1d5fcc] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
                 <button
                   type="button"
-                  className="rounded-full bg-[#2a73ea] px-5 py-2 text-sm font-bold text-white shadow-[0_8px_18px_rgba(0,0,0,0.14)]"
+                  className="rounded-full bg-[#2a73ea] px-4 py-2 text-sm font-bold text-white shadow-[0_8px_18px_rgba(0,0,0,0.14)]"
                 >
                   Chat
                 </button>
                 <button
                   type="button"
-                  className="rounded-full px-4 py-2 text-sm font-semibold text-white/80"
+                  className="rounded-full px-3 py-2 text-sm font-semibold text-white/80"
                 >
                   Helpdesk
                 </button>
@@ -1381,20 +1381,20 @@ function SmartAIChat({
               </div>
             </div>
 
-            <div className="text-center">
+            <div className="mx-auto max-w-[290px] text-center">
               <div className="text-[13px] font-semibold uppercase tracking-[0.28em] text-white/72">
                 Training Assistant
               </div>
-              <div className="mt-2 text-[1.95rem] font-black leading-none">
+              <div className="mt-2 text-[1.55rem] font-black leading-[1.05]">
                 Talk with Illinois
               </div>
-              <div className="mt-1 text-[1.95rem] font-black leading-none">
+              <div className="mt-1 text-[1.55rem] font-black leading-[1.05]">
                 Protective Services
               </div>
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-y-auto bg-white px-4 pb-4 pt-5">
+          <div className="min-h-0 flex-1 overflow-y-auto bg-white px-4 pb-4 pt-4">
             {messages.map((msg, index) => (
               <div key={index} className="mb-4">
                 {msg.role === "ai" ? (
