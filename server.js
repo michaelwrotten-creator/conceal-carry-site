@@ -357,10 +357,17 @@ function getServiceListReply(siteContext = {}) {
 
   return services
     .map((service) => {
-      const deposit = Math.round((Number(service.price || 0) / 3) * 100) / 100;
+      const deposit =
+        typeof service.deposit === "number"
+          ? service.deposit
+          : Math.round((Number(service.price || 0) / 3) * 100) / 100;
+      const depositText =
+        service.allowDeposit === false || deposit <= 0
+          ? "full payment required."
+          : `deposit $${deposit.toFixed(2)}.`;
       return `${service.title}: ${service.duration}, full payment $${Number(
         service.price || 0
-      ).toFixed(2)}, deposit $${deposit.toFixed(2)}.`;
+      ).toFixed(2)}, ${depositText}`;
     })
     .join(" ");
 }
@@ -597,25 +604,29 @@ const SERVICES = {
     id: "mini",
     title: "Mini Class",
     price: 50,
-    deposit: 16.67,
+    deposit: 0,
+    allowDeposit: false,
   },
   renewal3: {
     id: "renewal3",
     title: "3-Hour Renewal Course",
     price: 75,
     deposit: 25,
+    allowDeposit: true,
   },
   veteran8: {
     id: "veteran8",
     title: "8-Hours Class Veteran",
     price: 100,
     deposit: 33.33,
+    allowDeposit: true,
   },
   ccl16: {
     id: "ccl16",
     title: "16-Hour CCL Course",
     price: 225,
     deposit: 75,
+    allowDeposit: true,
   },
 };
 const SERVICE_ID_ALIASES = {
@@ -694,9 +705,13 @@ app.post("/api/create-checkout-session", async (req, res) => {
       typeof origin === "string" && origin.startsWith("http")
         ? origin
         : `http://localhost:${PORT}`;
-    const amount = paymentMode === "deposit" ? service.deposit : service.price;
+    const useDeposit =
+      paymentMode === "deposit" &&
+      service.allowDeposit !== false &&
+      Number(service.deposit || 0) > 0;
+    const amount = useDeposit ? service.deposit : service.price;
     const itemLabel =
-      paymentMode === "deposit"
+      useDeposit
         ? `${service.title} Deposit`
         : `${service.title} Full Payment`;
 
@@ -722,7 +737,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
       metadata: {
         serviceId: service.id,
         serviceTitle: service.title,
-        paymentMode: paymentMode || "full",
+        paymentMode: useDeposit ? "deposit" : "full",
         customerName: customerName || "",
         customerEmail: customerEmail || "",
         customerPhone: customerPhone || "",

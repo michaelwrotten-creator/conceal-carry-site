@@ -380,7 +380,8 @@ function ExpandableClassCard({
   formatPrice,
 }) {
   const [open, setOpen] = useState(false);
-  const deposit = Math.round((service.price / 3) * 100) / 100;
+  const deposit = getAssistantDeposit(service);
+  const hasDeposit = serviceSupportsDeposit(service);
 
   return (
     <div className="relative h-full overflow-hidden rounded-[2rem] border border-[#d9dee8] bg-white p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
@@ -405,7 +406,9 @@ function ExpandableClassCard({
             {formatPrice(service.price)}
           </div>
           <div className="text-sm text-[#4169e1]">
-            Deposit {formatPrice(deposit)}
+            {hasDeposit
+              ? `Deposit ${formatPrice(deposit)}`
+              : "Full payment required"}
           </div>
         </div>
 
@@ -459,7 +462,11 @@ function ExpandableClassCard({
       </div>
 
       {open && (
-        <div className="mt-6 grid gap-4 lg:grid-cols-3">
+        <div
+          className={`mt-6 grid gap-4 ${
+            service.optionalAddOns?.length ? "xl:grid-cols-4" : "lg:grid-cols-3"
+          }`}
+        >
           <div className="rounded-2xl border border-[#d9dee8] bg-[#f8fbff] p-5">
             <div className="text-sm font-black uppercase tracking-[0.16em] text-[#4169e1]">
               Included
@@ -492,6 +499,19 @@ function ExpandableClassCard({
               ))}
             </ul>
           </div>
+
+          {service.optionalAddOns?.length ? (
+            <div className="rounded-2xl border border-[#d9dee8] bg-[#f7fbff] p-5">
+              <div className="text-sm font-black uppercase tracking-[0.16em] text-[#4169e1]">
+                Optional Add-Ons
+              </div>
+              <ul className="mt-3 space-y-2 text-[#4b5563]">
+                {service.optionalAddOns.map((item) => (
+                  <li key={item}>• {item}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </div>
       )}
     </div>
@@ -519,8 +539,14 @@ const MISSED_CALL_ASSISTANT_MESSAGE =
   "Welcome back. I can help with class selection, pricing, booking, instructor questions, certificate replacement questions, concealed carry questions, and many general questions.";
 
 function getAssistantDeposit(service) {
+  if (!service) return 0;
+  if (typeof service.deposit === "number") return service.deposit;
   if (!service?.price) return 0;
   return Math.round((service.price / 3) * 100) / 100;
+}
+
+function serviceSupportsDeposit(service) {
+  return Boolean(service?.allowDeposit && getAssistantDeposit(service) > 0);
 }
 
 function normalizeAssistantReply(text) {
@@ -779,9 +805,11 @@ function SmartAIChat({
     return classServices
       .map(
         (s) =>
-          `${s.title}: full payment ${formatPrice(
-            s.price
-          )}, deposit ${formatPrice(getAssistantDeposit(s))}`
+          `${s.title}: full payment ${formatPrice(s.price)}${
+            serviceSupportsDeposit(s)
+              ? `, deposit ${formatPrice(getAssistantDeposit(s))}`
+              : ", full payment required"
+          }`
       )
       .join("; ");
   }
@@ -792,7 +820,11 @@ function SmartAIChat({
 
     return `${service.title} is selected. Full price is ${formatPrice(
       getSelectedPrice()
-    )}. Deposit is ${formatPrice(getSelectedDeposit())}. Date: ${
+    )}. ${
+      serviceSupportsDeposit(service)
+        ? `Deposit is ${formatPrice(getSelectedDeposit())}.`
+        : "Full payment is required."
+    } Date: ${
       selectedDate || "not selected"
     }. Time: ${selectedTime || "not selected"}.`;
   }
@@ -815,9 +847,11 @@ function SmartAIChat({
     return normalizeAssistantReply(
       `${service.title} is ${service.duration} and costs ${formatPrice(
         service.price
-      )}, with a deposit of ${formatPrice(
-        getAssistantDeposit(service)
-      )}. ${service.description} ${service.audience} Included: ${included}. Requirements: ${requirements}.`
+      )}. ${
+        serviceSupportsDeposit(service)
+          ? `The deposit is ${formatPrice(getAssistantDeposit(service))}.`
+          : "Full payment is required for this class."
+      } ${service.description} ${service.audience} Included: ${included}. Requirements: ${requirements}.`
     );
   }
 
@@ -1003,11 +1037,11 @@ function SmartAIChat({
       if (matched) {
         return {
           type: "reply-only",
-          reply: `${matched.title} costs ${formatPrice(
-            matched.price
-          )}. The deposit is ${formatPrice(
-            getAssistantDeposit(matched)
-          )}. If you want, I can also explain what is included in that class.`,
+          reply: `${matched.title} costs ${formatPrice(matched.price)}. ${
+            serviceSupportsDeposit(matched)
+              ? `The deposit is ${formatPrice(getAssistantDeposit(matched))}.`
+              : "Full payment is required for that class."
+          } If you want, I can also explain what is included in that class.`,
         };
       }
 
@@ -1153,6 +1187,14 @@ function SmartAIChat({
       };
     }
 
+    if (lower.includes("foid")) {
+      return {
+        type: "reply-only",
+        reply:
+          "For FOID card questions, please use the official Illinois State Police FAQ: https://www.ispfsb.com/Public/FAQ.aspx",
+      };
+    }
+
     if (
       lower.includes("pass") ||
       lower.includes("qualification score") ||
@@ -1227,12 +1269,15 @@ function SmartAIChat({
           classServices: classServices.map((service) => ({
             title: service.title,
             price: service.price,
+            deposit: service.deposit,
+            allowDeposit: service.allowDeposit,
             duration: service.duration,
             audience: service.audience,
             description: service.description,
             included: service.included,
             requirements: service.requirements,
             pricingNotes: service.pricingNotes,
+            optionalAddOns: service.optionalAddOns,
           })),
           faqs,
           instructors,
@@ -1632,11 +1677,23 @@ export default function ConcealCarryTrainingWebsite() {
     "5:00 PM",
   ];
 
+  const optionalAddOns = [
+    "Range fee — $35.00",
+    "Ammunition — $25.00",
+    "Eye/Ear Protection — $7.00",
+    "Targets — $2.00 each",
+    "Certificate Black Frame — $10.00",
+    "Book — $35.00",
+    "Application Assistance fee — $10.00",
+  ];
+
   const classServices = [
     {
       id: "mini",
       title: "Mini Class",
       price: 50,
+      deposit: 0,
+      allowDeposit: false,
       duration: "1 hr 30 min",
       description:
         "Quick training session designed for basic instruction, refreshers, and introductory firearm safety.",
@@ -1647,9 +1704,10 @@ export default function ConcealCarryTrainingWebsite() {
         "Hands-on instructor support",
         "Certificate of completion for everyone who passes the class",
       ],
+      optionalAddOns,
       requirements: ["State ID or driver's license"],
       pricingNotes: [
-        "Deposit is one-third of class price",
+        "Full payment is required for the Mini Class",
         "Range fee may apply separately",
         "No refunds",
       ],
@@ -1658,6 +1716,8 @@ export default function ConcealCarryTrainingWebsite() {
       id: "renewal3",
       title: "3-Hour Renewal Course",
       price: 75,
+      deposit: 25,
+      allowDeposit: true,
       duration: "3 hr",
       description:
         "Renewal training for qualified students who need a 3-hour concealed carry renewal course.",
@@ -1667,6 +1727,7 @@ export default function ConcealCarryTrainingWebsite() {
         "Certificate of completion for everyone who passes the class",
         "Structured classroom review",
       ],
+      optionalAddOns,
       requirements: ["State ID or driver's license"],
       pricingNotes: [
         "Deposit is one-third of class price",
@@ -1678,6 +1739,8 @@ export default function ConcealCarryTrainingWebsite() {
       id: "veteran8",
       title: "8-Hours Class Veteran",
       price: 100,
+      deposit: 33.33,
+      allowDeposit: true,
       duration: "8 hr",
       description:
         "Extended training course for veterans with structured instruction and state-credit considerations.",
@@ -1688,6 +1751,7 @@ export default function ConcealCarryTrainingWebsite() {
         "Structured training support",
         "Certificate of completion for everyone who passes the class",
       ],
+      optionalAddOns,
       requirements: [
         "DD-214 showing honorable discharge",
         "State ID or driver's license",
@@ -1702,6 +1766,8 @@ export default function ConcealCarryTrainingWebsite() {
       id: "ccl16",
       title: "16-Hour CCL Course",
       price: 225,
+      deposit: 75,
+      allowDeposit: true,
       duration: "16 hr",
       description:
         "Full concealed carry license training course for students who need complete instruction.",
@@ -1732,10 +1798,6 @@ export default function ConcealCarryTrainingWebsite() {
     {
       src: "/training-action-user/IMG_3702.jpg",
       alt: "Illinois Protective Services training photo 3",
-    },
-    {
-      src: "/training-action-user/IMG_3788.jpg",
-      alt: "Illinois Protective Services training photo 4",
     },
     {
       src: "/training-action-user/IMG_3835.jpg",
@@ -1827,6 +1889,18 @@ export default function ConcealCarryTrainingWebsite() {
       q: "How much is a replacement certificate?",
       a: "If you lost your certificate, the replacement fee is $75.00.",
     },
+    {
+      q: "Where can I get help with FOID card questions?",
+      a: "For FOID card questions, please use the official Illinois State Police FAQ.",
+      href: "https://www.ispfsb.com/Public/FAQ.aspx",
+      linkLabel: "Illinois State Police FOID FAQ",
+    },
+    {
+      q: "Where can I get help with CCL card questions?",
+      a: "For CCL card questions, please use the official Illinois State Police FAQ.",
+      href: "https://isp.illinois.gov/FoidCardReviewBoard/FAQs",
+      linkLabel: "Illinois State Police CCL FAQ",
+    },
   ];
 
   const assistantInstructors = [
@@ -1875,8 +1949,18 @@ export default function ConcealCarryTrainingWebsite() {
   function getSelectedDeposit() {
     const selected = getSelectedService();
     if (!selected) return 0;
-    return Math.round((selected.price / 3) * 100) / 100;
+    return getAssistantDeposit(selected);
   }
+
+  const selectedServiceSupportsDeposit = serviceSupportsDeposit(
+    getSelectedService()
+  );
+
+  useEffect(() => {
+    if (!selectedServiceSupportsDeposit && paymentMode === "deposit") {
+      setPaymentMode("full");
+    }
+  }, [selectedServiceSupportsDeposit, paymentMode]);
 
   function formatPrice(amount) {
     return `$${amount.toFixed(2)}`;
@@ -2244,8 +2328,8 @@ export default function ConcealCarryTrainingWebsite() {
             </h1>
 
             <p className="mt-6 max-w-3xl text-lg leading-8 text-[#4b5563]">
-              Illinois Protective Services Goal Is To Teach Every Responsible
-              American Citizen Gun Rights And Firearm Ownership. We Pride
+              Our Goal Is To Teach Every Responsible American Citizen Gun Rights
+              And Firearm Ownership. We Pride
               Ourselves On Professionalism, Courteous, Integrity, And
               Transparency. We Don&apos;t Just Aim To Shoot. We Aim To Please.
             </p>
@@ -2514,7 +2598,9 @@ export default function ConcealCarryTrainingWebsite() {
                             {formatPrice(service.price)}
                           </div>
                           <div className="text-xs text-[#6b7280]">
-                            Deposit {formatPrice(Math.round((service.price / 3) * 100) / 100)}
+                            {serviceSupportsDeposit(service)
+                              ? `Deposit ${formatPrice(getAssistantDeposit(service))}`
+                              : "Full payment required"}
                           </div>
                         </div>
                       </div>
@@ -2585,6 +2671,9 @@ export default function ConcealCarryTrainingWebsite() {
                       </button>
                     ))}
                   </div>
+                  <div className="mt-6 text-center text-lg font-black uppercase tracking-[0.16em] text-[#4169e1]">
+                    Review Availability
+                  </div>
                 </div>
 
                 <div className="mt-8 relative overflow-hidden rounded-[2rem] border border-[#d9dee8] bg-white p-6 shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
@@ -2616,7 +2705,7 @@ export default function ConcealCarryTrainingWebsite() {
                 <div className="inline-flex rounded-full border border-[#4169e1]/20 bg-[#f5f8ff] px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-[#4169e1]">
                   Step 2 Summary
                 </div>
-                <h2 className="mt-4 text-2xl font-black uppercase">Review Availability</h2>
+                <h2 className="mt-4 text-2xl font-black uppercase">Availability Summary</h2>
 
                 <div className="mt-6 space-y-4 text-[#374151]">
                   <div>
@@ -2642,7 +2731,9 @@ export default function ConcealCarryTrainingWebsite() {
                       Deposit
                     </div>
                     <div className="mt-1 text-lg font-bold">
-                      {formatPrice(getSelectedDeposit())}
+                      {selectedServiceSupportsDeposit
+                        ? formatPrice(getSelectedDeposit())
+                        : "No deposit"}
                     </div>
                   </div>
 
@@ -2766,7 +2857,9 @@ export default function ConcealCarryTrainingWebsite() {
                       Deposit
                     </div>
                     <div className="mt-1 text-lg font-bold">
-                      {formatPrice(getSelectedDeposit())}
+                      {selectedServiceSupportsDeposit
+                        ? formatPrice(getSelectedDeposit())
+                        : "No deposit"}
                     </div>
                   </div>
 
@@ -2817,15 +2910,23 @@ export default function ConcealCarryTrainingWebsite() {
                     </div>
                     <div className="mt-3 grid gap-3 sm:grid-cols-2">
                       {[
-                        {
-                          value: "deposit",
-                          label: `Deposit — ${formatPrice(getSelectedDeposit())}`,
-                          detail: "Reserve your seat today",
-                        },
+                        ...(selectedServiceSupportsDeposit
+                          ? [
+                              {
+                                value: "deposit",
+                                label: `Deposit — ${formatPrice(
+                                  getSelectedDeposit()
+                                )}`,
+                                detail: "Reserve your seat today",
+                              },
+                            ]
+                          : []),
                         {
                           value: "full",
                           label: `Full Amount — ${formatPrice(getSelectedPrice())}`,
-                          detail: "Pay the full class amount now",
+                          detail: selectedServiceSupportsDeposit
+                            ? "Pay the full class amount now"
+                            : "This class requires full payment",
                         },
                       ].map((option) => (
                         <label
@@ -2939,7 +3040,7 @@ export default function ConcealCarryTrainingWebsite() {
                 </p>
                 <p>
                   <span className="font-bold text-[#111111]">Address:</span> 7601 S.
-                  Cicero Ave, Chicago, IL 60652
+                  Chicago, IL
                 </p>
               </div>
             </div>
@@ -3029,18 +3130,18 @@ export default function ConcealCarryTrainingWebsite() {
   const whyChooseUs = [
     {
       icon: "🛡️",
-      title: "Safety-First Instruction",
-      text: "Every class is built around responsible handling, clear instruction, and real defensive awareness.",
+      title: "Safety-First",
+      text: "Every class is built around firearm safety, firearm displine, and real defensive awareness.",
     },
     {
       icon: "📘",
       title: "Application Assistance",
-      text: "We help students understand requirements, qualification standards, and application steps before class day.",
+      text: "We help students understand requirements, qualification standards, and application steps.",
     },
     {
       icon: "🎯",
-      title: "CCL Range Qualifications",
-      text: "Hands-on training and CCL range qualification support designed to build confidence, control, and consistency.",
+      title: "Range Qualifications",
+      text: "Hands-on training and range qualification support designed to build confidence, control, and consistency.",
     },
   ];
 
@@ -3127,7 +3228,7 @@ export default function ConcealCarryTrainingWebsite() {
             {[
               "Certified Instructors",
               "Weekday Classes",
-              "CCL Range Qualifications",
+              "Range Qualifications",
               "Application Assistance",
             ].map((item) => (
               <div
@@ -3143,7 +3244,7 @@ export default function ConcealCarryTrainingWebsite() {
 
       <section className="border-b border-[#0f172a]/10 bg-[#0b1630] text-white">
         <div className="mx-auto max-w-7xl px-6 py-12 md:px-10">
-          <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+          <div className="mx-auto max-w-4xl text-center">
             <div>
               <div className="text-sm font-black uppercase tracking-[0.24em] text-[#8ea6ff]">
                 Trusted. Structured. Professional.
@@ -3151,26 +3252,11 @@ export default function ConcealCarryTrainingWebsite() {
               <h2 className="mt-3 text-3xl font-black uppercase sm:text-4xl">
                 Train With Confidence From Day One
               </h2>
-              <p className="mt-4 max-w-3xl leading-8 text-white/80">
+              <p className="mt-4 leading-8 text-white/80">
                 We help students move from interest to preparation with a clear
                 process, practical instruction, and application assistance that
                 keeps everything clear from booking through qualification.
               </p>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-              {[
-                "Beginner Friendly",
-                "Professional Standards",
-                "Application Assistance",
-              ].map((item) => (
-                <div
-                  key={item}
-                  className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-white/90"
-                >
-                  {item}
-                </div>
-              ))}
             </div>
           </div>
         </div>
@@ -3186,11 +3272,11 @@ export default function ConcealCarryTrainingWebsite() {
           </h2>
         </div>
 
-        <div className="mt-10 flex flex-wrap justify-center gap-4">
+        <div className="mt-10 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {trustBadges.map((item) => (
             <div
               key={item}
-              className="flex items-center gap-2 rounded-full border border-[#d9dee8] bg-white px-5 py-3 text-sm font-black uppercase tracking-[0.12em] text-[#374151] shadow-[0_10px_24px_rgba(15,23,42,0.05)]"
+              className="flex items-center justify-center gap-2 rounded-full border border-[#d9dee8] bg-white px-5 py-3 text-center text-sm font-black uppercase tracking-[0.12em] text-[#374151] shadow-[0_10px_24px_rgba(15,23,42,0.05)]"
             >
               <span className="text-xs text-blue-500">★</span>
               {item}
@@ -3271,7 +3357,7 @@ export default function ConcealCarryTrainingWebsite() {
                 text: "Professional instruction focused on safety, discipline, and clear range expectations.",
               },
               {
-                title: "Understand Illinois Requirements",
+                title: "Understand Illinois Law",
                 text: "Guidance on paperwork, qualification standards, and the importance of staying current on state law.",
               },
               {
@@ -3440,8 +3526,8 @@ export default function ConcealCarryTrainingWebsite() {
                 support@illinoisprotectiveservices.com
               </p>
               <p>
-                <span className="font-bold text-[#111111]">Address:</span> 7601 S.
-                Cicero Ave, Chicago, IL 60652
+                <span className="font-bold text-[#111111]">Address:</span> Chicago,
+                IL
               </p>
             </div>
             <button
@@ -3465,7 +3551,19 @@ export default function ConcealCarryTrainingWebsite() {
               {faqs.map((faq) => (
                 <div key={faq.q}>
                   <h3 className="text-lg font-black">{faq.q}</h3>
-                  <p className="mt-2 leading-7 text-[#4b5563]">{faq.a}</p>
+                  <p className="mt-2 leading-7 text-[#4b5563]">
+                    {faq.a}{" "}
+                    {faq.href ? (
+                      <a
+                        href={faq.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-bold text-[#4169e1] underline underline-offset-4"
+                      >
+                        {faq.linkLabel || faq.href}
+                      </a>
+                    ) : null}
+                  </p>
                 </div>
               ))}
             </div>
@@ -3501,7 +3599,7 @@ export default function ConcealCarryTrainingWebsite() {
               <div className="mt-3 space-y-2 text-white/75">
                 <div>(224) 248-7027</div>
                 <div>support@illinoisprotectiveservices.com</div>
-                <div>7601 S. Cicero Ave, Chicago, IL 60652</div>
+                <div>Chicago, IL</div>
               </div>
             </div>
 
