@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import Stripe from "stripe";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 
 dotenv.config();
 
@@ -911,6 +912,14 @@ app.post("/api/post-booking-sms", (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server listening on http://localhost:${PORT}`);
-});
+const isDirectRun =
+  process.argv[1] &&
+  fileURLToPath(import.meta.url) === process.argv[1];
+
+if (isDirectRun) {
+  app.listen(PORT, () => {
+    console.log(`Server listening on http://localhost:${PORT}`);
+  });
+}
+
+export default app;

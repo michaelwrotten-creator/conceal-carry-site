@@ -60,6 +60,7 @@ function OpeningGate({ onEnter }) {
 }
 
 const CHECKOUT_STORAGE_KEY = "ips_pending_checkout";
+const PUBLIC_API_FALLBACK = "https://conceal-carry-site.vercel.app";
 const SERVICE_ID_ALIASES = {
   "3hour": "renewal3",
   "8hour-veteran": "veteran8",
@@ -121,6 +122,11 @@ function buildFormState(next = {}) {
 function getApiBaseCandidates(apiBase) {
   const explicitBase = String(apiBase || "").trim().replace(/\/$/, "");
   const candidates = [];
+  const publicFallback = String(
+    import.meta.env.VITE_PUBLIC_API_FALLBACK || PUBLIC_API_FALLBACK
+  )
+    .trim()
+    .replace(/\/$/, "");
 
   if (explicitBase) {
     candidates.push(explicitBase);
@@ -132,7 +138,11 @@ function getApiBaseCandidates(apiBase) {
     const host = window.location.hostname;
     if (/^(localhost|127\.0\.0\.1)$/.test(host)) {
       candidates.push("http://localhost:4242");
+    } else if (publicFallback) {
+      candidates.push(publicFallback);
     }
+  } else if (publicFallback) {
+    candidates.push(publicFallback);
   }
 
   return [...new Set(candidates)];
