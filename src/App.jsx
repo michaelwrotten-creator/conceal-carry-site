@@ -223,6 +223,38 @@ function redirectToTopLevel(url) {
   window.location.assign(targetUrl);
 }
 
+function chooseBestSpeechVoice(voices = []) {
+  if (!Array.isArray(voices) || !voices.length) return null;
+
+  const preferredPatterns = [
+    /aria/i,
+    /ava/i,
+    /samantha/i,
+    /alloy/i,
+    /serena/i,
+    /google us english/i,
+    /zira/i,
+    /jenny/i,
+    /natural/i,
+  ];
+
+  for (const pattern of preferredPatterns) {
+    const match = voices.find(
+      (voice) =>
+        pattern.test(String(voice?.name || "")) &&
+        /en/i.test(String(voice?.lang || ""))
+    );
+    if (match) return match;
+  }
+
+  return (
+    voices.find((voice) => /en-US/i.test(String(voice?.lang || ""))) ||
+    voices.find((voice) => /^en/i.test(String(voice?.lang || ""))) ||
+    voices[0] ||
+    null
+  );
+}
+
 const WHY_CHOOSE_IPS_REPLY =
   "You should choose Illinois Protective Services because the focus is on teaching responsible American citizens gun rights and firearm ownership with professionalism, courteous service, integrity, and transparency. The training is structured, safety-focused, and designed to help students leave more confident, better informed, and prepared to handle firearm ownership responsibly. If you want, I can also help you compare the classes and choose the right one for your situation.";
 
@@ -531,6 +563,8 @@ function SmartAIChat({
   const handleSendRef = useRef(null);
   const scrollAnchorRef = useRef(null);
   const speechEnabledRef = useRef(false);
+  const speechVoiceRef = useRef(null);
+  const audioContextRef = useRef(null);
 
   const contactPhone = "(224) 248-7027";
   const contactEmail = "support@illinoisprotectiveservices.com";
@@ -593,12 +627,77 @@ function SmartAIChat({
   }, [loading]);
 
   useEffect(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+
+    const assignVoice = () => {
+      speechVoiceRef.current = chooseBestSpeechVoice(
+        window.speechSynthesis.getVoices()
+      );
+    };
+
+    assignVoice();
+    window.speechSynthesis.addEventListener("voiceschanged", assignVoice);
+
+    return () => {
+      window.speechSynthesis.removeEventListener("voiceschanged", assignVoice);
+    };
+  }, []);
+
+  useEffect(() => {
     if (typeof window === "undefined") return;
     if (!speechEnabledRef.current) return;
     if (!soundEnabled) {
       window.speechSynthesis?.cancel?.();
     }
   }, [soundEnabled]);
+
+  function playPopupTone(kind = "open") {
+    if (typeof window === "undefined" || !soundEnabled) return;
+
+    const AudioContextClass =
+      window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    if (!audioContextRef.current) {
+      audioContextRef.current = new AudioContextClass();
+    }
+
+    const context = audioContextRef.current;
+    if (context.state === "suspended") {
+      context.resume().catch(() => {});
+    }
+
+    const now = context.currentTime;
+    const gain = context.createGain();
+    gain.connect(context.destination);
+    gain.gain.setValueAtTime(0.0001, now);
+
+    const tones =
+      kind === "reply"
+        ? [
+            { frequency: 740, duration: 0.08, delay: 0 },
+            { frequency: 880, duration: 0.12, delay: 0.08 },
+          ]
+        : [
+            { frequency: 620, duration: 0.09, delay: 0 },
+            { frequency: 820, duration: 0.11, delay: 0.07 },
+          ];
+
+    tones.forEach(({ frequency, duration, delay }) => {
+      const oscillator = context.createOscillator();
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequency, now + delay);
+      oscillator.connect(gain);
+      oscillator.start(now + delay);
+      oscillator.stop(now + delay + duration);
+    });
+
+    gain.gain.exponentialRampToValueAtTime(0.04, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(
+      0.0001,
+      now + tones[tones.length - 1].delay + tones[tones.length - 1].duration
+    );
+  }
 
   function speakReply(text) {
     if (
@@ -615,8 +714,11 @@ function SmartAIChat({
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(spokenText);
-    utterance.rate = 1;
-    utterance.pitch = 1;
+    if (speechVoiceRef.current) {
+      utterance.voice = speechVoiceRef.current;
+    }
+    utterance.rate = 0.94;
+    utterance.pitch = 1.02;
     utterance.volume = 1;
     window.speechSynthesis.speak(utterance);
   }
@@ -1176,6 +1278,7 @@ function SmartAIChat({
     if (localAction) {
       runLocalAction(localAction);
       setMessages((prev) => [...prev, { role: "ai", text: localAction.reply }]);
+      playPopupTone("reply");
       speakReply(localAction.reply);
       return;
     }
@@ -1183,6 +1286,7 @@ function SmartAIChat({
     setLoading(true);
     const aiReply = await requestAssistantReply(text, nextMessages);
     setMessages((prev) => [...prev, { role: "ai", text: aiReply }]);
+    playPopupTone("reply");
     speakReply(aiReply);
     setLoading(false);
   }
@@ -1200,10 +1304,19 @@ function SmartAIChat({
     <>
       <button
         type="button"
-        onClick={() => setOpen((prev) => !prev)}
+        onClick={() =>
+          setOpen((prev) => {
+            const next = !prev;
+            if (next) {
+              speechEnabledRef.current = true;
+              playPopupTone("open");
+            }
+            return next;
+          })
+        }
         aria-label="Open training assistant chat"
         title="Open training assistant chat"
-        className="fixed bottom-6 right-6 z-[999999] flex h-16 w-16 items-center justify-center rounded-full border border-[#4169e1]/40 bg-[#4169e1] text-white shadow-[0_0_30px_rgba(65,105,225,0.28)] transition hover:scale-105 hover:bg-[#3558c9]"
+        className="fixed bottom-24 right-4 z-[999999] flex h-16 w-16 items-center justify-center rounded-full border border-[#4169e1]/40 bg-[#4169e1] text-white shadow-[0_0_30px_rgba(65,105,225,0.28)] transition hover:scale-105 hover:bg-[#3558c9] md:bottom-6 md:right-6"
       >
         <svg
           viewBox="0 0 24 24"
@@ -1215,103 +1328,183 @@ function SmartAIChat({
       </button>
 
       {open && (
-        <div className="fixed inset-x-4 bottom-24 top-24 z-[999999] flex flex-col overflow-hidden rounded-3xl border border-[#d9dee8] bg-white shadow-[0_25px_70px_rgba(0,0,0,0.22)] sm:inset-x-auto sm:right-6 sm:top-20 sm:w-[360px]">
-          <div className="flex items-center justify-between bg-black px-5 py-4 text-white">
-            <div>
-              <div className="text-sm font-black uppercase tracking-[0.2em]">
-                Training Assistant
+        <div className="fixed inset-x-4 bottom-24 top-24 z-[999999] flex flex-col overflow-hidden rounded-[2rem] border border-[#c7d6ff] bg-white shadow-[0_28px_80px_rgba(28,56,134,0.24)] sm:inset-x-auto sm:right-6 sm:top-16 sm:w-[420px]">
+          <div className="bg-[linear-gradient(180deg,#2873f0_0%,#2366d6_100%)] px-5 pb-5 pt-4 text-white">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex rounded-full bg-[#1d5fcc] p-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.15)]">
+                <button
+                  type="button"
+                  className="rounded-full bg-[#2a73ea] px-5 py-2 text-sm font-bold text-white shadow-[0_8px_18px_rgba(0,0,0,0.14)]"
+                >
+                  Chat
+                </button>
+                <button
+                  type="button"
+                  className="rounded-full px-4 py-2 text-sm font-semibold text-white/80"
+                >
+                  Helpdesk
+                </button>
               </div>
-              <div className="text-xs text-white/80">
-                Classes, certificates, and general help
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    speechEnabledRef.current = true;
+                    setSoundEnabled((prev) => !prev);
+                  }}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-base backdrop-blur hover:bg-white/16"
+                  title={soundEnabled ? "Sound on" : "Sound off"}
+                >
+                  {soundEnabled ? "🔊" : "🔇"}
+                </button>
+                <button
+                  type="button"
+                  onClick={startVoice}
+                  disabled={loading}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-base backdrop-blur hover:bg-white/16"
+                  title="Voice input"
+                >
+                  {listening ? "🎤" : "🎙️"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.speechSynthesis?.cancel?.();
+                    setOpen(false);
+                  }}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-xl leading-none backdrop-blur hover:bg-white/16"
+                  title="Close"
+                >
+                  ×
+                </button>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  speechEnabledRef.current = true;
-                  setSoundEnabled((prev) => !prev);
-                }}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 hover:bg-white/10"
-                title={soundEnabled ? "Sound on" : "Sound off"}
-              >
-                {soundEnabled ? "🔊" : "🔇"}
-              </button>
-              <button
-                type="button"
-                onClick={startVoice}
-                disabled={loading}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 hover:bg-white/10"
-                title="Voice input"
-              >
-                {listening ? "🎤" : "🎙️"}
-              </button>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/5 hover:bg-white/10"
-                title="Close"
-              >
-                ✕
-              </button>
+            <div className="text-center">
+              <div className="text-[13px] font-semibold uppercase tracking-[0.28em] text-white/72">
+                Training Assistant
+              </div>
+              <div className="mt-2 text-[1.95rem] font-black leading-none">
+                Talk with Illinois
+              </div>
+              <div className="mt-1 text-[1.95rem] font-black leading-none">
+                Protective Services
+              </div>
             </div>
           </div>
 
-          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto bg-[#f8fbff] p-4">
+          <div className="min-h-0 flex-1 overflow-y-auto bg-white px-4 pb-4 pt-5">
             {messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`max-w-[88%] whitespace-pre-wrap rounded-2xl border px-4 py-3 text-sm leading-6 ${
-                  msg.role === "ai"
-                    ? "border-[#bfd0ff] bg-[#eaf1ff] text-[#1f3f9e]"
-                    : "ml-auto border-[#4169e1]/20 bg-[#4169e1] text-white"
-                }`}
-              >
-                {msg.text}
+              <div key={index} className="mb-4">
+                {msg.role === "ai" ? (
+                  <div className="flex items-start gap-3">
+                    <div className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2a73ea] text-sm text-white shadow-[0_8px_18px_rgba(42,115,234,0.22)]">
+                      🤖
+                    </div>
+                    <div className="max-w-[78%]">
+                      <div className="mb-1 text-sm font-semibold text-[#9bb0d8]">
+                        Bot
+                      </div>
+                      <div className="rounded-[1.15rem] rounded-tl-md bg-[#f1f4f9] px-4 py-3 text-[15px] leading-7 text-[#475569] shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
+                        {msg.text}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="ml-auto max-w-[82%]">
+                    <div className="mb-1 text-right text-sm font-semibold text-[#9bb0d8]">
+                      You
+                    </div>
+                    <div className="rounded-[1.15rem] rounded-tr-md bg-[#2a73ea] px-4 py-3 text-[15px] leading-7 text-white shadow-[0_14px_28px_rgba(42,115,234,0.2)]">
+                      {msg.text}
+                    </div>
+                    <div className="mt-2 text-right text-sm text-[#b3bfd4]">
+                      {index === messages.length - 1 && msg.role === "user"
+                        ? "Delivered"
+                        : ""}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             {loading ? (
-              <div className="max-w-[88%] rounded-2xl border border-[#bfd0ff] bg-[#eaf1ff] px-4 py-3 text-sm leading-6 text-[#1f3f9e]">
-                Thinking through the best answer for you...
+              <div className="mb-4 flex items-start gap-3">
+                <div className="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2a73ea] text-sm text-white shadow-[0_8px_18px_rgba(42,115,234,0.22)]">
+                  🤖
+                </div>
+                <div className="max-w-[78%]">
+                  <div className="mb-1 text-sm font-semibold text-[#9bb0d8]">
+                    Bot
+                  </div>
+                  <div className="inline-flex items-center gap-2 rounded-[1.15rem] rounded-tl-md bg-[#f1f4f9] px-4 py-3 text-[#7b8bad] shadow-[0_10px_24px_rgba(15,23,42,0.05)]">
+                    <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#7b8bad]" />
+                    <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#7b8bad] [animation-delay:120ms]" />
+                    <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[#7b8bad] [animation-delay:240ms]" />
+                  </div>
+                </div>
               </div>
             ) : null}
             <div ref={scrollAnchorRef} />
           </div>
 
-          <div className="border-t border-[#d9dee8] bg-white p-3">
-            <div className="mb-3 flex flex-wrap gap-2">
+          <div className="border-t border-[#e8eefb] bg-white px-4 pb-4 pt-3">
+            <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
               {suggestions.map((suggestion) => (
                 <button
                   key={suggestion}
                   type="button"
                   onClick={() => handleSend(suggestion)}
-                  className="rounded-full border border-[#d9dee8] bg-[#f8fbff] px-3 py-1.5 text-xs font-bold text-[#3558c9] hover:bg-[#eef4ff]"
+                  className="shrink-0 rounded-full border border-[#d9e4fb] bg-[#f9fbff] px-3 py-1.5 text-xs font-semibold text-[#3764c6] hover:bg-[#eef4ff]"
                 >
                   {suggestion}
                 </button>
               ))}
             </div>
 
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleSend();
-                }}
-                placeholder="Ask about classes, certificates, or almost anything..."
-                className="flex-1 rounded-xl border border-[#d9dee8] bg-white px-4 py-3 text-sm text-[#111111] outline-none placeholder:text-[#6b7280]"
-              />
-              <button
-                type="button"
-                onClick={() => handleSend()}
-                disabled={loading}
-                className="rounded-xl bg-[#4169e1] px-4 py-3 text-sm font-black uppercase text-white hover:bg-[#3558c9] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {loading ? "..." : "Send"}
-              </button>
+            <div className="rounded-[1.5rem] border border-[#e7edf7] bg-white px-3 py-2 shadow-[0_14px_30px_rgba(15,23,42,0.05)]">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSend();
+                  }}
+                  placeholder="Compose your message..."
+                  className="flex-1 bg-transparent px-2 py-2 text-[15px] text-[#334155] outline-none placeholder:text-[#a9b6cb]"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleSend()}
+                  disabled={loading}
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-[#2a73ea] text-white shadow-[0_12px_22px_rgba(42,115,234,0.24)] hover:bg-[#2262c8] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loading ? "..." : "➤"}
+                </button>
+              </div>
+
+              <div className="mt-2 flex items-center justify-between px-1 text-[#c2ccdb]">
+                <div className="flex items-center gap-3 text-lg">
+                  <span role="img" aria-label="Emoji">
+                    ☺
+                  </span>
+                  <button
+                    type="button"
+                    onClick={startVoice}
+                    className="text-lg text-inherit"
+                    title="Voice input"
+                  >
+                    🎙️
+                  </button>
+                  <span role="img" aria-label="Favorites">
+                    ★
+                  </span>
+                </div>
+                <div className="text-sm font-medium text-[#b4bfd0]">
+                  Illinois Protective Services
+                </div>
+              </div>
             </div>
           </div>
         </div>
